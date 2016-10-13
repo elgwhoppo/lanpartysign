@@ -1,2 +1,4 @@
 # LANPartySign
-The code behind the LAN party sign
+Depends on: 
+pfSense 2.3
+
