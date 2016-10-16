@@ -1,6 +1,7 @@
 #!/bin/sh
-#Written by Joe Clarke
-#Depends on vnstat being installed
+# Written by Joe Clarke
+# Depends on vnstat being installed
+# Change the interface called on the vnstat line
 
 while :
 do
