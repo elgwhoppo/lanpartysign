@@ -3,6 +3,9 @@
 # Depends on vnstat being installed
 # Change the interface called on the vnstat line
 
+initalfirstspeed="1000000"
+echo $initalfirstspeed > /tmp/lastspeed2.log
+
 while :
 do
 
@@ -69,7 +72,7 @@ echo "total  bps: ${totalbps}"
 totalmbps=`expr $totalbps / 1000000`
 echo "total mbps: ${totalmbps}"
 
-curl --data "$totalbps=bps&$totalmbps=mbps" http://httpbin.org/post
-
+echo $totalbps > /usr/local/www/bwnow.txt
 
 done
+
