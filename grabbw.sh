@@ -2,6 +2,8 @@
 # Written by Joe Clarke
 # Depends on vnstat being installed
 # Change the interface called on the vnstat line
+# on pfSense this shell script can be placed in the /usr/local/etc/rc.d/ directory for automatic start
+# make sure to run chmod +x grabbw.sh so that it can be executed. 
 
 initalfirstspeed="1000000"
 echo $initalfirstspeed > /tmp/lastspeed2.log
