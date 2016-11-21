@@ -2,11 +2,12 @@
 # Written by Joe Clarke
 # This script is to be run on the pfSense box itself and it depends on vnstat being installed. 
 # Change the interface called on the vnstat line to whatever interface you'd like to track bandwidth on, LAN is best for multi-wan configs. 
+# This script totals the tx and rx traffic together for the aggregate, but it can be modified if only download is of interest. 
 #
 # On pfSense this shell script can be placed in the /usr/local/etc/rc.d/ directory for automatic start
 # make sure to run chmod +x grabbw.sh so that it can be executed and it will run at start automatically on boot. 
 #
-# Initially we did the interpolation here, but it turned out that files outed into /usr/local/www/ are only updated by pfsense once per second. 
+# Initially we did the interpolation here, but it turned out that files outed into /usr/local/www/ are only updated by pfsense around once per second. 
 # So we opted to do the interpolation in python on the raspberry pi. 
 #
 # To test if it's working, navigate to <yourpfsenseIP>/bwnow.txt and you should see the value in bps. 
