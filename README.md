@@ -22,7 +22,7 @@ Press [Enter] four times after “SPEED” to create some space.
 
 LED panels
 ----------
-![LED panels JB Welded together](https://github.com/elgwhoppo/LANPartySign/blob/master/images/panels-jbwelded.jpg)
+![LED panels JB Welded together](https://github.com/elgwhoppo/LANPartySign/blob/master/images/panels-jbwelded.jpg =450x)
 
 Six 4” common anode LED panels, three in red, and three in green were glued together using JB Weld.  It’s not very pretty on the back, but no one sees the rear of the panels anyway.  I used a wet paper towel to wipe up the excess that oozed out the front.
 
@@ -45,8 +45,8 @@ https://smile.amazon.com/gp/product/B008BHB4L8/ref=oh\_aui\_search\_detailpage?i
 
 LED driver board
 ----------------
-![Schematic](https://github.com/elgwhoppo/LANPartySign/blob/master/images/schem1.png)
-![Schematic](https://github.com/elgwhoppo/LANPartySign/blob/master/images/schem2.png)
+![Schematic](https://github.com/elgwhoppo/LANPartySign/blob/master/images/schem1.png =450x)
+![Schematic](https://github.com/elgwhoppo/LANPartySign/blob/master/images/schem2.png =450x)
 
 ### Source IC
 A UDN2984A source driver is required as the RPi’s GPIO outputs neither source enough voltage (3.3V max) or current (\~30mA total) to drive the large LED panels.
@@ -103,8 +103,8 @@ https://smile.amazon.com/gp/product/B0002BSRIO/ref=oh\_aui\_search\_detailpage?i
 
 Fit and finish
 ==============
-![LED driver in enclosure](https://github.com/elgwhoppo/LANPartySign/blob/master/images/led-driver-in-enclosure.jpg)
-![Front of sign](https://github.com/elgwhoppo/LANPartySign/blob/master/images/front-of-sign.jpg)
+![LED driver in enclosure](https://github.com/elgwhoppo/LANPartySign/blob/master/images/led-driver-in-enclosure.jpg =450x)
+![Front of sign](https://github.com/elgwhoppo/LANPartySign/blob/master/images/front-of-sign.jpg =450x)
 
 A piece of tinted acrylic was glued to the front of the LED panels to give it anice slick look.  Unfortunately it's very reflective and impossible to photograph without seeing a reflection of someone or something :(
 
