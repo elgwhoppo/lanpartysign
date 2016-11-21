@@ -213,7 +213,7 @@ Things I would do differently
 
 Thank you
 =========
-Thanks to my two engineer friends, Rick Nemer and [@gyrowoof](http://www.twitter.com/gyrowoof), who I consulted heavily with for selecting IC’s and design of the LED driver board. Rick actually donated a the IC’s and resistors to the project since he had a bunch of them handy.
+Thanks to my two engineer friends, Rick Nemer and [@gyrowoof](http://www.twitter.com/gyrowoof), who I consulted heavily with for selecting IC’s and design of the LED driver board. Rick actually donated the IC’s and resistors to the project since he had a bunch of them handy.
 
 Also thanks to Rototron, who helped on the Python script based from his 7 Segment LED tutorial:
 
