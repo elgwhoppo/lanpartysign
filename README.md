@@ -46,6 +46,8 @@ https://smile.amazon.com/gp/product/B008BHB4L8/ref=oh\_aui\_search\_detailpage?i
 LED driver board
 ----------------
 ![Schematic](https://github.com/elgwhoppo/LANPartySign/blob/master/images/schem1.png)
+![Schematic](https://github.com/elgwhoppo/LANPartySign/blob/master/images/schem2.png)
+![LED driver in enclosure](https://github.com/elgwhoppo/LANPartySign/blob/master/images/led-driver-in-enclosure.png)
 
 ### Source IC
 A UDN2984A source driver is required as the RPi’s GPIO outputs neither source enough voltage (3.3V max) or current (\~30mA total) to drive the large LED panels.
@@ -102,13 +104,14 @@ https://smile.amazon.com/gp/product/B0002BSRIO/ref=oh\_aui\_search\_detailpage?i
 
 Fit and finish
 ==============
-A piece of tinted acrylic was glued to the front of the LED panels to give it anice slick look.
+![Front of sign](https://github.com/elgwhoppo/LANPartySign/blob/master/images/front-of-sign.png)
+A piece of tinted acrylic was glued to the front of the LED panels to give it anice slick look.  Unfortunately it's very reflective and impossible to photograph without seeing a reflection of someone or something :(
 
 https://smile.amazon.com/gp/product/B01A1C16TK/ref=oh\_aui\_detailpage\_o02\_s00?ie=UTF8&psc=1
 
 The Mb/s and ms units were printed on my laser printer using the same font used by the US Federal Highway Administration (Highway Gothic), laminated, and taped to the front of the sign because I ran out of time. However, more permanent unit labels printed on a vinyl printer will replace them.
 
-[LINK TO EPS FILE]
+https://github.com/elgwhoppo/LANPartySign/blob/master/images/units.eps
 
 Four pairs of rare earth magnets keep the LED panel secured to the sign. Four magnets are adhered to the set of LED panels with JB Weld. I love JB Weld.
 
