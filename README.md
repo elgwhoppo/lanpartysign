@@ -1,4 +1,5 @@
-(sorry this is my first time using Markdown -- the doc is getting cleaned up!)
+Here it is in action!
+https://github.com/elgwhoppo/LANPartySign/blob/master/images/xIRKag8QQ-qkcFby.mp4
 
 Hardware
 ========
