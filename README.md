@@ -111,7 +111,7 @@ https://smile.amazon.com/gp/product/B01A1C16TK/ref=oh\_aui\_detailpage\_o02\_s00
 
 The Mb/s and ms units were printed on my laser printer using the same font used by the US Federal Highway Administration (Highway Gothic), laminated, and taped to the front of the sign because I ran out of time. However, more permanent unit labels printed on a vinyl printer will replace them.
 
-https://github.com/elgwhoppo/LANPartySign/blob/master/images/units.eps
+https://github.com/elgwhoppo/LANPartySign/blob/master/units.eps
 
 Four pairs of rare earth magnets keep the LED panel secured to the sign. Four magnets are adhered to the set of LED panels with JB Weld. I love JB Weld.
 
@@ -134,11 +134,11 @@ sudo python setup.py install
 
 The Python Script
 =================
-The script does all the heavy lifting of the sign and runs on the Raspberry Pi. It creates the precisely-timed pulses required for multiplexing the digits, as well as gathering the data displayed on the sign.
+The Python script does all the heavy lifting of the sign and runs on the Raspberry Pi. It creates the precisely-timed pulses required for multiplexing the digits, as well as gathering the data displayed on the sign.
 
 The speed at which values are fetched by adjusting “fetchrate”, and the sign’s refresh rate can be adjusted using the “pulsewidth” value. A small amount of number crunching is done to create how long a segment or digit should stay on or off for the multiplexing.
 
-The rest of the script is heavily derived from Rototron’s terrific 7 Segment LED tutorial. I would suggest viewing that as it’s a great explanation of using PWM to multiplex LED’s.
+The rest of the Python script is heavily derived from Rototron’s terrific 7 Segment LED tutorial. I would suggest viewing that as it’s a great explanation of using PWM to multiplex LED’s.
 
 http://www.rototron.info/7-segment-led-tutorial-for-raspberry-pi/
 
@@ -146,11 +146,11 @@ It’s important to note that once a pulse is created (via PWM.add\_channel\_pul
 
 The http daemon only updates a file once per second even though the shell script is updating it quicker. To create the illustion it’s updating faster, a small section for “fuzzing” averages the previous two values to fabricate a new one.
 
-Some error checking and exception handling is done to prevent the Python script from stopping if something trips up the script such as a ping timing out, or a blank value is fetched from pfSense.
+Some error checking and exception handling is done to prevent the Python script from stopping if a ping times out, or a blank value is fetched from pfSense.
 
 The Shell Script
 ================
-This script runs on our pfSense unit, and using vnstat, outputs a value in bps accessible over HTTP by the Raspberry Pi. Hopefully elgwhoppo has more to say about it because he's the one that wrote it :)
+This shell script runs on our pfSense unit, and using vnstat, outputs a value in bps accessible over HTTP by the Raspberry Pi. Hopefully elgwhoppo has more to say about it because he's the one that wrote it :)
 
 tl;dr “what do i need to buy?”
 ==============================
