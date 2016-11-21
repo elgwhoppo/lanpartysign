@@ -27,6 +27,7 @@ Six 4” common anode LED panels, three in red, and three in green were glued to
 
 These are the panels we used:
 http://www.ebay.com/itm/182018966801
+
 http://www.ebay.com/itm/252168875198
 
 Power supply
