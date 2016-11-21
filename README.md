@@ -1,5 +1,5 @@
 Here it is in action!
-https://github.com/elgwhoppo/LANPartySign/blob/master/images/xIRKag8QQ-qkcFby.mp4
+https://raw.githubusercontent.com/elgwhoppo/LANPartySign/master/images/xIRKag8QQ-qkcFby.mp4
 
 Hardware
 ========
