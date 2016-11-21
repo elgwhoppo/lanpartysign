@@ -1,4 +1,4 @@
-(sorry this is my first time using Markdown -- the doc is getting cleaned up)
+(sorry this is my first time using Markdown -- the doc is getting cleaned up!)
 
 Hardware
 ========
@@ -59,10 +59,7 @@ A ULN2003AN Darlington array is required as the RPi’s GPIO can’t sink the re
 ### Resistors
 Current limiting resistors were are required to keep the LED panels from burning up, and to keep the brightness between the two colors uniform. The segments that form each digit require different values from the decimal point as the decimal point has less LED’s inside.
 
-Green segments used 300ohm resistors.
-Red segments used seven 150ohm resistors.
-Green decimal point used a 4000ohm resistor.
-Red decimal point used a 800ohm resistor.
+Green segments used 300ohm resistors and a 4000ohm for the decimal point.  Red segments used seven 150ohm resistors and a 800ohm resistor for the decimal point.
 
 You may change the resistor values to your liking if you’d like it brighter or darker. We chose higher values since the sign would be used in a dimly-lit room (i.e. a LAN party). For a brighter sign, use a lower value. I wouldn’t suggest going lower than 60ohm for the digits and 250ohm for the decimal point.
 
