@@ -68,9 +68,9 @@ https://smile.amazon.com/gp/product/B008BHB4L8/ref=oh\_aui\_search\_detailpage?i
 LED driver board
 ----------------
 
-[PHOTO OF DRIVER BOARD INSIDE ENCLOSURE GOES HERE]
+!(https://github.com/elgwhoppo/LANPartySign/blob/master/images/panels-jbwelded.jpg)
 
-[SCHEMATIC GOES HERE]
+!(https://github.com/elgwhoppo/LANPartySign/blob/master/images/schem1.png)
 
 ### Source IC
 
