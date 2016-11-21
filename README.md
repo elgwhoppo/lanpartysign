@@ -22,7 +22,7 @@ Press [Enter] four times after “SPEED” to create some space.
 
 LED panels
 ----------
-![LED panels JB Welded together](https://github.com/elgwhoppo/LANPartySign/blob/master/images/panels-jbwelded.jpg =450x)
+![LED panels JB Welded together](https://github.com/elgwhoppo/LANPartySign/blob/master/images/panels-jbwelded.jpg | width=450)
 
 Six 4” common anode LED panels, three in red, and three in green were glued together using JB Weld.  It’s not very pretty on the back, but no one sees the rear of the panels anyway.  I used a wet paper towel to wipe up the excess that oozed out the front.
 
