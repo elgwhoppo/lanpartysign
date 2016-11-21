@@ -103,8 +103,8 @@ https://smile.amazon.com/gp/product/B0002BSRIO/ref=oh\_aui\_search\_detailpage?i
 
 Fit and finish
 ==============
-![LED driver in enclosure](https://github.com/elgwhoppo/LANPartySign/blob/master/images/led-driver-in-enclosure.png)
-![Front of sign](https://github.com/elgwhoppo/LANPartySign/blob/master/images/front-of-sign.png)
+![LED driver in enclosure](https://github.com/elgwhoppo/LANPartySign/blob/master/images/led-driver-in-enclosure.jpg)
+![Front of sign](https://github.com/elgwhoppo/LANPartySign/blob/master/images/front-of-sign.jpg)
 
 A piece of tinted acrylic was glued to the front of the LED panels to give it anice slick look.  Unfortunately it's very reflective and impossible to photograph without seeing a reflection of someone or something :(
 
