@@ -83,9 +83,7 @@ https://www.sparkfun.com/products/643
 
 https://www.sparkfun.com/products/716
 
-A 40-pin IDE cable was sacrificed to make the connection between the LED driver board and the Raspberry Pi.
-
-We could’ve consolidated the cathode buses, but I was afraid I wouldn’t have room for current limiting resistors between the panels and the sign. The current limiting resistors are on the same board with the IC’s which required two individual cathode busses.
+A 40-pin IDE cable was sacrificed to make the connection between the LED driver board and the Raspberry Pi. We could’ve consolidated the cathode buses, but I was afraid I wouldn’t have room for current limiting resistors between the panels and the sign. The current limiting resistors are on the same board with the IC’s which required two individual cathode busses.
 
 Some protoboard was used to make soldering each panel to the bus easier, but I probably could’ve done with out them.
 
