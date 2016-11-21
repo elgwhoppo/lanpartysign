@@ -68,9 +68,9 @@ https://smile.amazon.com/gp/product/B008BHB4L8/ref=oh\_aui\_search\_detailpage?i
 LED driver board
 ----------------
 
-!(https://github.com/elgwhoppo/LANPartySign/blob/master/images/panels-jbwelded.jpg)
+![LED panels JB Welded together](https://github.com/elgwhoppo/LANPartySign/blob/master/images/panels-jbwelded.jpg)
 
-!(https://github.com/elgwhoppo/LANPartySign/blob/master/images/schem1.png)
+![Schematic](https://github.com/elgwhoppo/LANPartySign/blob/master/images/schem1.png)
 
 ### Source IC
 
