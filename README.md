@@ -58,7 +58,7 @@ A UDN2984A source driver is required as the RPi’s GPIO outputs neither source 
 A ULN2003AN Darlington array is required as the RPi’s GPIO can’t sink the return current without emitting smoke. A 2N7000 FET is used to drive one of the cathodes because the Darlington array I selected only had 7 pins and I needed 8.
 
 ### Resistors
-Current limiting resistors were are required to keep the LED panels from burning up, and to keep the brightness between the two colors uniform. The segments that form each digit require different values from the decimal point as the decimal point has less LED’s inside.
+Current limiting resistors are required to keep the LED panels from burning up, and to keep the brightness between the two types of panels uniform. The segments that form each digit require different values from the decimal point as the decimal point has less LED’s inside.
 
 Green segments used 300ohm resistors and a 4000ohm for the decimal point.  Red segments used seven 150ohm resistors and a 800ohm resistor for the decimal point.
 
@@ -78,7 +78,7 @@ https://www.amazon.com/gp/product/B0154MAECC/ref=oh\_aui\_search\_detailpage?ie=
 
 https://www.amazon.com/gp/product/B01G6EAY0E/ref=oh\_aui\_search\_detailpage?ie=UTF8&psc=1
 
-The LED panels used CAT5e cabling with RJ45 crimped on the ends. They were connected to RJ45 jacks and breakout boards from Sparkfun. Three were used in total. One for the anode bus, one for the green cathode bus, and one for the red cathode bus. We could’ve consolidated the cathode buses, but I was afraid I wouldn’t have room for current limiting resistors between the panels and the sign. The current limiting resistors are on the same board with the IC’s which required two individual cathode busses.
+The LED panels used CAT5e cabling with RJ45 crimped on the ends. They were connected to RJ45 jacks and breakout boards from Sparkfun. Three were used in total. One for the anode bus, one for the green cathode bus, and one for the red cathode bus. We could’ve consolidated the cathode buses, but I was afraid I wouldn’t have room for current limiting resistors behind the panels. The current limiting resistors are on the same board with the IC’s which required two individual CAT5e cathode busses.
 
 https://www.sparkfun.com/products/643
 
