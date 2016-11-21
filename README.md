@@ -39,12 +39,12 @@ Power supply
 ------------
 A 12V/2A power adapter is sufficient to provide power to the RPi and drive the LED’s. This isn’t terribly special. This is the same type of wallwart-style power supply that comes with routers and cable modems.
 
-https://smile.amazon.com/gp/product/B0194B7WSI/ref=oh\_aui\_search\_detailpage?ie=UTF8&psc=1
+https://www.amazon.com/gp/product/B0194B7WSI/ref=oh\_aui\_search\_detailpage?ie=UTF8&psc=1
 
 The Raspberry Pi is also draws from the same power adapter via a cheap step-down
 buck converter. This is the one we used.
 
-https://smile.amazon.com/gp/product/B008BHB4L8/ref=oh\_aui\_search\_detailpage?ie=UTF8&psc=1
+https://www.amazon.com/gp/product/B008BHB4L8/ref=oh\_aui\_search\_detailpage?ie=UTF8&psc=1
 
 LED driver board
 ----------------
@@ -74,9 +74,9 @@ Pins 2 and 4 power the Raspberry Pi through the step-down buck converter.
 ### Wiring and connectors
 A small length of 18GA wiring and barrel connectors are used to connect the LED driver board to the power supply.
 
-https://smile.amazon.com/gp/product/B0154MAECC/ref=oh\_aui\_search\_detailpage?ie=UTF8&psc=1
+https://www.amazon.com/gp/product/B0154MAECC/ref=oh\_aui\_search\_detailpage?ie=UTF8&psc=1
 
-https://smile.amazon.com/gp/product/B01G6EAY0E/ref=oh\_aui\_search\_detailpage?ie=UTF8&psc=1
+https://www.amazon.com/gp/product/B01G6EAY0E/ref=oh\_aui\_search\_detailpage?ie=UTF8&psc=1
 
 The LED panels used CAT5e cabling with RJ45 crimped on the ends. They were connected to RJ45 jacks and breakout boards from Sparkfun. Three were used in total. One for the anode bus, one for the green cathode bus, and one for the red cathode bus.
 
@@ -88,18 +88,18 @@ A 40-pin IDE cable was sacrificed to make the connection between the LED driver 
 
 Some protoboard was used to make soldering each panel to the bus easier, but I probably could’ve done with out them.
 
-https://smile.amazon.com/gp/product/B019Q14GRQ/ref=oh\_aui\_search\_detailpage?ie=UTF8&psc=1
+https://www.amazon.com/gp/product/B019Q14GRQ/ref=oh\_aui\_search\_detailpage?ie=UTF8&psc=1
 
 ### Enclosures
 The Raspberry Pi is housed in a ABS plastic case that allowed access to the
 40-pin connector.
 
-https://smile.amazon.com/gp/product/B00MQWQT0A/ref=oh\_aui\_search\_detailpage?ie=UTF8&psc=1
+https://www.amazon.com/gp/product/B00MQWQT0A/ref=oh\_aui\_search\_detailpage?ie=UTF8&psc=1
 
 The LED driver board, due to the strange size of the protoboard I used is housed
 in a 7.5” x 4.3” Hammond case.
 
-https://smile.amazon.com/gp/product/B0002BSRIO/ref=oh\_aui\_search\_detailpage?ie=UTF8&psc=1
+https://www.amazon.com/gp/product/B0002BSRIO/ref=oh\_aui\_search\_detailpage?ie=UTF8&psc=1
 
 Fit and finish
 ==============
@@ -108,7 +108,7 @@ Fit and finish
 
 A piece of tinted acrylic was glued to the front of the LED panels to give it anice slick look.  Unfortunately it's very reflective and impossible to photograph without seeing a reflection of someone or something :(
 
-https://smile.amazon.com/gp/product/B01A1C16TK/ref=oh\_aui\_detailpage\_o02\_s00?ie=UTF8&psc=1
+https://www.amazon.com/gp/product/B01A1C16TK/ref=oh\_aui\_detailpage\_o02\_s00?ie=UTF8&psc=1
 
 The Mb/s and ms units were printed on my laser printer using the same font used by the US Federal Highway Administration (Highway Gothic), laminated, and taped to the front of the sign because I ran out of time. However, more permanent unit labels printed on a vinyl printer will replace them.
 
@@ -165,12 +165,12 @@ Some of the parts may need to change based on your needs of the sign as well as 
 - 3x http://www.ebay.com/itm/252168875198
 
 ### Power supplies
-- 12V/2A power supply https://smile.amazon.com/gp/product/B0194B7WSI/ref=oh\_aui\_search\_detailpage?ie=UTF8&psc=1
-- step-down buck converter https://smile.amazon.com/gp/product/B008BHB4L8/ref=oh\_aui\_search\_detailpage?ie=UTF8&psc=1
+- 12V/2A power supply https://www.amazon.com/gp/product/B0194B7WSI/ref=oh\_aui\_search\_detailpage?ie=UTF8&psc=1
+- step-down buck converter https://www.amazon.com/gp/product/B008BHB4L8/ref=oh\_aui\_search\_detailpage?ie=UTF8&psc=1
 
 ### LED driver board
 - 1x large protoboard
-- 6x small protoboard https://smile.amazon.com/gp/product/B019Q14GRQ/ref=oh\_aui\_search\_detailpage?ie=UTF8&psc=1
+- 6x small protoboard https://www.amazon.com/gp/product/B019Q14GRQ/ref=oh\_aui\_search\_detailpage?ie=UTF8&psc=1
 - 1x UDN2984A
 - 1x 18-pin socket for UDN2984A
 - 1x ULN2003AN
@@ -186,22 +186,22 @@ Some of the parts may need to change based on your needs of the sign as well as 
 
 ### Wiring
 - 1x a bunch of scrap CAT5 to salvage solid wiring from
-- 1x some scrap 18GA wire https://smile.amazon.com/gp/product/B0154MAECC/ref=oh\_aui\_search\_detailpage?ie=UTF8&psc=1
+- 1x some scrap 18GA wire https://www.amazon.com/gp/product/B0154MAECC/ref=oh\_aui\_search\_detailpage?ie=UTF8&psc=1
 - 1x 40pin IDE cable
-- 1x pair of male and female barrel connectors https://smile.amazon.com/gp/product/B01G6EAY0E/ref=oh\_aui\_search\_detailpage?ie=UTF8&psc=1
+- 1x pair of male and female barrel connectors https://www.amazon.com/gp/product/B01G6EAY0E/ref=oh\_aui\_search\_detailpage?ie=UTF8&psc=1
 
 ### Raspberry Pi 2
 - Raspberry Pi 2 single board computer https://www.raspberrypi.org/products/raspberry-pi-2-model-b/
-- 8GB SD card https://smile.amazon.com/gp/product/B000WH6H1M/ref=oh\_aui\_detailpage\_o01\_s00?ie=UTF8&psc=1
+- 8GB SD card https://www.amazon.com/gp/product/B000WH6H1M/ref=oh\_aui\_detailpage\_o01\_s00?ie=UTF8&psc=1
 
 ### Enclosures
-- 1x Hammond case https://smile.amazon.com/gp/product/B0002BSRIO/ref=oh\_aui\_search\_detailpage?ie=UTF8&psc=1
-- 1x Raspberry Pi case with GPIO header access https://smile.amazon.com/gp/product/B00MQWQT0A/ref=oh\_aui\_search\_detailpage?ie=UTF8&psc=1
+- 1x Hammond case https://www.amazon.com/gp/product/B0002BSRIO/ref=oh\_aui\_search\_detailpage?ie=UTF8&psc=1
+- 1x Raspberry Pi case with GPIO header access https://www.amazon.com/gp/product/B00MQWQT0A/ref=oh\_aui\_search\_detailpage?ie=UTF8&psc=1
 
 ### Fit and finish
 - 1x 3M double-sided tape
 - 1x JB Weld
-- 1x tinted acrylic https://smile.amazon.com/gp/product/B01A1C16TK/ref=oh\_aui\_detailpage\_o02\_s00?ie=UTF8&psc=1
+- 1x tinted acrylic https://www.amazon.com/gp/product/B01A1C16TK/ref=oh\_aui\_detailpage\_o02\_s00?ie=UTF8&psc=1
 
 Things I would do differently
 =============================
