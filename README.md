@@ -158,83 +158,50 @@ tl;dr “what do i need to buy?”
 Some of the parts may need to change based on your needs of the sign as well as if you don’t want to repeat the same poor design decisions I made.
 
 ### 1x Aluminum street sign
+- http://www.roadtrafficsigns.com/Custom-Metal-Sign/Custom-Metal-Sign-24x18/SKU-K-3409-BK.aspx 
 
-http://www.roadtrafficsigns.com/Custom-Metal-Sign/Custom-Metal-Sign-24x18/SKU-K-3409-BK.aspx 
-
-### 6x LED panels (3x red, 3x green)
-
-http://www.ebay.com/itm/182018966801
-
-http://www.ebay.com/itm/252168875198
+### 6x LED panels
+- 3x http://www.ebay.com/itm/182018966801
+- 3x http://www.ebay.com/itm/252168875198
 
 ### Power supplies
-12V/2A power supply
-
-https://smile.amazon.com/gp/product/B0194B7WSI/ref=oh\_aui\_search\_detailpage?ie=UTF8&psc=1
-
-step-down buck converter
-
-https://smile.amazon.com/gp/product/B008BHB4L8/ref=oh\_aui\_search\_detailpage?ie=UTF8&psc=1
+- 12V/2A power supply https://smile.amazon.com/gp/product/B0194B7WSI/ref=oh\_aui\_search\_detailpage?ie=UTF8&psc=1
+- step-down buck converter https://smile.amazon.com/gp/product/B008BHB4L8/ref=oh\_aui\_search\_detailpage?ie=UTF8&psc=1
 
 ### LED driver board
-1x large protoboard
-6x small protoboard
-
-https://smile.amazon.com/gp/product/B019Q14GRQ/ref=oh\_aui\_search\_detailpage?ie=UTF8&psc=1
-
-1x UDN2984A
-1x 18-pin socket for UDN2984A
-1x ULN2003AN
-1x 16-pin socket for ULN2008AN
-1x 2N7000 MOSFET
-7x 300ohm resistors
-7x 150ohm resistors
-1x 4000ohm resistor
-1x 800ohm resistor
-3x RJ45 crimps
-3x Sparkfun RJ45 jacks
-
-https://www.sparkfun.com/products/643
-
-3x Sparkfun RJ45 breakout boards
-
-https://www.sparkfun.com/products/716
+- 1x large protoboard
+- 6x small protoboard https://smile.amazon.com/gp/product/B019Q14GRQ/ref=oh\_aui\_search\_detailpage?ie=UTF8&psc=1
+- 1x UDN2984A
+- 1x 18-pin socket for UDN2984A
+- 1x ULN2003AN
+- 1x 16-pin socket for ULN2008AN
+- 1x 2N7000 MOSFET
+- 7x 300ohm resistors
+- 7x 150ohm resistors
+- 1x 4000ohm resistor
+- 1x 800ohm resistor
+- 3x RJ45 crimps
+- 3x Sparkfun RJ45 jacks https://www.sparkfun.com/products/643
+- 3x Sparkfun RJ45 breakout boards https://www.sparkfun.com/products/716
 
 ### Wiring
-1x a bunch of scrap CAT5 to salvage solid wiring from
-1x some scrap 18GA wire
-
-https://smile.amazon.com/gp/product/B0154MAECC/ref=oh\_aui\_search\_detailpage?ie=UTF8&psc=1
-
-1x 40pin IDE cable
-1x pair of male and female barrel connectors
-
-https://smile.amazon.com/gp/product/B01G6EAY0E/ref=oh\_aui\_search\_detailpage?ie=UTF8&psc=1
+- 1x a bunch of scrap CAT5 to salvage solid wiring from
+- 1x some scrap 18GA wire https://smile.amazon.com/gp/product/B0154MAECC/ref=oh\_aui\_search\_detailpage?ie=UTF8&psc=1
+- 1x 40pin IDE cable
+- 1x pair of male and female barrel connectors https://smile.amazon.com/gp/product/B01G6EAY0E/ref=oh\_aui\_search\_detailpage?ie=UTF8&psc=1
 
 ### Raspberry Pi 2
-Raspberry Pi 2 single board computer
-
-https://www.raspberrypi.org/products/raspberry-pi-2-model-b/
-
-8GB SD card
-
-https://smile.amazon.com/gp/product/B000WH6H1M/ref=oh\_aui\_detailpage\_o01\_s00?ie=UTF8&psc=1
+- Raspberry Pi 2 single board computer https://www.raspberrypi.org/products/raspberry-pi-2-model-b/
+- 8GB SD card https://smile.amazon.com/gp/product/B000WH6H1M/ref=oh\_aui\_detailpage\_o01\_s00?ie=UTF8&psc=1
 
 ### Enclosures
-1x Hammond case
-
-https://smile.amazon.com/gp/product/B0002BSRIO/ref=oh\_aui\_search\_detailpage?ie=UTF8&psc=1
-
-1x Raspberry Pi case with GPIO header access
-
-https://smile.amazon.com/gp/product/B00MQWQT0A/ref=oh\_aui\_search\_detailpage?ie=UTF8&psc=1
+- 1x Hammond case https://smile.amazon.com/gp/product/B0002BSRIO/ref=oh\_aui\_search\_detailpage?ie=UTF8&psc=1
+- 1x Raspberry Pi case with GPIO header access https://smile.amazon.com/gp/product/B00MQWQT0A/ref=oh\_aui\_search\_detailpage?ie=UTF8&psc=1
 
 ### Fit and finish
-1x 3M double-sided tape
-1x JB Weld
-1x tinted acrylic
-
-https://smile.amazon.com/gp/product/B01A1C16TK/ref=oh\_aui\_detailpage\_o02\_s00?ie=UTF8&psc=1
+- 1x 3M double-sided tape
+- 1x JB Weld
+- 1x tinted acrylic https://smile.amazon.com/gp/product/B01A1C16TK/ref=oh\_aui\_detailpage\_o02\_s00?ie=UTF8&psc=1
 
 Things I would do differently
 =============================
