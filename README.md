@@ -123,7 +123,7 @@ We used:
 -   The latest copy of Raspbian as of November 2016. Nothing special here.
 -   Python 2.7.9. Nothing special here either.
 -   The RPIO library. This allows us to use a DMA for the precise timing
-    required for multiplexing. We installed it straight from Github:
+    required for multiplexing. We installed it straight from GitHub:
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 cd ~
