@@ -106,7 +106,7 @@ Fit and finish
 ![LED driver in enclosure](https://github.com/elgwhoppo/LANPartySign/blob/master/images/led-driver-in-enclosure.jpg)
 ![Front of sign](https://github.com/elgwhoppo/LANPartySign/blob/master/images/front-of-sign.jpg)
 
-A piece of tinted acrylic was glued to the front of the LED panels to give it anice slick look.  Unfortunately it's very reflective and impossible to photograph without seeing a reflection of someone or something :(
+A piece of tinted acrylic was glued to the front of the LED panels to give it a nice slick look.  Unfortunately it's very reflective and impossible to photograph without seeing a reflection of someone or something :(
 
 https://www.amazon.com/gp/product/B01A1C16TK/ref=oh\_aui\_detailpage\_o02\_s00?ie=UTF8&psc=1
 
