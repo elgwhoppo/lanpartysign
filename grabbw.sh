@@ -3,7 +3,10 @@
 # Depends on vnstat being installed
 # Change the interface called on the vnstat line
 # on pfSense this shell script can be placed in the /usr/local/etc/rc.d/ directory for automatic start
-# make sure to run chmod +x grabbw.sh so that it can be executed. 
+# make sure to run chmod +x grabbw.sh so that it can be executed and it will run at start automatically. 
+#
+# Initially we did the interpolation here, but it turned out that files outed into /usr/local/www/ are only updated by pfsense once per second. 
+# So we opted to do the interpolation in python on the raspberry pi. 
 
 initalfirstspeed="1000000"
 echo $initalfirstspeed > /tmp/lastspeed2.log
