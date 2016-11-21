@@ -78,13 +78,13 @@ https://www.amazon.com/gp/product/B0154MAECC/ref=oh\_aui\_search\_detailpage?ie=
 
 https://www.amazon.com/gp/product/B01G6EAY0E/ref=oh\_aui\_search\_detailpage?ie=UTF8&psc=1
 
-The LED panels used CAT5e cabling with RJ45 crimped on the ends. They were connected to RJ45 jacks and breakout boards from Sparkfun. Three were used in total. One for the anode bus, one for the green cathode bus, and one for the red cathode bus.
+The LED panels used CAT5e cabling with RJ45 crimped on the ends. They were connected to RJ45 jacks and breakout boards from Sparkfun. Three were used in total. One for the anode bus, one for the green cathode bus, and one for the red cathode bus. We could’ve consolidated the cathode buses, but I was afraid I wouldn’t have room for current limiting resistors between the panels and the sign. The current limiting resistors are on the same board with the IC’s which required two individual cathode busses.
 
 https://www.sparkfun.com/products/643
 
 https://www.sparkfun.com/products/716
 
-A 40-pin IDE cable was sacrificed to make the connection between the LED driver board and the Raspberry Pi. We could’ve consolidated the cathode buses, but I was afraid I wouldn’t have room for current limiting resistors between the panels and the sign. The current limiting resistors are on the same board with the IC’s which required two individual cathode busses.
+A 40-pin IDE cable was sacrificed to make the connection between the LED driver board and the Raspberry Pi. 
 
 Some protoboard was used to make soldering each panel to the bus easier, but I probably could’ve done with out them.
 
