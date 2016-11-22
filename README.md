@@ -176,7 +176,8 @@ Some of the parts may need to change based on your needs of the sign as well as 
 - 1x ULN2003AN
 - 1x 16-pin socket for ULN2008AN
 - 1x 2N7000 MOSFET
-- 14x 150ohm resistors
+- 7x 110ohm resistors
+- 7x 150ohm resistors
 - 1x 4000ohm resistor
 - 1x 800ohm resistor
 - 3x RJ45 crimps
