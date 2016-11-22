@@ -48,8 +48,8 @@ https://www.amazon.com/gp/product/B008BHB4L8/ref=oh\_aui\_search\_detailpage?ie=
 
 LED driver board
 ----------------
-![Schematic](https://github.com/elgwhoppo/LANPartySign/blob/master/images/schematic.png)
-![Schematic](https://github.com/elgwhoppo/LANPartySign/blob/master/images/schem2.png)
+![Schematic](https://github.com/elgwhoppo/LANPartySign/blob/master/schematic.png)
+![Schematic](https://github.com/elgwhoppo/LANPartySign/blob/master/schem2.png)
 
 ### Source IC
 A UDN2984A source driver is required as the RPi’s GPIO outputs neither source enough voltage (3.3V max) or current (\~30mA total) to drive the large LED panels.
