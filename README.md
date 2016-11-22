@@ -48,7 +48,7 @@ https://www.amazon.com/gp/product/B008BHB4L8/ref=oh\_aui\_search\_detailpage?ie=
 
 LED driver board
 ----------------
-![Schematic](https://github.com/elgwhoppo/LANPartySign/blob/master/images/schem1.png)
+![Schematic](https://github.com/elgwhoppo/LANPartySign/blob/master/images/schematic.png)
 ![Schematic](https://github.com/elgwhoppo/LANPartySign/blob/master/images/schem2.png)
 
 ### Source IC
