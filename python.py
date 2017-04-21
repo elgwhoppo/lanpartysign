@@ -1,3 +1,8 @@
+# 1.0 Initial Version via @krhainos
+# 1.1 Update via @elgwhoppo
+#  - added iptoping in initial settings section
+#  - fixed for Mbps greater than two digits not dropping decimal
+
 from RPIO import PWM
 import urllib2
 import time
@@ -6,6 +11,9 @@ import os
 
 # where do i find the throughput value?
 bwurl = "http://10.11.12.1/bwnow.txt"
+
+# what remote IP should I ping to test for latency?
+iptoping = "8.8.8.8"
 
 # pick a dma channel that won't crash your raspberry pi
 dmach = 14
@@ -80,10 +88,16 @@ def SetSix7Seg( digits ):
         PWM.add_channel_pulse(dmach,segments[i], pulsewidth*4, pulse[num[digits[4]][i]])
         PWM.add_channel_pulse(dmach,segments[i], pulsewidth*5, pulse[num[digits[5]][i]]) 
     # since i only needed the decimal point in one place, this is a bit of a hack...
-    if k < 99999:
-        PWM.add_channel_pulse(dmach,24,pulsewidth,pulsewidthon)
-    else:    
-        PWM.add_channel_pulse(dmach,24,pulsewidth,pulsewidthoff)
+	
+def SetDecimal(k):
+	print "I'm in SetDecimal...about to check K:"
+	print k
+	if k > 99999:
+		PWM.add_channel_pulse(dmach,24,pulsewidth,pulsewidthoff)
+		print "DECIMAL OFF"
+	else:
+		PWM.add_channel_pulse(dmach,24,pulsewidth,pulsewidthon)
+		print "DECIMAL ON"
 
 def dothething():        
     counter = 0
@@ -92,14 +106,14 @@ def dothething():
         print "fetching bandwidth..."
         bwresponse = urllib2.urlopen(bwurl,timeout=.5)
         print "pinging..."
-        pingresponse = os.popen("timeout "+str(fetchrate*.001)+" ping -c 1 8.8.8.8 | grep rtt | cut -c 24-28").readlines()
+        pingresponse = os.popen("timeout "+str(fetchrate*.001)+" ping -c 1 "+str(iptoping)+" | grep rtt | cut -c 24-28").readlines()
         # a timed out ping will record a "999"
         pingresponse.append("999")
         t = bwresponse.read()
         y = pingresponse[0]
-        print "here be ping"
+        print "here be ping in ms to " + iptoping
         print y
-        print "here be throguhput"
+        print "here be throughput in Kbps, raw from pfsense"
         print t
         # crash prevention in case a bandwidth value isn't fetched
         if t == "\n" or t == "" :
@@ -120,11 +134,11 @@ def dothething():
             counter = 0
         if counter == 1:
             oldbw[1] = oldbw[0]
-            print "FUZZED VALUE"
+            print "FUZZED VALUES"
             t = (int(t)+int(oldbw[1]))/2
         if counter == 0:
             oldbw[0] = t
-            print "REAL VALUE"
+            print "REAL VALUES"
         #
         # DEACTIVATE FUZZ
         #
@@ -151,10 +165,18 @@ def dothething():
             l = ' '+str(p)[0:2]
         if p < 9:
             l = '  '+str(p)[0:1]
+        print "Pre adjusted values BW: "+v
+        print "Pre adjusted values ping: "+l
         s = v.rjust(3)+l.rjust(3)
+        print ""
+        print "Sending the following values to be printed: "
         print s
-        print "looping..."    
         SetSix7Seg(s)
+        print "Sending the following BW to determine decimal: "
+        print k
+        SetDecimal(k)
+		
+        print "looping..."   
         time.sleep(fuzzrate*.001)
 
 def doit():
