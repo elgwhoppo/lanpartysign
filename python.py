@@ -2,6 +2,9 @@
 # 1.1 Update via @elgwhoppo
 #  - added iptoping in initial settings section
 #  - fixed for Mbps greater than two digits not dropping decimal
+# 1.2 Update via @elgwhoppo
+#  - Increased default fetch time to 750ms
+#  - Added "no URL" as error message when bwnow.txt can't be reached
 
 from RPIO import PWM
 import urllib2
@@ -10,6 +13,7 @@ import math
 import os
 
 # where do i find the throughput value?
+# hint: throughput value should be in bps
 bwurl = "http://10.11.12.1/bwnow.txt"
 
 # what remote IP should I ping to test for latency?
@@ -23,19 +27,23 @@ dmach = 14
 pulsewidth = 330
 
 # define how often to fetch data and ping in milliseconds (e.g. 1000 = 1 second)
-fetchrate = 500
+fetchrate = 750
 
 # please dont touch any of these
 global counter
+global urlbrokecounter
 subcycle = pulsewidth*6
 pulsewidthon = pulsewidth-2
 pulsewidthoff = 4
 fuzzrate = fetchrate + 5
 oldbw = [0,0,0]
 counter = 0
+urlbrokecounter = 0
 y = "45.678"
 t = "123456789"
 k = 0
+urlbroke = 0
+
 
 # initialization stuff
 PWM.setup()
@@ -46,6 +54,10 @@ PWM.init_channel(dmach)
 # decimal point is on GPIO 24
 num = {' ':(0,0,0,0,0,0,0),
     'L':(0,1,0,1,0,1,0),
+    'U':(0,1,1,1,1,1,0),
+    'R':(0,0,0,1,0,0,1),
+    'O':(0,0,0,1,1,1,1),
+    'N':(0,0,0,1,1,0,1),
     '0':(1,1,1,1,1,1,0),
     '1':(0,0,1,0,1,0,0),
     '2':(1,0,1,1,0,1,1),
@@ -105,6 +117,7 @@ def dothething():
         print "moo"
         print "fetching bandwidth..."
         bwresponse = urllib2.urlopen(bwurl,timeout=.5)
+        urlbrokecounter = 0
         print "pinging..."
         pingresponse = os.popen("timeout "+str(fetchrate*.001)+" ping -c 1 "+str(iptoping)+" | grep rtt | cut -c 24-28").readlines()
         # a timed out ping will record a "999"
@@ -198,8 +211,12 @@ while True:
         print " "
         print " "
         print " "
-        print "it broke. timeout (url)."
-        print "contiuing anyway..."
+        urlbrokecounter = urlbrokecounter +1
+        print "URL Error; timeout. Has failed this many times: ", urlbrokecounter
+        print "Contiuing anyway..."
+        if urlbrokecounter > 20:
+            SetSix7Seg("NO URL")
+            SetDecimal("")
         pass
     except urllib2.httplib.BadStatusLine:
         print " "
@@ -219,3 +236,4 @@ while True:
     else:
        PWM.clear_channel(0)
        PWM.cleanup()
+	   
