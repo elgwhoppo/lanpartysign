@@ -1,3 +1,5 @@
+# !! THIS FILE HAS BEEN DEPRECATED IN LIU OF PYTHON.PY 1.3 !!
+#
 #!/bin/sh
 # Written by Joe Clarke
 # This script is to be run on the pfSense box itself and it depends on vnstat being installed. 
