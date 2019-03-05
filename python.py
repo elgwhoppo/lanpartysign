@@ -206,8 +206,8 @@ def dothething():
             v = ' 0'+str(k)[0:1]
         if k > 0 and k < 99:
             v = ' 01'
-        if snmphealth == "Network Error":
-            v = "N00"
+        #if snmphealth == "Network Error":
+        #    v = "N00"
         if p >= 100 and p < 999:
             l = str(p)[0:3]
         if p >= 10 and p < 99:
