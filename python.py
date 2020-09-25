@@ -54,9 +54,12 @@ k = 0
 g = 0
 urlbroke = 0
 #Variable Declaration SetupifOutOctets - Modify to fit your environment
-interfaceOIDout = "1.3.6.1.2.1.31.1.1.1.10.2"
-interfaceOIDin = "1.3.6.1.2.1.31.1.1.1.6.2"
-snmptarget = "10.11.12.1"
+#interfaceOIDout = "1.3.6.1.2.1.31.1.1.1.10.2" #USG-PRO-4 WAN1 config
+#interfaceOIDout = "1.3.6.1.2.1.31.1.1.1.10.20" #LAN14 SNMP config
+interfaceOIDout = "1.3.6.1.2.1.2.2.1.16.1" #Unifi 16 port POE Switch port 1
+#interfaceOIDin = "1.3.6.1.2.1.31.1.1.1.6.2"     #USG-PRO-4 WAN1 config
+#interfaceOIDin = "1.3.6.1.2.1.31.1.1.1.6.20" #LAN14 SNMP config
+interfaceOIDin = "1.3.6.1.2.1.2.2.1.10.1" #Unifi 16 port POE switch port 1
 snmpv2community = "public"
 
 #Initial Variable Assignment - don't touch
