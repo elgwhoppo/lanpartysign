@@ -1,3 +1,4 @@
+# 1.4 Bugfix and snmp updates 
 # 1.3 Update via @elgwhoppo
 #  - Moved all bandwidth checking to SNMP
 #  - Cleaned up formatting 
@@ -17,13 +18,15 @@ import time
 import math
 import os
 
-
-# where do i find the throughput value?
-# hint: throughput value should be in bps
-bwurl = "/tmp/bwnow.txt"
+# what IP should I check for SNMP counters? 
+#snmptarget = "192.168.1.157" #Unifi 16 port switch
+snmptarget = "192.168.1.1" #UDM-PRO
+#snmptarget = "10.11.12.1" #UDM-PRO Litchfield
+#snmptarget = "10.11.12.2" #Dlink-DGS-1510-28X
 
 # what remote IP should I ping to test for latency?
-iptoping = "8.8.8.8"
+iptoping = "8.8.8.8" #Google DNS IP-Anycast
+#iptoping = "139.130.4.5" #Australia DNS
 
 # pick a dma channel that won't crash your raspberry pi
 dmach = 14
@@ -41,6 +44,7 @@ global urlbrokecounter
 global snmptargetofflinecounter
 global snmpdelaycounter
 global bps,octetsOLDout,timeOLDout,octetsOLDin,timeOLDin,snmphealth
+global snmptargetpingstatus,iptopingstatus
 subcycle = pulsewidth*6
 pulsewidthon = pulsewidth-2
 pulsewidthoff = 4
@@ -53,13 +57,30 @@ t = "123456789"
 k = 0
 g = 0
 urlbroke = 0
-#Variable Declaration SetupifOutOctets - Modify to fit your environment
-#interfaceOIDout = "1.3.6.1.2.1.31.1.1.1.10.2" #USG-PRO-4 WAN1 config
+
+#Variable Declaration IfOutOctets and IfInOctets- Modify to fit your environment
+
+#UDM-PRO WAN Interface
+#interfaceOIDout = "1.3.6.1.2.1.2.2.1.16.4" #ifIndex.4
+#interfaceOIDin = "1.3.6.1.2.1.2.2.1.10.4" #ifIndex.4
+
+#USG-PRO-4
+interfaceOIDout = "1.3.6.1.2.1.2.2.1.16.4" #USG-PRO-4 WAN1 config
+interfaceOIDin = "1.3.6.1.2.1.2.2.1.10.4"  #USG-PRO-4 WAN1 config
+
+#LAN14 pfSense
 #interfaceOIDout = "1.3.6.1.2.1.31.1.1.1.10.20" #LAN14 SNMP config
-interfaceOIDout = "1.3.6.1.2.1.2.2.1.16.1" #Unifi 16 port POE Switch port 1
-#interfaceOIDin = "1.3.6.1.2.1.31.1.1.1.6.2"     #USG-PRO-4 WAN1 config
 #interfaceOIDin = "1.3.6.1.2.1.31.1.1.1.6.20" #LAN14 SNMP config
-interfaceOIDin = "1.3.6.1.2.1.2.2.1.10.1" #Unifi 16 port POE switch port 1
+
+#Dlink DGS-1510-28X
+#interfaceOIDout = "1.3.6.1.2.1.2.2.1.16.25" #Dlink DGS-1510-28X Port 25 IfOutOctets, port 25, 26, etc. 
+#interfaceOIDin = "1.3.6.1.2.1.2.2.1.10.25" #Dlink DGS-1510-28X Port 25 IfInOctets, port 25, 26, etc.
+
+#Unifi 16 Port POE Switch port 1
+#interfaceOIDout = "1.3.6.1.2.1.2.2.1.16.1" #Unifi 16 port POE Switch port 1
+#interfaceOIDin = "1.3.6.1.2.1.2.2.1.10.1" #Unifi 16 port POE switch port 1
+
+#ensure snmpv2 is ussed, set your read only community to whatever
 snmpv2community = "public"
 
 #Initial Variable Assignment - don't touch
@@ -353,19 +374,35 @@ def getsnmpbw():
 	
     return ifbitspersecond
 
-def check_ping():
+def snmptargetonline():
     hostname = snmptarget
     response = os.system("ping -c 1 " + hostname)
     # and then check the response...
     if response == 0:
-        pingstatus = "Network Active"
+        snmptargetpingstatus = "Online"
     else:
-        pingstatus = "Network Error"
-
-    return pingstatus
+        snmptargetpingstatus = "Offline"
+    print snmptarget + "current status: " + snmptargetpingstatus
+    return snmptargetpingstatus
 	
+def iptopingonline():
+    hostname = iptoping
+    response = os.system("ping -c 1 " + hostname)
+    # and then check the response...
+    if response == 0:
+        iptopingstatus = "Online"
+    else:
+        iptopingstatus = "Offline"
+    print iptoping + "current status: " + iptopingstatus
+    return iptopingstatus
+
 
 def doit():
+# trying to get better error handling for no internet/snmp
+#    snmptargetonline()
+#    iptopingonline()
+#    print iptopingstatus
+#    print snmptargetpingstatus
     pwmsetup()
     dothething()
 
