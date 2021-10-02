@@ -1,4 +1,5 @@
 # 1.0 J. Clarke Initial release, dumps snmp data to a text files
+# Must be run at the same time as the python.py
 
 from pysnmp.hlapi import *
 from datetime import datetime
