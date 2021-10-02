@@ -1,5 +1,4 @@
 # 1.0 J. Clarke Initial release, dumps snmp data to a text files
-# Must be run at the same time as the python.py
 
 from pysnmp.hlapi import *
 from datetime import datetime
@@ -109,14 +108,14 @@ def getsnmpbw():
 	
     # Turn var into a string
     int1out = str(int1out)
-    print("Raw int1out SNMP string: ",int1out)
+    print "Raw int1out SNMP string: ",int1out
     # Take only to the right of the space equals space in the MIB finding
     int1out = int1out.split(' = ')[1]
 	
-    print("Cleaned up intlout 1: ",int1out)
+    print "Cleaned up intlout 1: ",int1out
     #convert to integer
     int1out = int(int1out)
-    print("Cleaned up intlout 2: ",int1out)
+    print "Cleaned up intlout 2: ",int1out
     changedbitsout = (int1out - octetsOLDout)
     timedeltaout = (currenttimeout - timeOLDout)
     changedbitsout = abs(changedbitsout)
@@ -124,17 +123,17 @@ def getsnmpbw():
 	# IN METRICS
 	# Turn var into a string
     int1in = str(int1in)
-    print("Raw int1out SNMP string: ",int1in)
+    print "Raw int1out SNMP string: ",int1in
 
     # Take only to the right of the space equals space in the MIB finding	
     int1in = int1in.split(' = ')[1]
 	
-    print("Cleaned up intlin 1: ",int1in)
+    print "Cleaned up intlin 1: ",int1in
 	#exmple:   SNMPv2-SMI::mib-2.31.1.1.1.6.2 = 18417094860
 	#example from UDM-PRO has 31 characters: SNMPv2-SMI::mib-2.2.2.1.16.4 = 3542493243
     #convert to integer
     int1in = int(int1in)
-    print("Cleaned up intlin 2: ",int1in)
+    print "Cleaned up intlin 2: ",int1in
     changedbitsin = (int1in - octetsOLDin)
     timedeltain = (currenttimein - timeOLDin)
     changedbitsin = abs(changedbitsin)
