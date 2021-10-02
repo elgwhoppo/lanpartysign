@@ -1,4 +1,4 @@
-# 1.5 Moved SNMP to separate script to allow for faster execution
+# 1.5 Error handling and better bugfixes
 # 1.4 Bugfix and snmp updates 
 # 1.3 Update via @elgwhoppo
 #  - Moved all bandwidth checking to SNMP
@@ -43,10 +43,12 @@ fetchrate = 750
 # please dont touch any of these
 global counter
 global urlbrokecounter
-global snmptargetofflinecounter
+global snmpunchangedcounter
+global snmpunchangedvalue
 global snmpdelaycounter
 global bps,octetsOLDout,timeOLDout,octetsOLDin,timeOLDin,snmphealth
 global snmptargetpingstatus,iptopingstatus
+
 subcycle = pulsewidth*6
 pulsewidthon = pulsewidth-2
 pulsewidthoff = 4
@@ -54,6 +56,8 @@ fuzzrate = fetchrate + 5
 oldbw = [0,0,0]
 counter = 0
 urlbrokecounter = 0
+snmpunchangedcounter = 0
+snmpunchangedvalue = 0
 y = "45.678"
 t = "123456789"
 k = 0
@@ -92,6 +96,7 @@ octetsOLDin = 0
 timeOLDin = 0
 bps = 0
 snmpdelaycounter = 0
+snmpunchangedvalue = 0
 
 
 # initialization stuff
@@ -105,6 +110,7 @@ num = {' ':(0,0,0,0,0,0,0),
     'L':(0,1,0,1,0,1,0),
     'U':(0,1,1,1,1,1,0),
     'R':(0,0,0,1,0,0,1),
+    'E':(1,1,0,1,0,1,1),
     'O':(0,0,0,1,1,1,1),
     'N':(0,0,0,1,1,0,1),
     'G':(1,1,0,1,1,1,0),
@@ -153,42 +159,64 @@ def SetSix7Seg( digits ):
 	
 def SetDecimal(k):
     #print "I'm in SetDecimal...about to check K:"
-    #print k
     if k >= 999999:
         print "              Decmial Formatting: 1.3G"
         PWM.add_channel_pulse(dmach,24,1,pulsewidthon)
+        PWM.add_channel_pulse(dmach,24,1,pulsewidthoff)		
     elif k >= 99999 and  k < 999999:
         PWM.add_channel_pulse(dmach,24,pulsewidth,pulsewidthoff)
         PWM.add_channel_pulse(dmach,24,1,pulsewidthoff)
         print "              Decmial Formatting: 999"
+    elif k == 66:
+        PWM.add_channel_pulse(dmach,24,pulsewidth,pulsewidthoff)
+        PWM.add_channel_pulse(dmach,24,1,pulsewidthoff)
+        print "              Decmial Formatting: ERR"
     else:
         PWM.add_channel_pulse(dmach,24,pulsewidth,pulsewidthon)
+        PWM.add_channel_pulse(dmach,24,1,pulsewidthoff)
         print "              Decmial Formatting: 0.1"
 
 def dothething():        
     counter = 0
+    global snmpbrokecounter,snmpunchangedvalue,snmpbrokenow
+    snmpbrokecounter = 0
+    snmpunchangedvalue = 0
+    snmpbrokenow = 0
     for i in range(86400):
-        print "Fetching bandwidth from " + str(snmptarget) + "..."
+
 		#call the SNMP bandwidth function
-		
         bps = getsnmpbw()
 		
-        if bps is "" : 
-            return
+        print "Raw bps value pulled from bps.txt: ",bps
 		
         t = int(bps)
-        #activate fuzz, let's make bandwidth move a little 
-        bpsmultipler = random.uniform(0.85, 1.02)
+        ogbps = t
+		
+        if ogbps != snmpunchangedvalue:
+            snmpbrokenow = 0
+            snmpbrokecounter = 0
+        else:
+            snmpbrokecounter = snmpbrokecounter+1
+            print "BPS has been the same for this many times: ",snmpbrokecounter
+		
+        if snmpbrokecounter > 100:
+            print "SNMP definitely broken. Mark as error: ",snmpbrokecounter		
+            snmpbrokenow = 1
+        snmpunchangedvalue = ogbps
+
+        #activate fuzz, let's make bandwidth move a little
+        #normal random
+        bpsmultipler = random.uniform(0.90, 1.02)
+        #5x random
+        #bpsmultipler = random.uniform(5.85, 6.02)
+		
         realvaluembps = t/1000000
-        print("Real value Mbps: ",realvaluembps)
+        print "  Real value Mbps: ",realvaluembps
         t = t*bpsmultipler
         t = int(t)
         fuzzedvaluembps = t/1000000
-        print("Fuzzed value Mbps: ",fuzzedvaluembps)
-		
-        print "        bps has been measured at: " + str(t)
-        print ""
-        print "pinging out..."
+        print "Fuzzed value Mbps: ",fuzzedvaluembps
+        print ""		
         pingresponse = os.popen("timeout "+str(fetchrate*.001)+" ping -c 1 "+str(iptoping)+" | grep rtt | cut -c 24-28").readlines()
         # a timed out ping will record a "999"
         pingresponse.append("999")
@@ -247,8 +275,14 @@ def dothething():
             v = ' 0'+str(k)[0:1]
         if k > 0 and k < 99:
             v = ' 01'
-        #if snmphealth == "Network Error":
-        #    v = "N00"
+        if ogbps == 66:
+            #Set the value to 66 for error handling; will remove the decmial in the SetDecimal function
+            k = 66
+            #Set the verbiage to ERR for error
+            v = "ERR"
+        if snmpbrokenow == 1:
+            k = 66
+            v = "ERR"
         if p >= 100 and p < 999:
             l = str(p)[0:3]
         if p >= 10 and p < 99:
@@ -257,10 +291,9 @@ def dothething():
             l = '  '+str(p)[0:1]
         print "Raw value for bandwidth printing: " +str(v)
         print "              Raw value for ping: " +str(l)
-        print ""
         s = v.rjust(3)+l.rjust(3)
         print ""
-        print "   THE FOLLOWING WILL BE PRINTED: " + str(s)
+        print "   The following will be printed: " + str(s)
         SetSix7Seg(s)
         #print "Determine Decimal on this number: " + str(k)
         SetDecimal(k)
@@ -273,10 +306,19 @@ def getsnmpbw():
     global octetsOLDout,timeOLDout,octetsOLDin,timeOLDin,snmpdelaycounter,snmphealth
     f = open("bps.txt", "r")
     ifbitspersecond = f.read()
-    print ifbitspersecond
+    #print ifbitspersecond
     #turn into integer
-    #ifbitspersecond = int(ifbitspersecond)
-    return ifbitspersecond
+    if ifbitspersecond is None: 
+        print "SNMP returned NONE. Is the snmp script running? Manually setting to 66."
+        ifbitspersecond = int(66)
+        return ifbitspersecond		
+    elif ifbitspersecond == "":
+        print "SNMP returned empty. Is the snmp script running? Manually setting to 66."
+        ifbitspersecond = int(66)
+        return ifbitspersecond
+    else:
+        ifbitspersecond = int(ifbitspersecond)
+        return ifbitspersecond
 
 def snmptargetonline():
     hostname = snmptarget
@@ -348,6 +390,6 @@ while True:
         print "continuing anyway..."
         pass
     else:
-       PWM.clear_channel(0)
-       PWM.cleanup()
-	   
+        print " "
+	   #PWM.clear_channel(0)
+       #PWM.cleanup()
