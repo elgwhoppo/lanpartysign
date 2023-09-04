@@ -19,6 +19,7 @@ import time
 import math
 import os
 import random
+import subprocess
 
 # what IP should I check for SNMP counters? 
 #snmptarget = "192.168.1.157" #Unifi 16 port switch
@@ -63,6 +64,8 @@ t = "123456789"
 k = 0
 g = 0
 urlbroke = 0
+# Define the path to the SNMP python script to keep running in the background
+python_script_path = '/home/pi/speedsign/snmp.py'
 
 #Variable Declaration IfOutOctets and IfInOctets- Modify to fit your environment
 
@@ -132,8 +135,6 @@ pulse = {
     0:pulsewidthoff,
     1:pulsewidthon}
 
-print "moo"
-
 def pwmsetup():
     # more ref add_channel_pulse(dma_channel, gpio, start, width)
     # Start alternating 10k uS pulses for the anodes
@@ -202,6 +203,15 @@ def dothething():
         if snmpbrokecounter > 100:
             print "SNMP definitely broken. Mark as error: ",snmpbrokecounter		
             snmpbrokenow = 1
+            print "Sleeping for 5 seconds..."
+            sleep(5)
+            print "Trying to restart the snmp python script..."
+            try:
+                subprocess.call(['screen', '-dmS', 'SNMP', 'python', python_script_path])
+            except Exception as e:
+                print(f"An error occurred: {e}")
+            
+
         snmpunchangedvalue = ogbps
 
         #activate fuzz, let's make bandwidth move a little
