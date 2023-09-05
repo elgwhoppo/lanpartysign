@@ -57,7 +57,7 @@ interfaceOIDout = "1.3.6.1.2.1.2.2.1.16.15"
 #interfaceOIDin = "1.3.6.1.2.1.2.2.1.10.1" #Unifi 16 port POE switch port 1
 
 #ensure snmpv2 is ussed, set your read only community to whatever
-snmpv2community = "forgetown"
+snmpv2community = "public"
 
 #Initial Variable Assignment - don't touch
 octetsOLDout = 0
