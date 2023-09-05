@@ -1,4 +1,3 @@
-# 1.5 Error handling and better bugfixes
 # 1.4 Bugfix and snmp updates 
 # 1.3 Update via @elgwhoppo
 #  - Moved all bandwidth checking to SNMP
@@ -19,11 +18,10 @@ import time
 import math
 import os
 import random
-import subprocess
 
 # what IP should I check for SNMP counters? 
 #snmptarget = "192.168.1.157" #Unifi 16 port switch
-snmptarget = "192.168.1.1" #UDM-PRO Wad
+#snmptarget = "192.168.1.1" #UDM-PRO Wad
 #snmptarget = "10.11.12.1" #UDM-PRO Litchfield
 #snmptarget = "10.11.12.2" #Dlink-DGS-1510-28X
 
@@ -64,8 +62,6 @@ t = "123456789"
 k = 0
 g = 0
 urlbroke = 0
-# Define the path to the SNMP python script to keep running in the background
-python_script_path = '/home/pi/speedsign/snmp.py'
 
 #Variable Declaration IfOutOctets and IfInOctets- Modify to fit your environment
 
@@ -117,6 +113,10 @@ num = {' ':(0,0,0,0,0,0,0),
     'O':(0,0,0,1,1,1,1),
     'N':(0,0,0,1,1,0,1),
     'G':(1,1,0,1,1,1,0),
+    'A':(1,1,1,1,1,0,1),
+    'T':(0,1,0,1,0,1,1), #number 8, the last one is the middle segment
+    'B':(0,1,0,1,1,1,1), #number 1, the first one is the top segment
+    'D':(0,0,1,1,1,1,1), #number 2, the second one, is top left segment
     '0':(1,1,1,1,1,1,0),
     '1':(0,0,1,0,1,0,0),
     '2':(1,0,1,1,0,1,1),
@@ -134,6 +134,8 @@ segments = (25,5,6,12,13,19,16)
 pulse = {
     0:pulsewidthoff,
     1:pulsewidthon}
+
+print "moo"
 
 def pwmsetup():
     # more ref add_channel_pulse(dma_channel, gpio, start, width)
@@ -200,23 +202,24 @@ def dothething():
             snmpbrokecounter = snmpbrokecounter+1
             print "BPS has been the same for this many times: ",snmpbrokecounter
 		
-        if snmpbrokecounter > 100:
+        if snmpbrokecounter > 300:
             print "SNMP definitely broken. Mark as error: ",snmpbrokecounter		
             snmpbrokenow = 1
             print "Sleeping for 5 seconds..."
-            sleep(5)
+            #time.sleep(10)
             print "Trying to restart the snmp python script..."
             try:
-                subprocess.call(['screen', '-dmS', 'SNMP', 'python', python_script_path])
+               subprocess.call(['screen', '-dmS', 'SNMP', 'python', python_script_path])
             except Exception as e:
-                print(f"An error occurred: {e}")
-            
-
+                print "An error occurred: {e}"        
+	#if snmpbrokecounter > 300:
+        #    print "SNMP definitely broken. Mark as error: ",snmpbrokecounter		
+        #    snmpbrokenow = 1
         snmpunchangedvalue = ogbps
 
         #activate fuzz, let's make bandwidth move a little
         #normal random
-        bpsmultipler = random.uniform(0.90, 1.02)
+        bpsmultipler = random.uniform(0.95, 1.05)
         #5x random
         #bpsmultipler = random.uniform(5.85, 6.02)
 		
@@ -233,8 +236,9 @@ def dothething():
         y = pingresponse[0]
         print "   Latency to " + iptoping + " is pinging: " + str(y)
         
-		#DELAY
-        time.sleep(.2)
+	#!!!!!!!!!!!!!!!!!!!!!!!DELAY!!!!!!!!!!!!!!!!!!!!!!!!!
+        #time.sleep(.05) <--original values here
+        time.sleep(.15)
 
         #print "here be throughput in Kbps, raw from pfsense"
         # crash prevention in case a bandwidth value isn't fetched
@@ -273,8 +277,8 @@ def dothething():
         v = '999'
         # crunch values
         # so throughput displays as 1.3_,999, 99.9, 9.9, or 0.9 in megabits
-        # and latency is 999, 99, or 9 in milliseconds
-        #k = 1699999 #Bogus testing number for 1.6G format
+        # and latency is 999, 99, or 9 in milliseconds   
+		#k = 1699999 #Bogus testing number for 1.6G format
         if k >= 999999 and k < 9999999:
             v = str(k)[0:2]+str("G")
         if k >= 10000 and k < 999999:
@@ -288,11 +292,14 @@ def dothething():
         if ogbps == 66:
             #Set the value to 66 for error handling; will remove the decmial in the SetDecimal function
             k = 66
-            #Set the verbiage to ERR for error
-            v = "ERR"
+            #Set the verbiage to ERR for error, or blank in the case of this script now
+            #v = "ERR"
+            v = "TBD"
         if snmpbrokenow == 1:
             k = 66
-            v = "ERR"
+            #Set to blank, err not by design
+            #v = "ERR"
+            v = "TBD"
         if p >= 100 and p < 999:
             l = str(p)[0:3]
         if p >= 10 and p < 99:
@@ -310,6 +317,7 @@ def dothething():
         print ""
         print "                   End of Loop"   
         print "******************************************************"
+        #os.system('clear')
         #time.sleep(fuzzrate*.001)
 		
 def getsnmpbw():

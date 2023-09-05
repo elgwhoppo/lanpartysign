@@ -9,13 +9,11 @@ import os
 
 # what IP should I check for SNMP counters? 
 #snmptarget = "192.168.1.157" #Unifi 16 port switch
-snmptarget = "192.168.1.1" #UDM-PRO Wad
-#snmptarget = "10.11.12.1" #UDM-PRO Litchfield
+#snmptarget = "192.168.1.1" #UDM-PRO Wad
+snmptarget = "10.10.0.1" #UDM-PRO Litchfield
 #snmptarget = "10.11.12.2" #Dlink-DGS-1510-28X
 
-# what remote IP should I ping to test for latency?
 iptoping = "8.8.8.8" #Google DNS IP-Anycast
-#iptoping = "139.130.4.5" #Australia DNS
 
 # pick a dma channel that won't crash your raspberry pi
 dmach = 14
@@ -29,13 +27,22 @@ fetchrate = 750
 
 #Variable Declaration IfOutOctets and IfInOctets- Modify to fit your environment
 
+#UDM-PRO SE WAN Interface ifInOctets.5, AKA Ethernet WAN interface
+#interfaceOIDout = "1.3.6.1.2.1.2.2.1.16.5"
+#interfaceOIDin = "1.3.6.1.2.1.2.2.1.10.5"
+
+#Trying ifInOctets.15
+interfaceOIDin = "1.3.6.1.2.1.2.2.1.10.15"
+interfaceOIDout = "1.3.6.1.2.1.2.2.1.16.15"
+
+
 #UDM-PRO WAN Interface
 #interfaceOIDout = "1.3.6.1.2.1.2.2.1.16.4" #ifIndex.4
 #interfaceOIDin = "1.3.6.1.2.1.2.2.1.10.4" #ifIndex.4
 
 #USG-PRO-4
-interfaceOIDout = "1.3.6.1.2.1.2.2.1.16.4" #USG-PRO-4 WAN1 config
-interfaceOIDin = "1.3.6.1.2.1.2.2.1.10.4"  #USG-PRO-4 WAN1 config
+#interfaceOIDout = "1.3.6.1.2.1.2.2.1.16.4" #USG-PRO-4 WAN1 config
+#interfaceOIDin = "1.3.6.1.2.1.2.2.1.10.4"  #USG-PRO-4 WAN1 config
 
 #LAN14 pfSense
 #interfaceOIDout = "1.3.6.1.2.1.31.1.1.1.10.20" #LAN14 SNMP config
@@ -50,7 +57,7 @@ interfaceOIDin = "1.3.6.1.2.1.2.2.1.10.4"  #USG-PRO-4 WAN1 config
 #interfaceOIDin = "1.3.6.1.2.1.2.2.1.10.1" #Unifi 16 port POE switch port 1
 
 #ensure snmpv2 is ussed, set your read only community to whatever
-snmpv2community = "public"
+snmpv2community = "forgetown"
 
 #Initial Variable Assignment - don't touch
 octetsOLDout = 0
@@ -59,6 +66,7 @@ octetsOLDin = 0
 timeOLDin = 0
 bps = 0
 snmpdelaycounter = 0
+int1out = None
 
 def getsnmpbw():
     global octetsOLDout,timeOLDout,octetsOLDin,timeOLDin,snmpdelaycounter,snmphealth,int1in,int1out
@@ -75,6 +83,8 @@ def getsnmpbw():
     )
     if errorIndication:
 	    print(errorIndication)
+            time.sleep(2)
+            return(errorIndication)
     elif errorStatus:
 	    print('%s at %s' % (errorStatus.prettyPrint(),
 	    					errorIndex and varBinds[int(errorIndex) - 1][0] or '?'))
@@ -109,8 +119,12 @@ def getsnmpbw():
     # Turn var into a string
     int1out = str(int1out)
     print "Raw int1out SNMP string: ",int1out
+
     # Take only to the right of the space equals space in the MIB finding
-    int1out = int1out.split(' = ')[1]
+    try: 
+       int1out = int1out.split(' = ')[1]
+    except Exception as e:
+        print("An error occurred:", str(e))
 	
     print "Cleaned up intlout 1: ",int1out
     #convert to integer
@@ -152,6 +166,9 @@ def getsnmpbw():
     #print("ifinbitspersecond = ",ifinbitspersecond)
     ifbitspersecond = ifinbitspersecond+ifoutbitspersecond
     ifbitspersecond = int(round(ifbitspersecond))
+    # TESTING ONLY: Make it more
+    #ifbitspersecond = ifbitspersecond * 100
+    # Calculate breakdown 
     ifKbitspersecond = ifbitspersecond/1000
     ifMbitspersecond = ifKbitspersecond/1000
     ifGbitspersecond = ifMbitspersecond/1000
@@ -171,17 +188,8 @@ def getsnmpbw():
     timeOLDout = currenttimeout
     octetsOLDin = int1in
     timeOLDin = currenttimein
-	
-	#health check the SNMP node - meh maybe some day. 
-    #snmphealth = check_ping()
-    #if snmphealth == "Network Error":
-    #    print "SNMP host is offline"
-    #else:
-    #    print "SNMP host is online and functioning."
-	
-	
 
-	
+    # Return the variable from the function	
     return ifbitspersecond
 
 def snmptargetonline():
@@ -195,113 +203,63 @@ def snmptargetonline():
     print snmptarget + "current status: " + snmptargetpingstatus
     return snmptargetpingstatus
 
+def check_snmp_connectivity():
+    # SNMP parameters
+    snmp_target = '10.10.0.1'
+    community_string = 'forgetown'
+    snmp_oid = '1.3.6.1.2.1.1.1.0'  # Example OID for system description
+    
+    # Create an SNMP engine
+    snmp_engine = SnmpEngine()
+    
+    try:
+        # Create an SNMP GET request
+        errorIndication, errorStatus, errorIndex, varBinds = next(
+            getCmd(
+                snmp_engine,
+                CommunityData(community_string),
+                UdpTransportTarget((snmp_target, 161)),
+                ContextData(),
+                ObjectType(ObjectIdentity(snmp_oid))
+            )
+        )
+        
+        # Check for errors
+        if errorIndication:
+            print("SNMP Error:", errorIndication)
+            return 0
+        elif errorStatus:
+            print("SNMP Error:", errorStatus.prettyPrint())
+            return 0 
+        else:
+            print("SNMP Data:", varBinds[0].prettyPrint())
+            return 1
+    
+    except Exception as e:
+        print("An error occurred:", str(e))
+        return 0
 
+# Call the function to check SNMP connectivity
+#check_snmp_connectivity()
+
+
+# Get SNMP and main function 
 def getsnmp():
-# trying to get better error handling for no internet/snmp
-#    snmptargetonline()
-#    iptopingonline()
-#    print iptopingstatus
-#    print snmptargetpingstatus
-#    pwmsetup()
-#    dothething()
     bps = getsnmpbw()
     print bps
     bpsfile = open("bps.txt", "w")
     bpsstr = str(bps)
     bpsfile.write(bpsstr)
     bpsfile.close()
-
+# Loop forever 
 while True:
     try:
-       getsnmp()
+        snmpworkingrn = check_snmp_connectivity()
+        if snmpworkingrn == 1: 
+            getsnmp()
+        else: 
+            print ("SNMP isn't working right now. Sleeping for 10 seconds and repeating...")
+            time.sleep(10)
     except KeyboardInterrupt:
-	   sys.exit()
+        sys.exit()
 
-# Interface OID looks like Test 2:em1 (1.3.6.1.2.1.31.1.1.1.6.2,1.3.6.1.2.1.31.1.1.1.10.2): in=107117891  out=945560614
-# Use paessler SNMPTEST to obtain when doing interface or snmpwalk
-#Pfsense SNMP Helper  - see https://www.reddit.com/r/PFSENSE/comments/3szzbh/snmp_64bit_counters/ for additional help
-#
-# the following is a pfsense box with 1 LAN 1 WAN intefaces. 
-#snmpwalk -v 2c -c public 10.11.12.1 iso.3.6.1.2.1.31.1.1.1
-#iso.3.6.1.2.1.31.1.1.1.1.1 = STRING: "em0" <-- interface definition note for below, these increment with additional interfaces
-#iso.3.6.1.2.1.31.1.1.1.1.2 = STRING: "em1"
-#iso.3.6.1.2.1.31.1.1.1.1.3 = STRING: "enc0"
-#iso.3.6.1.2.1.31.1.1.1.1.4 = STRING: "lo0"
-#iso.3.6.1.2.1.31.1.1.1.1.5 = STRING: "pflog0"
-#iso.3.6.1.2.1.31.1.1.1.1.6 = STRING: "pfsync0"#
-#iso.3.6.1.2.1.31.1.1.1.2.1 = Counter32: 21374  <-- Begin ifInMulticastPkts
-#iso.3.6.1.2.1.31.1.1.1.2.2 = Counter32: 29570
-#iso.3.6.1.2.1.31.1.1.1.2.3 = Counter32: 0
-#iso.3.6.1.2.1.31.1.1.1.2.4 = Counter32: 0
-#iso.3.6.1.2.1.31.1.1.1.2.5 = Counter32: 0
-#iso.3.6.1.2.1.31.1.1.1.2.6 = Counter32: 0 <-- End ifInMulticastPkts
-#iso.3.6.1.2.1.31.1.1.1.3.1 = Counter32: 0 <-- Begin ifInBroadcastPkts
-#iso.3.6.1.2.1.31.1.1.1.3.2 = Counter32: 0
-#iso.3.6.1.2.1.31.1.1.1.3.3 = Counter32: 0
-#iso.3.6.1.2.1.31.1.1.1.3.4 = Counter32: 0
-#iso.3.6.1.2.1.31.1.1.1.3.5 = Counter32: 0
-#iso.3.6.1.2.1.31.1.1.1.3.6 = Counter32: 0 <-- End ifInBroadcastPkts
-#iso.3.6.1.2.1.31.1.1.1.4.1 = Counter32: 6 <-- Begin ifOutMulticastPkts
-#iso.3.6.1.2.1.31.1.1.1.4.2 = Counter32: 5
-#iso.3.6.1.2.1.31.1.1.1.4.3 = Counter32: 0
-#iso.3.6.1.2.1.31.1.1.1.4.4 = Counter32: 0
-#iso.3.6.1.2.1.31.1.1.1.4.5 = Counter32: 0
-#iso.3.6.1.2.1.31.1.1.1.4.6 = Counter32: 0 <-- End ifOutMulticastPkts
-#iso.3.6.1.2.1.31.1.1.1.5.1 = Counter32: 0 <-- Begin ifOutBroadcastPkts
-#iso.3.6.1.2.1.31.1.1.1.5.2 = Counter32: 0
-#iso.3.6.1.2.1.31.1.1.1.5.3 = Counter32: 0
-#iso.3.6.1.2.1.31.1.1.1.5.4 = Counter32: 0
-#iso.3.6.1.2.1.31.1.1.1.5.5 = Counter32: 0
-#iso.3.6.1.2.1.31.1.1.1.5.6 = Counter32: 0 <-- End ifOutBroadcastPkts
-#iso.3.6.1.2.1.31.1.1.1.6.1 = Counter64: 26006348139 <--- em0 in-octets
-#iso.3.6.1.2.1.31.1.1.1.6.2 = Counter64: 9205906507  <--- em1 in-octets      !!! Used in this script by way of example
-#iso.3.6.1.2.1.31.1.1.1.7.1 = Counter64: 20027195
-#iso.3.6.1.2.1.31.1.1.1.7.2 = Counter64: 11609973
-#iso.3.6.1.2.1.31.1.1.1.8.1 = Counter64: 21374
-#iso.3.6.1.2.1.31.1.1.1.8.2 = Counter64: 29570 <--- End 
-#iso.3.6.1.2.1.31.1.1.1.9.1 = Counter64: 0
-#iso.3.6.1.2.1.31.1.1.1.9.2 = Counter64: 0
-#iso.3.6.1.2.1.31.1.1.1.10.1 = Counter64: 9134872256  <--- em0 out-octets   
-#iso.3.6.1.2.1.31.1.1.1.10.2 = Counter64: 26020039451 <--- em1 out-octets    !!! Used in this script by way of example
-#iso.3.6.1.2.1.31.1.1.1.11.1 = Counter64: 11443662
-#iso.3.6.1.2.1.31.1.1.1.11.2 = Counter64: 20180393
-#iso.3.6.1.2.1.31.1.1.1.12.1 = Counter64: 6
-#iso.3.6.1.2.1.31.1.1.1.12.2 = Counter64: 5
-#iso.3.6.1.2.1.31.1.1.1.13.1 = Counter64: 0
-#iso.3.6.1.2.1.31.1.1.1.13.2 = Counter64: 0
-#iso.3.6.1.2.1.31.1.1.1.14.1 = INTEGER: 1
-#iso.3.6.1.2.1.31.1.1.1.14.2 = INTEGER: 1
-#iso.3.6.1.2.1.31.1.1.1.14.3 = INTEGER: 2
-#iso.3.6.1.2.1.31.1.1.1.14.4 = INTEGER: 2
-#iso.3.6.1.2.1.31.1.1.1.14.5 = INTEGER: 2
-#iso.3.6.1.2.1.31.1.1.1.14.6 = INTEGER: 2
-#iso.3.6.1.2.1.31.1.1.1.15.1 = Gauge32: 1000 <--- em0 interface speed (1000 = 1Gbps)
-#iso.3.6.1.2.1.31.1.1.1.15.2 = Gauge32: 1000 <--- em1 interface speed (1000 = 1Gbps)
-#iso.3.6.1.2.1.31.1.1.1.15.3 = Gauge32: 0
-#iso.3.6.1.2.1.31.1.1.1.15.4 = Gauge32: 0
-#iso.3.6.1.2.1.31.1.1.1.15.5 = Gauge32: 0
-#iso.3.6.1.2.1.31.1.1.1.15.6 = Gauge32: 0
-#iso.3.6.1.2.1.31.1.1.1.16.1 = INTEGER: 2
-#iso.3.6.1.2.1.31.1.1.1.16.2 = INTEGER: 2
-#iso.3.6.1.2.1.31.1.1.1.16.3 = INTEGER: 2
-#iso.3.6.1.2.1.31.1.1.1.16.4 = INTEGER: 2
-#iso.3.6.1.2.1.31.1.1.1.16.5 = INTEGER: 1
-#iso.3.6.1.2.1.31.1.1.1.16.6 = INTEGER: 2
-#iso.3.6.1.2.1.31.1.1.1.17.1 = INTEGER: 1
-#iso.3.6.1.2.1.31.1.1.1.17.2 = INTEGER: 1
-#iso.3.6.1.2.1.31.1.1.1.17.3 = INTEGER: 2
-#iso.3.6.1.2.1.31.1.1.1.17.4 = INTEGER: 2
-#iso.3.6.1.2.1.31.1.1.1.17.5 = INTEGER: 2
-#iso.3.6.1.2.1.31.1.1.1.17.6 = INTEGER: 2
-#iso.3.6.1.2.1.31.1.1.1.18.1 = ""
-#iso.3.6.1.2.1.31.1.1.1.18.2 = ""
-#iso.3.6.1.2.1.31.1.1.1.18.3 = ""
-#iso.3.6.1.2.1.31.1.1.1.18.4 = ""
-#iso.3.6.1.2.1.31.1.1.1.18.5 = ""
-#iso.3.6.1.2.1.31.1.1.1.18.6 = ""
-#iso.3.6.1.2.1.31.1.1.1.19.1 = Timeticks: (0) 0:00:00.00
-#iso.3.6.1.2.1.31.1.1.1.19.2 = Timeticks: (0) 0:00:00.00
-#iso.3.6.1.2.1.31.1.1.1.19.3 = Timeticks: (0) 0:00:00.00
-#iso.3.6.1.2.1.31.1.1.1.19.4 = Timeticks: (0) 0:00:00.00
-#iso.3.6.1.2.1.31.1.1.1.19.5 = Timeticks: (0) 0:00:00.00
-#iso.3.6.1.2.1.31.1.1.1.19.6 = Timeticks: (0) 0:00:00.00
