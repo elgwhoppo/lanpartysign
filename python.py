@@ -126,7 +126,8 @@ num = {' ':(0,0,0,0,0,0,0),
     '6':(1,1,0,1,1,1,1),
     '7':(1,0,1,0,1,0,0),
     '8':(1,1,1,1,1,1,1),
-    '9':(1,1,1,0,1,1,1)}
+    '9':(1,1,1,0,1,1,1),
+    '_':(0,0,0,0,0,1,0)}
 
 segments = (25,5,6,12,13,19,16)
 
@@ -134,8 +135,6 @@ segments = (25,5,6,12,13,19,16)
 pulse = {
     0:pulsewidthoff,
     1:pulsewidthon}
-
-print "moo"
 
 def pwmsetup():
     # more ref add_channel_pulse(dma_channel, gpio, start, width)
@@ -160,24 +159,31 @@ def SetSix7Seg( digits ):
         PWM.add_channel_pulse(dmach,segments[i], pulsewidth*5, pulse[num[digits[5]][i]]) 
     # since i only needed the decimal point in one place, this is a bit of a hack...
 	
-def SetDecimal(k):
-    #print "I'm in SetDecimal...about to check K:"
-    if k >= 999999:
-        print "              Decmial Formatting: 1.3G"
+def SetDecimal(t):
+    if t >= 1000000000: 
+        # 1.2G
+        print "Decmial is like: 1.3G. We're in Gbps now."
         PWM.add_channel_pulse(dmach,24,1,pulsewidthon)
-        PWM.add_channel_pulse(dmach,24,1,pulsewidthoff)		
-    elif k >= 99999 and  k < 999999:
+        PWM.add_channel_pulse(dmach,24,pulsewidth,pulsewidthoff)		
+    elif t >= 100000000 and t < 1000000000:
+        # 999
         PWM.add_channel_pulse(dmach,24,pulsewidth,pulsewidthoff)
         PWM.add_channel_pulse(dmach,24,1,pulsewidthoff)
-        print "              Decmial Formatting: 999"
-    elif k == 66:
+        print "Decmial is like: 999. We're in 100's of Mbps now."
+    elif t >= 10000000 and t < 100000000:
+        # 99.9
+        PWM.add_channel_pulse(dmach,24,pulsewidth,pulsewidthon)
+        PWM.add_channel_pulse(dmach,24,1,pulsewidthoff)
+        print "Decimal is like: 10.6. We're in 10's of Mbps now"
+    elif t == 66:
         PWM.add_channel_pulse(dmach,24,pulsewidth,pulsewidthoff)
         PWM.add_channel_pulse(dmach,24,1,pulsewidthoff)
         print "              Decmial Formatting: ERR"
     else:
-        PWM.add_channel_pulse(dmach,24,pulsewidth,pulsewidthon)
-        PWM.add_channel_pulse(dmach,24,1,pulsewidthoff)
-        print "              Decmial Formatting: 0.1"
+        # 0.23
+        PWM.add_channel_pulse(dmach,24,1,pulsewidthon)
+        PWM.add_channel_pulse(dmach,24,pulsewidth,pulsewidthoff)
+        print "Assuming decmial is like 0.16. We're in single digit or lower Mbps now."
 
 def dothething():        
     counter = 0
@@ -190,7 +196,7 @@ def dothething():
 		#call the SNMP bandwidth function
         bps = getsnmpbw()
 		
-        print "Raw bps value pulled from bps.txt: ",bps
+        print "Raw bps value pulled from bps.txt:",bps
 		
         t = int(bps)
         ogbps = t
@@ -200,21 +206,12 @@ def dothething():
             snmpbrokecounter = 0
         else:
             snmpbrokecounter = snmpbrokecounter+1
-            print "BPS has been the same for this many times: ",snmpbrokecounter
+            print "BPS has been the same for this many times:     ",snmpbrokecounter
+            print ""
 		
-        if snmpbrokecounter > 300:
+        if snmpbrokecounter > 30:
             print "SNMP definitely broken. Mark as error: ",snmpbrokecounter		
             snmpbrokenow = 1
-            print "Sleeping for 5 seconds..."
-            #time.sleep(10)
-            print "Trying to restart the snmp python script..."
-            try:
-               subprocess.call(['screen', '-dmS', 'SNMP', 'python', python_script_path])
-            except Exception as e:
-                print "An error occurred: {e}"        
-	#if snmpbrokecounter > 300:
-        #    print "SNMP definitely broken. Mark as error: ",snmpbrokecounter		
-        #    snmpbrokenow = 1
         snmpunchangedvalue = ogbps
 
         #activate fuzz, let's make bandwidth move a little
@@ -224,12 +221,12 @@ def dothething():
         #bpsmultipler = random.uniform(5.85, 6.02)
 		
         realvaluembps = t/1000000
-        print "  Real value Mbps: ",realvaluembps
+        #print "  Real value Mbps: ",realvaluembps
         t = t*bpsmultipler
         t = int(t)
         fuzzedvaluembps = t/1000000
-        print "Fuzzed value Mbps: ",fuzzedvaluembps
-        print ""		
+        #print "Fuzzed value Mbps: ",fuzzedvaluembps
+        #print ""		
         pingresponse = os.popen("timeout "+str(fetchrate*.001)+" ping -c 1 "+str(iptoping)+" | grep rtt | cut -c 24-28").readlines()
         # a timed out ping will record a "999"
         pingresponse.append("999")
@@ -237,7 +234,6 @@ def dothething():
         print "   Latency to " + iptoping + " is pinging: " + str(y)
         
 	#!!!!!!!!!!!!!!!!!!!!!!!DELAY!!!!!!!!!!!!!!!!!!!!!!!!!
-        #time.sleep(.05) <--original values here
         time.sleep(.15)
 
         #print "here be throughput in Kbps, raw from pfsense"
@@ -269,37 +265,49 @@ def dothething():
         # DEACTIVATE FUZZ
         #
         #maths
+        var_bps = int(t)
+        var_kbps = int(t)/1000
+        var_mbps = int(t)/1000000
+        var_gbps = int(t)/1000000000
+        print "                Current Bandwidth"
+        print "                             bps:", var_bps
+        print "                            Kbps:", var_kbps
+        print "                            Mbps:", var_mbps
+        print "                            Gbps:", var_gbps        
+        print "" 
         k = int(t)/1000
         g = int(t)/1000000
         p = int(math.ceil(float(y)))
         # set 999 in case something blows up
         l = '999'
         v = '999'
-        # crunch values
-        # so throughput displays as 1.3_,999, 99.9, 9.9, or 0.9 in megabits
-        # and latency is 999, 99, or 9 in milliseconds   
-		#k = 1699999 #Bogus testing number for 1.6G format
-        if k >= 999999 and k < 9999999:
-            v = str(k)[0:2]+str("G")
-        if k >= 10000 and k < 999999:
-            v = str(k)[0:3]
-        if k >= 1000 and k < 9999:
-            v = ' '+str(k)[0:2]
-        if k >= 100 and  k < 999:
-            v = ' 0'+str(k)[0:1]
-        if k > 0 and k < 99:
-            v = ' 01'
+
+        # 1.5G
+        if t >= 1000000000:
+            v = str(var_gbps)[0:1]+str(var_mbps)[0:1]+str("G")
+        # 689
+        if t >= 100000000 and t < 1000000000:
+            v = str(var_mbps)[0:3]
+        # 56.3
+        if t >= 10000000 and t < 100000000:
+            v = str(var_mbps)[0:2]+str(var_kbps)[0:1]
+        # 0.04
+        if t < 10000000:
+            v = str(var_mbps)[0:1]+str(var_kbps)[0:2]
+
+
+
         if ogbps == 66:
             #Set the value to 66 for error handling; will remove the decmial in the SetDecimal function
-            k = 66
+            t = 66
             #Set the verbiage to ERR for error, or blank in the case of this script now
             #v = "ERR"
             v = "TBD"
         if snmpbrokenow == 1:
-            k = 66
+            t = 66
             #Set to blank, err not by design
-            #v = "ERR"
-            v = "TBD"
+            #v = "TBD"
+            v = "O_0"
         if p >= 100 and p < 999:
             l = str(p)[0:3]
         if p >= 10 and p < 99:
@@ -312,8 +320,8 @@ def dothething():
         print ""
         print "   The following will be printed: " + str(s)
         SetSix7Seg(s)
-        #print "Determine Decimal on this number: " + str(k)
-        SetDecimal(k)
+        print "Determine Decimal on this number: " + str(k)
+        SetDecimal(t)
         print ""
         print "                   End of Loop"   
         print "******************************************************"
