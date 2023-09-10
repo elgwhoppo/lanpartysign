@@ -6,6 +6,7 @@ import urllib2
 import time
 import math
 import os
+import fcntl
 
 # what IP should I check for SNMP counters? 
 #snmptarget = "192.168.1.157" #Unifi 16 port switch
@@ -84,7 +85,7 @@ def getsnmpbw():
     if errorIndication:
 	    print(errorIndication)
             time.sleep(2)
-            return(errorIndication)
+            return("999")
     elif errorStatus:
 	    print('%s at %s' % (errorStatus.prettyPrint(),
 	    					errorIndex and varBinds[int(errorIndex) - 1][0] or '?'))
@@ -242,15 +243,21 @@ def check_snmp_connectivity():
 # Call the function to check SNMP connectivity
 #check_snmp_connectivity()
 
-
+   
 # Get SNMP and main function 
 def getsnmp():
     bps = getsnmpbw()
-    print bps
-    bpsfile = open("bps.txt", "w")
+    print "BPS from function: ",bps
+    with open("/home/pi/speedsign/bps.txt", 'r') as file:
+        try:
+            fcntl.flock(file, fcntl.LOCK_UN)
+        except IOError:
+            print("Failed to release the lock")
+    bpsfile = open("/home/pi/speedsign/bps.txt", "w")
     bpsstr = str(bps)
     bpsfile.write(bpsstr)
     bpsfile.close()
+
 # Loop forever 
 while True:
     try:
@@ -258,8 +265,8 @@ while True:
         if snmpworkingrn == 1: 
             getsnmp()
         else: 
+            snmp
             print ("SNMP isn't working right now. Sleeping for 10 seconds and repeating...")
             time.sleep(10)
     except KeyboardInterrupt:
         sys.exit()
-

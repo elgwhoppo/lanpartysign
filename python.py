@@ -114,7 +114,8 @@ num = {' ':(0,0,0,0,0,0,0),
     'N':(0,0,0,1,1,0,1),
     'G':(1,1,0,1,1,1,0),
     'A':(1,1,1,1,1,0,1),
-    'T':(0,1,0,1,0,1,1), #number 8, the last one is the middle segment
+    'H':(0,1,0,1,1,0,1),
+    'T':(0,1,0,1,1,1,1), #number 8, the last one is the middle segment
     'B':(0,1,0,1,1,1,1), #number 1, the first one is the top segment
     'D':(0,0,1,1,1,1,1), #number 2, the second one, is top left segment
     '0':(1,1,1,1,1,1,0),
@@ -209,14 +210,14 @@ def dothething():
             print "BPS has been the same for this many times:     ",snmpbrokecounter
             print ""
 		
-        if snmpbrokecounter > 30:
+        if snmpbrokecounter > 100:
             print "SNMP definitely broken. Mark as error: ",snmpbrokecounter		
             snmpbrokenow = 1
         snmpunchangedvalue = ogbps
 
         #activate fuzz, let's make bandwidth move a little
         #normal random
-        bpsmultipler = random.uniform(0.95, 1.05)
+        bpsmultipler = random.uniform(0.9, 1.1)
         #5x random
         #bpsmultipler = random.uniform(5.85, 6.02)
 		
@@ -308,6 +309,8 @@ def dothething():
             #Set to blank, err not by design
             #v = "TBD"
             v = "O_0"
+        if p >= 999:
+            l = 'UHH'
         if p >= 100 and p < 999:
             l = str(p)[0:3]
         if p >= 10 and p < 99:
@@ -328,9 +331,9 @@ def dothething():
         #os.system('clear')
         #time.sleep(fuzzrate*.001)
 		
-def getsnmpbw():
+def getsnmpbworig():
     global octetsOLDout,timeOLDout,octetsOLDin,timeOLDin,snmpdelaycounter,snmphealth
-    f = open("bps.txt", "r")
+    f = open("/home/pi/speedsign/bps.txt", "r")
     ifbitspersecond = f.read()
     #print ifbitspersecond
     #turn into integer
@@ -345,6 +348,34 @@ def getsnmpbw():
     else:
         ifbitspersecond = int(ifbitspersecond)
         return ifbitspersecond
+
+
+
+def getsnmpbw():
+    global octetsOLDout, timeOLDout, octetsOLDin, timeOLDin, snmpdelaycounter, snmphealth
+
+    try:
+        with open("/home/pi/speedsign/bps.txt", "r") as f:
+            ifbitspersecond = f.read()
+            
+            if not ifbitspersecond:
+                print("SNMP returned an empty string. Is the SNMP script running? Manually setting to 66.")
+                return 66
+            else:
+                ifbitspersecond = int(ifbitspersecond)
+                return ifbitspersecond
+
+    except IOError:
+        print("File not found: /home/pi/speedsign/bps.txt. Is the file path correct?")
+        return None
+
+    except ValueError:
+        print("Invalid data in the file. Is the SNMP script returning valid data? Manually setting to 66.")
+        return 66
+
+    except Exception as e:
+        print("An error occurred: " + str(e))
+        return None
 
 def snmptargetonline():
     hostname = snmptarget
