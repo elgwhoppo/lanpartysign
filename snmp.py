@@ -11,20 +11,9 @@ import fcntl
 # what IP should I check for SNMP counters? 
 #snmptarget = "192.168.1.157" #Unifi 16 port switch
 #snmptarget = "192.168.1.1" #UDM-PRO Wad
-snmptarget = "10.10.0.1" #UDM-PRO Litchfield
+#snmptarget = "10.10.0.1" #UDM-PRO Litchfield
 #snmptarget = "10.11.12.2" #Dlink-DGS-1510-28X
-
-iptoping = "8.8.8.8" #Google DNS IP-Anycast
-
-# pick a dma channel that won't crash your raspberry pi
-dmach = 14
-
-# define pulswidth in microseconds
-# do not exceed 330 with 6 digits.  "night mode" can be 115
-pulsewidth = 330
-
-# define how often to fetch data and ping in milliseconds (e.g. 1000 = 1 second)
-fetchrate = 750
+snmptarget = "192.168.1.40" #10Gb Agg Switch
 
 #Variable Declaration IfOutOctets and IfInOctets- Modify to fit your environment
 

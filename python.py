@@ -1,3 +1,4 @@
+# 1.5 Python update, GPIO framework update
 # 1.4 Bugfix and snmp updates 
 # 1.3 Update via @elgwhoppo
 #  - Moved all bandwidth checking to SNMP
@@ -10,20 +11,15 @@
 #  - fixed for Mbps greater than two digits not dropping decimal
 # 1.0 Initial Version via @krhainos 
 
-from RPIO import PWM
+from RPi import GPIO as PWM
 from pysnmp.hlapi import *
 from datetime import datetime
-import urllib2
+import urllib.request, urllib.error
 import time
 import math
 import os
 import random
-
-# what IP should I check for SNMP counters? 
-#snmptarget = "192.168.1.157" #Unifi 16 port switch
-#snmptarget = "192.168.1.1" #UDM-PRO Wad
-#snmptarget = "10.11.12.1" #UDM-PRO Litchfield
-#snmptarget = "10.11.12.2" #Dlink-DGS-1510-28X
+import http.client
 
 # what remote IP should I ping to test for latency?
 iptoping = "8.8.8.8" #Google DNS IP-Anycast
@@ -85,9 +81,6 @@ interfaceOIDin = "1.3.6.1.2.1.2.2.1.10.4"  #USG-PRO-4 WAN1 config
 #interfaceOIDout = "1.3.6.1.2.1.2.2.1.16.1" #Unifi 16 port POE Switch port 1
 #interfaceOIDin = "1.3.6.1.2.1.2.2.1.10.1" #Unifi 16 port POE switch port 1
 
-#ensure snmpv2 is ussed, set your read only community to whatever
-snmpv2community = "public"
-
 #Initial Variable Assignment - don't touch
 octetsOLDout = 0
 timeOLDout = 0
@@ -130,7 +123,22 @@ num = {' ':(0,0,0,0,0,0,0),
     '9':(1,1,1,0,1,1,1),
     '_':(0,0,0,0,0,1,0)}
 
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(segments, GPIO.OUT)
+GPIO.setup(digits, GPIO.OUT)
+
+def display_number(digit, number):
+    GPIO.output(digits, 0)  # Turn off all digits
+    GPIO.output(segments, num[number])  # Configure segments
+    GPIO.output(digits[digit], 1)  # Turn on the specific digit
+
+def update_display(values):
+    for i, value in enumerate(values):
+        display_number(i, value)
+        time.sleep(0.001)  # Display each digit for 1 ms
+
 segments = (25,5,6,12,13,19,16)
+digits = (18,17,4,23,22,27)
 
 # Pulse off and on (minimum of 4 for off state = 40 uS)
 pulse = {
@@ -274,7 +282,7 @@ def dothething():
         print "                             bps:", var_bps
         print "                            Kbps:", var_kbps
         print "                            Mbps:", var_mbps
-        print "                            Gbps:", var_gbps        
+        print "                            Gbps:", var_gbps
         print "" 
         k = int(t)/1000
         g = int(t)/1000000
@@ -401,13 +409,24 @@ def iptopingonline():
 
 
 def doit():
-# trying to get better error handling for no internet/snmp
-#    snmptargetonline()
-#    iptopingonline()
-#    print iptopingstatus
-#    print snmptargetpingstatus
-    pwmsetup()
-    dothething()
+    # ... [rest of the doit() function, unchanged]
+    while True:
+        try:
+        doit()
+    except urllib.error.URLError as e:
+        print("\n" * 12)
+        urlbrokecounter += 1
+        print("URL Error; timeout. Has failed this many times:", urlbrokecounter)
+        print("Continuing anyway...")
+        if urlbrokecounter > 20:
+            SetSix7Seg("NO URL")
+            SetDecimal("")
+    except http.client.BadStatusLine:
+        print("\n" * 12)
+        print("something bad happened (badstatusline)")
+        print("continuing anyway...")
+    else:
+        print(" ")
 
 while True:
     try:
