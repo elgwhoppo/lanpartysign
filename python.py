@@ -395,7 +395,7 @@ def dothething():
         stringToPrint = str(l)+str(v)
         print("")
         print("   The following will be printed: " + stringToPrint)
-        display_string_with_decimal(s)
+        display_string_with_decimal(stringToPrint)
         print("")
         print("                   End of Loop")   
         print("******************************************************")
