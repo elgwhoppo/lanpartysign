@@ -44,7 +44,7 @@ global bps,octetsOLDout,timeOLDout,octetsOLDin,timeOLDin,snmphealth
 global snmptargetpingstatus,iptopingstatus
 global stringToPrint
 
-global_variable_lock = threading.Lock()
+#global_variable_lock = threading.Lock()
 
 #stringToPrint = "HA1OOH"
 fuzzrate = fetchrate + 5
@@ -132,7 +132,7 @@ num = {' ':(0,0,0,0,0,0,0),
 def display_thread():
     while True:
         display_string_with_decimal(stringToPrint)
-        time.sleep(0.1)  # Adjust the sleep interval as needed to control the update rate
+        #time.sleep(0.1)  # Adjust the sleep interval as needed to control the update rate
 
 
 def display_string_with_decimal(input_str):
@@ -373,10 +373,9 @@ def dothething():
 
 try:
 
-    # Create a thread for the display function
-    display_thread = threading.Thread(target=display_thread)
-
-    # Start the display thread
+    # Create and start the thread, passing the current value of stringToPrint
+    display_thread = threading.Thread(target=display_thread, args=(stringToPrint,))
+    display_thread.daemon = True  # Set the thread as a daemon so it exits when the main program exits
     display_thread.start()
 
     while True:
