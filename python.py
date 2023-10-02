@@ -110,6 +110,7 @@ display_queue = queue.Queue()
 
 def threaded_display():
     global stringToPrint
+    print("[Thread] Started!")
     while True:
         str_to_display = stringToPrint.replace(".", "")
         decimals = [i-1 for i, char in enumerate(stringToPrint) if char == "."]  # Adjusted to ge>
@@ -123,8 +124,8 @@ def threaded_display():
                 GPIO.output(decimal_point, 0)
 
             GPIO.output(digits[idx], 1)        # Light up the current digit
-            time.sleep(0.002)                  # Adjust this delay to reduce flickering
-            GPIO.output(digits[idx], 0)        # Turn off the current digit to prepare for next
+            time.sleep(0.0005)                  # Adjust this delay to reduce flickering
+            #GPIO.output(digits[idx], 0)        # Turn off the current digit to prepare for next
 
 def get_bandwidth_value(t, var_gbps, var_mbps, var_kbps):
     v = '999'
@@ -169,8 +170,6 @@ def get_bandwidth_value(t, var_gbps, var_mbps, var_kbps):
     print("")
     print("                   End of Loop")   
     print("******************************************************")
-    #os.system('clear')
-    #time.sleep(fuzzrate*.001)
 
 def getsnmpbw():
     global octetsOLDout, timeOLDout, octetsOLDin, timeOLDin, snmpdelaycounter, snmphealth
@@ -340,7 +339,7 @@ def main():
             dothething() # Update the string to print
             print("[Main] Pushing the following to the display queue:", stringToPrint)
             display_queue.put(stringToPrint)  # Push the new value to the queue
-            time.sleep(1)
+            time.sleep(5)
 
     except KeyboardInterrupt:
         # Clean up GPIOs upon exit
