@@ -337,7 +337,6 @@ def dothething():
     stringToPrint = str(l)+str(v)
     print("")
     print("   The following will be printed by the threaded process: " + stringToPrint)
-    print("Sleeping for 1s...")
     print("")
     print("                   End of Loop")   
     print("******************************************************")
@@ -358,7 +357,7 @@ def main():
             dothething() # Update the string to print
             print("[Main] Pushing the following to the display queue:", stringToPrint)
             display_queue.put(stringToPrint)  # Push the new value to the queue
-            time.sleep(3)
+            time.sleep(0.5)
 
     except KeyboardInterrupt:
         # Clean up GPIOs upon exit
