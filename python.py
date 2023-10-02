@@ -125,7 +125,7 @@ def threaded_display():
 
             GPIO.output(digits[idx], 1)        # Light up the current digit
             time.sleep(0.0005)                  # Adjust this delay to reduce flickering
-            #GPIO.output(digits[idx], 0)        # Turn off the current digit to prepare for next
+            GPIO.output(digits[idx], 0)        # Turn off the current digit to prepare for next
 
 def get_bandwidth_value(t, var_gbps, var_mbps, var_kbps):
     v = '999'
