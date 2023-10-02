@@ -378,7 +378,6 @@ def dothething():
         print("")
         print("   The following will be printed by the threaded process: " + stringToPrint)
         display_string_with_decimal(stringToPrint)
-        with 
         print("")
         print("                   End of Loop")   
         print("******************************************************")
