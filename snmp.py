@@ -62,8 +62,8 @@ def getsnmpbw():
 	# set time
     errorIndication, errorStatus, errorIndex, varBinds = next(
         getCmd(SnmpEngine(),
-		   CommunityData(snmpv2community),
-		   UdpTransportTarget((snmptarget, 161)),
+		   CommunityData(SNMP_V2_COMMUNITY),
+		   UdpTransportTarget((SNMP_TARGET, 161)),
 		   ContextData(),
 		   ObjectType(ObjectIdentity(interfaceOIDout)))
     )
@@ -83,8 +83,8 @@ def getsnmpbw():
 	# set time
     errorIndication, errorStatus, errorIndex, varBinds = next(
         getCmd(SnmpEngine(),
-		   CommunityData(snmpv2community),
-		   UdpTransportTarget((snmptarget, 161)),
+		   CommunityData(SNMP_V2_COMMUNITY),
+		   UdpTransportTarget((SNMP_TARGET, 161)),
 		   ContextData(),
 		   ObjectType(ObjectIdentity(interfaceOIDin)))
     )
@@ -177,20 +177,18 @@ def getsnmpbw():
     return ifbitspersecond
 
 def snmptargetonline():
-    hostname = snmptarget
+    hostname = SNMP_TARGET
     response = os.system("ping -c 1 " + hostname)
     # and then check the response...
     if response == 0:
         snmptargetpingstatus = "Online"
     else:
         snmptargetpingstatus = "Offline"
-    print (snmptarget," current status: ",snmptargetpingstatus)
+    print (SNMP_TARGET," current status: ",snmptargetpingstatus)
     return snmptargetpingstatus
 
 def check_snmp_connectivity():
     # SNMP parameters
-    snmp_target = '192.168.1.40'
-    community_string = 'forgetown'
     snmp_oid = '1.3.6.1.2.1.1.5.0'  # Example OID for system description, this one for 10Gb Ubiquiti Aggregation switch
     
     # Create an SNMP engine
@@ -201,8 +199,8 @@ def check_snmp_connectivity():
         errorIndication, errorStatus, errorIndex, varBinds = next(
             getCmd(
                 snmp_engine,
-                CommunityData(community_string),
-                UdpTransportTarget((snmp_target, 161)),
+                CommunityData(SNMP_V2_COMMUNITY),
+                UdpTransportTarget((SNMP_TARGET, 161)),
                 ContextData(),
                 ObjectType(ObjectIdentity(snmp_oid))
             )
