@@ -180,6 +180,8 @@ def get_bandwidth_value(t, var_gbps, var_mbps, var_kbps):
     s = v.rjust(3)+l.rjust(3)
     print("")
     print("DO THE THING HERE JOE")
+    display_string_with_decimal(stringToPrint)
+    print ("stringToPrint:",stringToPrint)
     #print "   The following will be printed: " + str(s)
     #SetSix7Seg(s)
     #print "Determine Decimal on this number: " + str(k)
@@ -264,24 +266,24 @@ def dothething():
     snmpbrokenow = 0
     for i in range(86400):
 
-		#call the SNMP bandwidth function
+        #call the SNMP bandwidth function
         bps = getsnmpbw()
-		
-        print ("Raw bps value pulled from bps.txt:", bps)
-		
+        
+        print("Raw bps value pulled from bps.txt:",bps)
+        
         t = int(bps)
         ogbps = t
-		
+        
         if ogbps != snmpunchangedvalue:
             snmpbrokenow = 0
             snmpbrokecounter = 0
         else:
             snmpbrokecounter = snmpbrokecounter+1
-            print ("BPS has been the same for this many times:     ", snmpbrokecounter)
-            print ("")
-		
+            print("BPS has been the same for this many times:     ",snmpbrokecounter)
+            print("")
+        
         if snmpbrokecounter > 100:
-            print ("SNMP definitely broken. Mark as error: ", snmpbrokecounter)
+            print("SNMP definitely broken. Mark as error: ",snmpbrokecounter)        
             snmpbrokenow = 1
         snmpunchangedvalue = ogbps
 
@@ -290,24 +292,24 @@ def dothething():
         bpsmultipler = random.uniform(0.9, 1.1)
         #5x random
         #bpsmultipler = random.uniform(5.85, 6.02)
-		
+        
         realvaluembps = t/1000000
-        #print "  Real value Mbps: ",realvaluembps
+        #print("  Real value Mbps: ",realvaluembps)
         t = t*bpsmultipler
         t = int(t)
         fuzzedvaluembps = t/1000000
-        #print "Fuzzed value Mbps: ",fuzzedvaluembps
-        #print ""		
+        #print("Fuzzed value Mbps: ",fuzzedvaluembps)
+        #print("")        
         pingresponse = os.popen("timeout "+str(fetchrate*.001)+" ping -c 1 "+str(iptoping)+" | grep rtt | cut -c 24-28").readlines()
         # a timed out ping will record a "999"
         pingresponse.append("999")
         y = pingresponse[0]
         print("   Latency to " + iptoping + " is pinging: " + str(y))
         
-	#!!!!!!!!!!!!!!!!!!!!!!!DELAY!!!!!!!!!!!!!!!!!!!!!!!!!
+        #!!!!!!!!!!!!!!!!!!!!!!!DELAY!!!!!!!!!!!!!!!!!!!!!!!!!
         time.sleep(.15)
 
-        #print "here be throughput in Kbps, raw from pfsense"
+        #print("here be throughput in Kbps, raw from pfsense")
         # crash prevention in case a bandwidth value isn't fetched
         if t == "\n" or t == "" :
             print("IT'S EMPTY!!!!!!!!!!!!!!")
@@ -319,19 +321,19 @@ def dothething():
         # ACTIVATE FUZZ 
         #
         counter = counter +1
-        #print counter
-        #print "HISTORICAL VAUES"
-        #print oldbw[0]
-        #print oldbw[1]
+        #print(counter)
+        #print("HISTORICAL VAUES")
+        #print(oldbw[0])
+        #print(oldbw[1])
         if counter == 2:
             counter = 0
         if counter == 1:
             oldbw[1] = oldbw[0]
-            #print "FUZZED VALUES"
+            #print("FUZZED VALUES")
             t = (int(t)+int(oldbw[1]))/2
         if counter == 0:
             oldbw[0] = t
-            #print "REAL VALUES"
+            #print("REAL VALUES")
         #
         # DEACTIVATE FUZZ
         #
@@ -344,15 +346,62 @@ def dothething():
         print("                             bps:", var_bps)
         print("                            Kbps:", var_kbps)
         print("                            Mbps:", var_mbps)
-        print("                            Gbps:", var_gbps)
+        print("                            Gbps:", var_gbps)        
         print("") 
         k = int(t)/1000
         g = int(t)/1000000
         p = int(math.ceil(float(y)))
         # set 999 in case something blows up
         l = '999'
-        #sleep for testing
-        time.sleep(1) 
+        v = '999'
+
+        # 1.5G
+        if t >= 1000000000:
+            v = str(var_gbps)[0:1]+str(var_mbps)[0:1]+str("G")
+        # 689
+        if t >= 100000000 and t < 1000000000:
+            v = str(var_mbps)[0:3]
+        # 56.3
+        if t >= 10000000 and t < 100000000:
+            v = str(var_mbps)[0:2]+str(var_kbps)[0:1]
+        # 0.04
+        if t < 10000000:
+            v = str(var_mbps)[0:1]+str(var_kbps)[0:2]
+
+
+
+        if ogbps == 66:
+            #Set the value to 66 for error handling; will remove the decmial in the SetDecimal function
+            t = 66
+            #Set the verbiage to ERR for error, or blank in the case of this script now
+            #v = "ERR"
+            v = "TBD"
+        if snmpbrokenow == 1:
+            t = 66
+            #Set to blank, err not by design
+            #v = "TBD"
+            v = "O_0"
+        if p >= 999:
+            l = 'UHH'
+        if p >= 100 and p < 999:
+            l = str(p)[0:3]
+        if p >= 10 and p < 99:
+            l = ' '+str(p)[0:2]
+        if p < 9:
+            l = '  '+str(p)[0:1]
+        print("Raw value for bandwidth printing: " +str(v))
+        print("              Raw value for ping: " +str(l))
+        s = v.rjust(3)+l.rjust(3)
+        print("")
+        print("   The following will be printed: " + str(s))
+        #SetSix7Seg(s)
+        print("Determine Decimal on this number: " + str(k))
+        #SetDecimal(t)
+        print("")
+        print("                   End of Loop")   
+        print("******************************************************")
+        #os.system('clear')
+        #time.sleep(fuzzrate*.001)
 
 try:
     while True:
