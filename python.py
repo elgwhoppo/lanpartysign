@@ -144,20 +144,25 @@ def display_thread():
 
 
 def display_string_with_decimal(input_str):
-    str_to_display = input_str.replace(".", "")
-    decimals = [i-1 for i, char in enumerate(input_str) if char == "."]  # Adjusted to get the correct segments
-    
-    for idx, char in enumerate(str_to_display):
-        GPIO.output(segments, num[char])   # Set segments for the character
+    global stringToPrint
+    while True:
+        str_to_display = input_str.replace(".", "")
+        decimals = [i-1 for i, char in enumerate(input_str) if char == "."]  # Adjusted to get the correct segments
+        
+        for idx, char in enumerate(str_to_display):
+            GPIO.output(segments, num[char])   # Set segments for the character
 
-        if idx in decimals:
-            GPIO.output(decimal_point, 1)
-        else:
-            GPIO.output(decimal_point, 0)
+            if idx in decimals:
+                GPIO.output(decimal_point, 1)
+            else:
+                GPIO.output(decimal_point, 0)
 
-        GPIO.output(digits[idx], 1)        # Light up the current digit
-        time.sleep(0.0005)                  # Adjust this delay to reduce flickering
-        GPIO.output(digits[idx], 0)        # Turn off the current digit to prepare for next
+            GPIO.output(digits[idx], 1)        # Light up the current digit
+            time.sleep(0.002)                  # Adjust this delay to reduce flickering
+            GPIO.output(digits[idx], 0)        # Turn off the current digit to prepare for next
+        
+        # Short pause before updating again
+        time.sleep (0.01)
 
 def get_bandwidth_value(t, var_gbps, var_mbps, var_kbps):
     v = '999'
