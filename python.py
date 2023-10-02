@@ -369,10 +369,6 @@ def dothething():
 
 
 # Create and start the thread, passing the current value of stringToPrint
-display_thread = threading.Thread(target=dothething)
-display_thread.daemon = True  # Set the thread as a daemon so it exits when the main program exits
-display_thread.start()
-
 def main():
     global stringToPrint
     try:
@@ -381,14 +377,10 @@ def main():
         display_thread.start()
 
         for _ in range(1, 1000000):
-            stringToPrint = " 4588.8"
+            dothething()
+            #stringToPrint = " 4588.8"
             display_queue.put(stringToPrint)  # Push the new value to the queue
-            print("[Main] Updated to:", stringToPrint)
-            time.sleep(1)
-
-            stringToPrint = " 4699.9"
-            display_queue.put(stringToPrint)  # Push the new value to the queue
-            print("[Main] Updated to:", stringToPrint)
+            print("[Main] Printing the following:", stringToPrint)
             time.sleep(1)
 
     except KeyboardInterrupt:
