@@ -44,7 +44,7 @@ global bps,octetsOLDout,timeOLDout,octetsOLDin,timeOLDin,snmphealth
 global snmptargetpingstatus,iptopingstatus
 global stringToPrint
 
-#global_variable_lock = threading.Lock()
+display_value_lock = threading.Lock()
 
 stringToPrint = "O_0TBD"
 last_displayed_string = ""
@@ -377,18 +377,19 @@ def dothething():
         stringToPrint = str(l)+str(v)
         print("")
         print("   The following will be printed by the threaded process: " + stringToPrint)
-        #display_string_with_decimal(stringToPrint)
+        display_string_with_decimal(stringToPrint)
+        with 
         print("")
         print("                   End of Loop")   
         print("******************************************************")
 
+
+# Create and start the thread, passing the current value of stringToPrint
+display_thread = threading.Thread(target=dothething)
+display_thread.daemon = True  # Set the thread as a daemon so it exits when the main program exits
+display_thread.start()
+
 try:
-
-    # Create and start the thread, passing the current value of stringToPrint
-    display_thread = threading.Thread(target=display_thread)
-    display_thread.daemon = True  # Set the thread as a daemon so it exits when the main program exits
-    display_thread.start()
-
     while True:
         dothething()
 except KeyboardInterrupt:
