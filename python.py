@@ -223,7 +223,7 @@ def getsnmpbw():
                 return ifbitspersecond
 
     except IOError:
-        print("File not found: /home/pi/speedsign/bps.txt. Is the file path correct?")
+        print("File not found: /home/pi/lanpartysign/bps.txt. Is the file path correct?")
         return None
 
     except ValueError:
@@ -360,5 +360,6 @@ def doit():
 while True:
     try:
         doit()
-    except:
+    except KeyboardInterrupt:
         pass
+    GPIO.cleanup()
