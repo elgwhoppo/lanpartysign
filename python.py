@@ -231,7 +231,7 @@ def getsnmpbw():
    	
 def dothething():        
     counter = 0
-    global snmpbrokecounter,snmpunchangedvalue,snmpbrokenow
+    global snmpbrokecounter,snmpunchangedvalue,snmpbrokenow,stringToPrint
     snmpbrokecounter = 0
     snmpunchangedvalue = 0
     snmpbrokenow = 0
