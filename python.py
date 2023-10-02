@@ -353,12 +353,7 @@ def iptopingonline():
     return iptopingstatus
 
 def doit():
-    # ... [rest of the doit() function, unchanged]
-    while True:
-        try:
-            doit()
-        except:
-            pass
+    dothething()
 
 while True:
     try:
