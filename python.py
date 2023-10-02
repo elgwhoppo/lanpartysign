@@ -355,8 +355,8 @@ def main():
 
         while True: 
             # testing
-            stringToPrint = "O_0UHH"
-            #dothething() # Update the string to print
+            #stringToPrint = "O_0UHH"
+            dothething() # Update the string to print
             print("[Main] Pushing the following to the display queue:", stringToPrint)
             display_queue.put(stringToPrint)  # Push the new value to the queue
             time.sleep(3)
