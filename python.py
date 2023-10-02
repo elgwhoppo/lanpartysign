@@ -46,7 +46,7 @@ global stringToPrint
 
 global_variable_lock = threading.Lock()
 
-stringToPrint = "HA1OOH"
+#stringToPrint = "HA1OOH"
 fuzzrate = fetchrate + 5
 oldbw = [0,0,0]
 counter = 0
@@ -363,8 +363,8 @@ def dothething():
         #s = v.rjust(3)+l.rjust(3)
         stringToPrint = str(l)+str(v)
         print("")
-        print("   The following will be printed: " + stringToPrint)
-        display_string_with_decimal(stringToPrint)
+        print("   The following will be printed by the threaded process: " + stringToPrint)
+        #display_string_with_decimal(stringToPrint)
         print("")
         print("                   End of Loop")   
         print("******************************************************")
