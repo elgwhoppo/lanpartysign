@@ -140,6 +140,122 @@ def display_string_with_decimal(input_str):
         time.sleep(0.002)                  # Adjust this delay to reduce flickering
         GPIO.output(digits[idx], 0)        # Turn off the current digit to prepare for next
 
+def get_bandwidth_value(t, var_gbps, var_mbps, var_kbps):
+    v = '999'
+
+    # 1.5G
+    if t >= 1000000000:
+        v = str(var_gbps)[0:1]+str(var_mbps)[0:1]+str("G")
+    # 689
+    if t >= 100000000 and t < 1000000000:
+        v = str(var_mbps)[0:3]
+    # 56.3
+    if t >= 10000000 and t < 100000000:
+        v = str(var_mbps)[0:2]+str(var_kbps)[0:1]
+    # 0.04
+    if t < 10000000:
+        v = str(var_mbps)[0:1]+str(var_kbps)[0:2]
+
+    if ogbps == 66:
+        #Set the value to 66 for error handling; will remove the decmial in the SetDecimal function
+        t = 66
+        #Set the verbiage to ERR for error, or blank in the case of this script now
+        #v = "ERR"
+        v = "TBD"
+    if snmpbrokenow == 1:
+        t = 66
+        #Set to blank, err not by design
+        #v = "TBD"
+        v = "O_0"
+    if p >= 999:
+        l = 'UHH'
+    if p >= 100 and p < 999:
+        l = str(p)[0:3]
+    if p >= 10 and p < 99:
+        l = ' '+str(p)[0:2]
+    if p < 9:
+        l = '  '+str(p)[0:1]
+    print("Raw value for bandwidth printing: " +str(v))
+    print("              Raw value for ping: " +str(l))
+    s = v.rjust(3)+l.rjust(3)
+    print("")
+    print("DO THE THING HERE JOE")
+    #print "   The following will be printed: " + str(s)
+    #SetSix7Seg(s)
+    #print "Determine Decimal on this number: " + str(k)
+    #SetDecimal(t)
+    print("")
+    print("                   End of Loop")   
+    print("******************************************************")
+    #os.system('clear')
+    #time.sleep(fuzzrate*.001)
+
+def getsnmpbworig():
+    global octetsOLDout,timeOLDout,octetsOLDin,timeOLDin,snmpdelaycounter,snmphealth
+    f = open("/home/pi/speedsign/bps.txt", "r")
+    ifbitspersecond = f.read()
+    #print ifbitspersecond
+    #turn into integer
+    if ifbitspersecond is None: 
+        print("SNMP returned NONE. Is the snmp script running? Manually setting to 66.")
+        ifbitspersecond = int(66)
+        return ifbitspersecond		
+    elif ifbitspersecond == "":
+        print("SNMP returned empty. Is the snmp script running? Manually setting to 66.")
+        ifbitspersecond = int(66)
+        return ifbitspersecond
+    else:
+        ifbitspersecond = int(ifbitspersecond)
+        return ifbitspersecond
+
+def getsnmpbw():
+    global octetsOLDout, timeOLDout, octetsOLDin, timeOLDin, snmpdelaycounter, snmphealth
+
+    try:
+        with open("/home/pi/lanpartysign/bps.txt", "r") as f:
+            ifbitspersecond = f.read()
+            
+            if not ifbitspersecond:
+                print("SNMP returned an empty string. Is the SNMP script running? Manually setting to 66.")
+                return 66
+            else:
+                ifbitspersecond = int(ifbitspersecond)
+                return ifbitspersecond
+
+    except IOError:
+        print("File not found: /home/pi/speedsign/bps.txt. Is the file path correct?")
+        return None
+
+    except ValueError:
+        print("Invalid data in the file. Is the SNMP script returning valid data? Manually setting to 66.")
+        return 66
+
+    except Exception as e:
+        print("An error occurred: " + str(e))
+        return None
+
+def snmptargetonline():
+    hostname = snmptarget
+    response = os.system("ping -c 1 " + hostname)
+    # and then check the response...
+    if response == 0:
+        snmptargetpingstatus = "Online"
+    else:
+        snmptargetpingstatus = "Offline"
+    print(snmptarget + "current status: " + snmptargetpingstatus)
+    return snmptargetpingstatus
+        	
+def iptopingonline():
+    hostname = iptoping
+    response = os.system("ping -c 1 " + hostname)
+    # and then check the response...
+    if response == 0:
+        iptopingstatus = "Online"
+    else:
+        iptopingstatus = "Offline"
+    print(iptoping + "current status: " + iptopingstatus)
+    return iptopingstatus
+
 def dothething():        
     counter = 0
     global snmpbrokecounter,snmpunchangedvalue,snmpbrokenow
@@ -235,122 +351,8 @@ def dothething():
         p = int(math.ceil(float(y)))
         # set 999 in case something blows up
         l = '999'
-
-def get_bandwidth_value(t, var_gbps, var_mbps, var_kbps):
-    v = '999'
-
-    # 1.5G
-    if t >= 1000000000:
-        v = str(var_gbps)[0:1]+str(var_mbps)[0:1]+str("G")
-    # 689
-    if t >= 100000000 and t < 1000000000:
-        v = str(var_mbps)[0:3]
-    # 56.3
-    if t >= 10000000 and t < 100000000:
-        v = str(var_mbps)[0:2]+str(var_kbps)[0:1]
-    # 0.04
-    if t < 10000000:
-        v = str(var_mbps)[0:1]+str(var_kbps)[0:2]
-
-    if ogbps == 66:
-        #Set the value to 66 for error handling; will remove the decmial in the SetDecimal function
-        t = 66
-        #Set the verbiage to ERR for error, or blank in the case of this script now
-        #v = "ERR"
-        v = "TBD"
-    if snmpbrokenow == 1:
-        t = 66
-        #Set to blank, err not by design
-        #v = "TBD"
-        v = "O_0"
-    if p >= 999:
-        l = 'UHH'
-    if p >= 100 and p < 999:
-        l = str(p)[0:3]
-    if p >= 10 and p < 99:
-        l = ' '+str(p)[0:2]
-    if p < 9:
-        l = '  '+str(p)[0:1]
-    print("Raw value for bandwidth printing: " +str(v))
-    print("              Raw value for ping: " +str(l))
-    s = v.rjust(3)+l.rjust(3)
-    print("")
-    print("DO THE THING HERE JOE")
-    #print "   The following will be printed: " + str(s)
-    #SetSix7Seg(s)
-    #print "Determine Decimal on this number: " + str(k)
-    #SetDecimal(t)
-    print("")
-    print("                   End of Loop")   
-    print("******************************************************")
-    #os.system('clear')
-    #time.sleep(fuzzrate*.001)
-
-def getsnmpbworig():
-    global octetsOLDout,timeOLDout,octetsOLDin,timeOLDin,snmpdelaycounter,snmphealth
-    f = open("/home/pi/speedsign/bps.txt", "r")
-    ifbitspersecond = f.read()
-    #print ifbitspersecond
-    #turn into integer
-    if ifbitspersecond is None: 
-        print("SNMP returned NONE. Is the snmp script running? Manually setting to 66.")
-        ifbitspersecond = int(66)
-        return ifbitspersecond		
-    elif ifbitspersecond == "":
-        print("SNMP returned empty. Is the snmp script running? Manually setting to 66.")
-        ifbitspersecond = int(66)
-        return ifbitspersecond
-    else:
-        ifbitspersecond = int(ifbitspersecond)
-        return ifbitspersecond
-
-def getsnmpbw():
-    global octetsOLDout, timeOLDout, octetsOLDin, timeOLDin, snmpdelaycounter, snmphealth
-
-    try:
-        with open("/home/pi/speedsign/bps.txt", "r") as f:
-            ifbitspersecond = f.read()
-            
-            if not ifbitspersecond:
-                print("SNMP returned an empty string. Is the SNMP script running? Manually setting to 66.")
-                return 66
-            else:
-                ifbitspersecond = int(ifbitspersecond)
-                return ifbitspersecond
-
-    except IOError:
-        print("File not found: /home/pi/speedsign/bps.txt. Is the file path correct?")
-        return None
-
-    except ValueError:
-        print("Invalid data in the file. Is the SNMP script returning valid data? Manually setting to 66.")
-        return 66
-
-    except Exception as e:
-        print("An error occurred: " + str(e))
-        return None
-
-def snmptargetonline():
-    hostname = snmptarget
-    response = os.system("ping -c 1 " + hostname)
-    # and then check the response...
-    if response == 0:
-        snmptargetpingstatus = "Online"
-    else:
-        snmptargetpingstatus = "Offline"
-    print(snmptarget + "current status: " + snmptargetpingstatus)
-    return snmptargetpingstatus
-        	
-def iptopingonline():
-    hostname = iptoping
-    response = os.system("ping -c 1 " + hostname)
-    # and then check the response...
-    if response == 0:
-        iptopingstatus = "Online"
-    else:
-        iptopingstatus = "Offline"
-    print(iptoping + "current status: " + iptopingstatus)
-    return iptopingstatus
+        #sleep for testing
+        time.sleep(1) 
 
 def doit():
     dothething()
