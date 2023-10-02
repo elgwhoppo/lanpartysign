@@ -245,8 +245,7 @@ def dothething():
         y = pingresponse[0]
         print("   Latency to " + iptoping + " is pinging: " + str(y))
         
-        #!!!!!!!!!!!!!!!!!!!!!!!DELAY!!!!!!!!!!!!!!!!!!!!!!!!!
-        #time.sleep(.0015)
+
 
         counter = counter +1
         #print(counter)
@@ -317,11 +316,11 @@ def dothething():
             l = '  '+str(p)[0:1]
         print("Raw value for bandwidth printing: " +str(v))
         print("              Raw value for ping: " +str(l))
-        #s = v.rjust(3)+l.rjust(3)
         stringToPrint = str(l)+str(v)
         print("")
         print("   The following will be printed by the threaded process: " + stringToPrint)
-        #display_string_with_decimal(stringToPrint)
+        print("Sleeping for 1s...")
+        time.sleep(1)
         print("")
         print("                   End of Loop")   
         print("******************************************************")
