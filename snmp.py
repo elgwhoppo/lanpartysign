@@ -12,7 +12,6 @@ SNMP_TARGET = "192.168.1.40"
 SNMP_V2_COMMUNITY = "public"
 INTERFACE_OID_IN = "1.3.6.1.2.1.31.1.1.1.6.1"
 INTERFACE_OID_OUT = "1.3.6.1.2.1.31.1.1.1.10.1"
-
 BPS_FILE_PATH = "/home/pi/lanpartysign/bps.txt"
 
 #Variable Declaration IfOutOctets and IfInOctets- Modify to fit your environment
@@ -227,7 +226,7 @@ def check_snmp_connectivity():
    
 # Get SNMP and main function 
 def get_snmp_data():
-    bps = get_snmp_bandwidth()
+    bps = get_snmp_bw()
     with open(BPS_FILE_PATH, 'w') as bps_file:
         bps_file.write(str(bps))
 
