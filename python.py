@@ -41,7 +41,11 @@ global snmpunchangedvalue
 global snmpdelaycounter
 global bps,octetsOLDout,timeOLDout,octetsOLDin,timeOLDin,snmphealth
 global snmptargetpingstatus,iptopingstatus
+global stringToPrint
 
+global_variable_lock = threading.Lock()
+
+stringToPrint = "HA1OOH"
 fuzzrate = fetchrate + 5
 oldbw = [0,0,0]
 counter = 0
@@ -123,6 +127,12 @@ num = {' ':(0,0,0,0,0,0,0),
     '8':(1,1,1,1,1,1,1),
     '9':(1,1,1,0,1,1,1),
     '_':(0,0,0,0,0,1,0)}
+
+def display_thread():
+    while True:
+        display_string_with_decimal(stringToPrint)
+        time.sleep(0.1)  # Adjust the sleep interval as needed to control the update rate
+
 
 def display_string_with_decimal(input_str):
     str_to_display = input_str.replace(".", "")
@@ -361,6 +371,13 @@ def dothething():
         #time.sleep(fuzzrate*.001)
 
 try:
+
+    # Create a thread for the display function
+    display_thread = threading.Thread(target=display_thread)
+
+    # Start the display thread
+    display_thread.start()
+
     while True:
         dothething()
 except KeyboardInterrupt:
