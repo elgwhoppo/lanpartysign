@@ -391,9 +391,10 @@ def dothething():
             l = '  '+str(p)[0:1]
         print("Raw value for bandwidth printing: " +str(v))
         print("              Raw value for ping: " +str(l))
-        s = v.rjust(3)+l.rjust(3)
+        #s = v.rjust(3)+l.rjust(3)
+        stringToPrint = str(l)+str(v)
         print("")
-        print("   The following will be printed: " + str(s))
+        print("   The following will be printed: " + stringToPrint)
         display_string_with_decimal(s)
         print("")
         print("                   End of Loop")   
