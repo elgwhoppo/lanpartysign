@@ -354,12 +354,10 @@ def dothething():
         #sleep for testing
         time.sleep(1) 
 
-def doit():
-    dothething()
-
 while True:
     try:
-        doit()
+        dothething()
     except KeyboardInterrupt:
         pass
-    GPIO.cleanup()
+    finally:
+        GPIO.cleanup()
