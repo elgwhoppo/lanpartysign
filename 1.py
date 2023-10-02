@@ -66,11 +66,12 @@ def display_string_with_decimal(input_str):
 
 def main():
     try:
-        while True:
-            stringToPrint = " 2245.9"
+        for i in range(1, 1000000):
+            stringToPrint = f" {i:.6f}".replace(".", "").replace("00000", " ").replace("0000", "  ").replace("000", "   ").replace("00", "    ").replace("0", "     ")
             display_string_with_decimal(stringToPrint)
             print ("stringToPrint:",stringToPrint)
-    
+            time.sleep(1)
+
     except KeyboardInterrupt:
         # Clean up GPIOs upon exit
         GPIO.cleanup()

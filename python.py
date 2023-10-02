@@ -140,7 +140,7 @@ def display_thread():
             display_string_with_decimal(last_displayed_string)
         
         # Sleep for a short interval to avoid busy-waiting
-        time.sleep(0.1)
+        #time.sleep(0.1)
 
 
 def display_string_with_decimal(input_str):
@@ -156,7 +156,7 @@ def display_string_with_decimal(input_str):
             GPIO.output(decimal_point, 0)
 
         GPIO.output(digits[idx], 1)        # Light up the current digit
-        time.sleep(0.005)                  # Adjust this delay to reduce flickering
+        time.sleep(0.0005)                  # Adjust this delay to reduce flickering
         GPIO.output(digits[idx], 0)        # Turn off the current digit to prepare for next
 
 def get_bandwidth_value(t, var_gbps, var_mbps, var_kbps):
@@ -376,8 +376,6 @@ def dothething():
         print("")
         print("                   End of Loop")   
         print("******************************************************")
-        #os.system('clear')
-        #time.sleep(fuzzrate*.001)
 
 try:
 
