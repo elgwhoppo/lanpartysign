@@ -12,7 +12,6 @@
 # 1.0 Initial Version via @krhainos 
 
 import RPi.GPIO as GPIO
-from pysnmp.hlapi import *
 from datetime import datetime
 import urllib.request, urllib.error
 import time
