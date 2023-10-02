@@ -200,7 +200,7 @@ def get_bandwidth_value(t, var_gbps, var_mbps, var_kbps):
     s = v.rjust(3)+l.rjust(3)
     print("")
     print("DO THE THING HERE JOE")
-    display_string_with_decimal(stringToPrint)
+    #display_string_with_decimal(stringToPrint)
     print ("stringToPrint:",stringToPrint)
     #print "   The following will be printed: " + str(s)
     #SetSix7Seg(s)
@@ -376,9 +376,8 @@ def main():
         display_thread.daemon = True  # Set to daemon so it'll automatically exit with the main t>
         display_thread.start()
 
-        for _ in range(1, 1000000):
-            dothething()
-            #stringToPrint = " 4588.8"
+        while True: 
+            dothething() # Update the string to print
             display_queue.put(stringToPrint)  # Push the new value to the queue
             print("[Main] Printing the following:", stringToPrint)
             time.sleep(1)
