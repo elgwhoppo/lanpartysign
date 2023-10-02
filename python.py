@@ -46,7 +46,7 @@ global stringToPrint
 
 #global_variable_lock = threading.Lock()
 
-#stringToPrint = "HA1OOH"
+stringToPrint = "O_0TBD"
 fuzzrate = fetchrate + 5
 oldbw = [0,0,0]
 counter = 0
@@ -131,6 +131,7 @@ num = {' ':(0,0,0,0,0,0,0),
 
 def display_thread():
     while True:
+        global stringToPrint
         display_string_with_decimal(stringToPrint)
         #time.sleep(0.1)  # Adjust the sleep interval as needed to control the update rate
 
@@ -374,7 +375,7 @@ def dothething():
 try:
 
     # Create and start the thread, passing the current value of stringToPrint
-    display_thread = threading.Thread(target=display_thread, args=(stringToPrint,))
+    display_thread = threading.Thread(target=display_thread)
     display_thread.daemon = True  # Set the thread as a daemon so it exits when the main program exits
     display_thread.start()
 
