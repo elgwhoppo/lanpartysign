@@ -165,13 +165,7 @@ def get_bandwidth_value(t, var_gbps, var_mbps, var_kbps):
     print("              Raw value for ping: " +str(l))
     s = v.rjust(3)+l.rjust(3)
     print("")
-    print("DO THE THING HERE JOE")
-    #display_string_with_decimal(stringToPrint)
     print ("stringToPrint:",stringToPrint)
-    #print "   The following will be printed: " + str(s)
-    #SetSix7Seg(s)
-    #print "Determine Decimal on this number: " + str(k)
-    #SetDecimal(t)
     print("")
     print("                   End of Loop")   
     print("******************************************************")
@@ -253,7 +247,7 @@ def dothething():
         print("   Latency to " + iptoping + " is pinging: " + str(y))
         
         #!!!!!!!!!!!!!!!!!!!!!!!DELAY!!!!!!!!!!!!!!!!!!!!!!!!!
-        time.sleep(.0015)
+        #time.sleep(.0015)
 
         counter = counter +1
         #print(counter)
@@ -344,8 +338,8 @@ def main():
 
         while True: 
             dothething() # Update the string to print
+            print("[Main] Pushing the following to the display queue:", stringToPrint)
             display_queue.put(stringToPrint)  # Push the new value to the queue
-            print("[Main] Printing the following:", stringToPrint)
             time.sleep(1)
 
     except KeyboardInterrupt:
