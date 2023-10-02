@@ -47,6 +47,7 @@ global stringToPrint
 #global_variable_lock = threading.Lock()
 
 stringToPrint = "O_0TBD"
+last_displayed_string = ""
 fuzzrate = fetchrate + 5
 oldbw = [0,0,0]
 counter = 0
@@ -130,10 +131,16 @@ num = {' ':(0,0,0,0,0,0,0),
     '_':(0,0,0,0,0,1,0)}
 
 def display_thread():
+    global stringToPrint, last_displayed_string
+    
     while True:
-        global stringToPrint
-        display_string_with_decimal(stringToPrint)
-        #time.sleep(0.1)  # Adjust the sleep interval as needed to control the update rate
+        # Check if the stringToPrint has changed
+        if stringToPrint != last_displayed_string:
+            last_displayed_string = stringToPrint
+            display_string_with_decimal(last_displayed_string)
+        
+        # Sleep for a short interval to avoid busy-waiting
+        time.sleep(0.1)
 
 
 def display_string_with_decimal(input_str):
@@ -149,7 +156,7 @@ def display_string_with_decimal(input_str):
             GPIO.output(decimal_point, 0)
 
         GPIO.output(digits[idx], 1)        # Light up the current digit
-        time.sleep(0.002)                  # Adjust this delay to reduce flickering
+        time.sleep(0.005)                  # Adjust this delay to reduce flickering
         GPIO.output(digits[idx], 0)        # Turn off the current digit to prepare for next
 
 def get_bandwidth_value(t, var_gbps, var_mbps, var_kbps):
