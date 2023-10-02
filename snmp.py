@@ -7,12 +7,13 @@ import math
 import os
 import fcntl
 
-# what IP should I check for SNMP counters? 
-#snmptarget = "192.168.1.157" #Unifi 16 port switch
-#snmptarget = "192.168.1.1" #UDM-PRO Wad
-#snmptarget = "10.10.0.1" #UDM-PRO Litchfield
-#snmptarget = "10.11.12.2" #Dlink-DGS-1510-28X
-snmptarget = "192.168.1.40" #10Gb Agg Switch
+# Configuration
+SNMP_TARGET = "192.168.1.40"
+SNMP_V2_COMMUNITY = "public"
+INTERFACE_OID_IN = "1.3.6.1.2.1.31.1.1.1.6.1"
+INTERFACE_OID_OUT = "1.3.6.1.2.1.31.1.1.1.10.1"
+
+BPS_FILE_PATH = "/home/pi/lanpartysign/bps.txt"
 
 #Variable Declaration IfOutOctets and IfInOctets- Modify to fit your environment
 
@@ -23,7 +24,6 @@ snmptarget = "192.168.1.40" #10Gb Agg Switch
 #Trying ifInOctets.15
 interfaceOIDin = "1.3.6.1.2.1.2.2.1.10.15"
 interfaceOIDout = "1.3.6.1.2.1.2.2.1.16.15"
-
 
 #UDM-PRO WAN Interface
 #interfaceOIDout = "1.3.6.1.2.1.2.2.1.16.4" #ifIndex.4
@@ -44,9 +44,6 @@ interfaceOIDout = "1.3.6.1.2.1.2.2.1.16.15"
 #Unifi 16 Port POE Switch port 1
 #interfaceOIDout = "1.3.6.1.2.1.2.2.1.16.1" #Unifi 16 port POE Switch port 1
 #interfaceOIDin = "1.3.6.1.2.1.2.2.1.10.1" #Unifi 16 port POE switch port 1
-
-#ensure snmpv2 is ussed, set your read only community to whatever
-snmpv2community = "forgetown"
 
 #Initial Variable Assignment - don't touch
 octetsOLDout = 0
@@ -194,7 +191,7 @@ def check_snmp_connectivity():
     # SNMP parameters
     snmp_target = '192.168.1.40'
     community_string = 'forgetown'
-    snmp_oid = '1.3.6.1.2.1.1.1.0'  # Example OID for system description
+    snmp_oid = '1.3.6.1.2.1.1.5.0'  # Example OID for system description, this one for 10Gb Ubiquiti Aggregation switch
     
     # Create an SNMP engine
     snmp_engine = SnmpEngine()
@@ -231,27 +228,22 @@ def check_snmp_connectivity():
 
    
 # Get SNMP and main function 
-def getsnmp():
-    bps = getsnmpbw()
-    print ("BPS from function: ", bps)
-    with open("/home/pi/lanpartysign/bps.txt", 'r') as file:
-        try:
-            fcntl.flock(file, fcntl.LOCK_UN)
-        except IOError:
-            print("Failed to release the lock")
-    bpsfile = open("/home/pi/lanpartysign/bps.txt", "w")
-    bpsstr = str(bps)
-    bpsfile.write(bpsstr)
-    bpsfile.close()
+def get_snmp_data():
+    bps = get_snmp_bandwidth()
+    with open(BPS_FILE_PATH, 'w') as bps_file:
+        bps_file.write(str(bps))
 
-# Loop forever 
-while True:
-    try:
-        snmpworkingrn = check_snmp_connectivity()
-        if snmpworkingrn == 1: 
-            getsnmp()
-        else: 
-            print ("SNMP isn't working right now. Sleeping for 10 seconds and repeating...")
+def main():
+    while True:
+        if check_snmp_connectivity() == 1:
+            get_snmp_data()
+        else:
+            print("SNMP isn't working right now. Sleeping for 10 seconds and repeating...")
             time.sleep(10)
+
+
+if __name__ == "__main__":
+    try:
+        main()
     except KeyboardInterrupt:
         sys.exit()
