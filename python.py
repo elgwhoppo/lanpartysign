@@ -354,10 +354,10 @@ def dothething():
         #sleep for testing
         time.sleep(1) 
 
-while True:
-    try:
+try:
+    while True:
         dothething()
-    except KeyboardInterrupt:
-        pass
-    finally:
-        GPIO.cleanup()
+except KeyboardInterrupt:
+    print("Script interrupted by user. Exiting...")
+finally:
+    GPIO.cleanup()
