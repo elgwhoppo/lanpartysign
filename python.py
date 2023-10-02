@@ -78,6 +78,15 @@ GPIO.setup(segments, GPIO.OUT)
 GPIO.setup(digits, GPIO.OUT)
 GPIO.setup(decimal_point, GPIO.OUT)
 
+# Global variable to hold the current value to be displayed
+stringToPrint = "      "
+
+# Global variable to hold the current value to be displayed
+stringToPrint = "      "
+
+# Use a queue to communicate between threads
+display_queue = queue.Queue()
+
 # truth table for segments and where they are.  i wired them funny as you can see.
 # decimal point is on GPIO 24
 num = {' ':(0,0,0,0,0,0,0),
@@ -105,8 +114,6 @@ num = {' ':(0,0,0,0,0,0,0),
     '9':(1,1,1,0,1,1,1),
     '_':(0,0,0,0,0,1,0)}
 
-# Use a queue to communicate between threads
-display_queue = queue.Queue()
 
 def threaded_display():
     global stringToPrint
