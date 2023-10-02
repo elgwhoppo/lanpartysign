@@ -16,5 +16,7 @@
 #BUG_REPORT_URL="http://www.raspbian.org/RaspbianBugs"
 
 pip3 install pysnmp
+#had to downgrade due to compatibility issue 
+pip3 install pyasn1==0.4.8
 
 git clone https://github.com/elgwhoppo/lanpartysign.git
