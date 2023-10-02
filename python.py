@@ -60,32 +60,6 @@ k = 0
 g = 0
 urlbroke = 0
 
-#Variable Declaration IfOutOctets and IfInOctets- Modify to fit your environment
-
-#UDM-PRO WAN Interface
-#interfaceOIDout = "1.3.6.1.2.1.2.2.1.16.4" #ifIndex.4
-#interfaceOIDin = "1.3.6.1.2.1.2.2.1.10.4" #ifIndex.4
-
-#USG-PRO-4
-interfaceOIDout = "1.3.6.1.2.1.2.2.1.16.4" #USG-PRO-4 WAN1 config
-interfaceOIDin = "1.3.6.1.2.1.2.2.1.10.4"  #USG-PRO-4 WAN1 config
-
-#TBD - 10Gb SNMP port
-#interfaceOIDout = "1.3.6.1.2.1.2.2.1.16.4" #USG-PRO-4 WAN1 config
-#interfaceOIDin = "1.3.6.1.2.1.2.2.1.10.4"  #USG-PRO-4 WAN1 config
-
-#LAN14 pfSense
-#interfaceOIDout = "1.3.6.1.2.1.31.1.1.1.10.20" #LAN14 SNMP config
-#interfaceOIDin = "1.3.6.1.2.1.31.1.1.1.6.20" #LAN14 SNMP config
-
-#Dlink DGS-1510-28X
-#interfaceOIDout = "1.3.6.1.2.1.2.2.1.16.25" #Dlink DGS-1510-28X Port 25 IfOutOctets, port 25, 26, etc. 
-#interfaceOIDin = "1.3.6.1.2.1.2.2.1.10.25" #Dlink DGS-1510-28X Port 25 IfInOctets, port 25, 26, etc.
-
-#Unifi 16 Port POE Switch port 1
-#interfaceOIDout = "1.3.6.1.2.1.2.2.1.16.1" #Unifi 16 port POE Switch port 1
-#interfaceOIDin = "1.3.6.1.2.1.2.2.1.10.1" #Unifi 16 port POE switch port 1
-
 #Initial Variable Assignment - don't touch
 octetsOLDout = 0
 timeOLDout = 0
@@ -130,7 +104,26 @@ num = {' ':(0,0,0,0,0,0,0),
     '9':(1,1,1,0,1,1,1),
     '_':(0,0,0,0,0,1,0)}
 
-def display_thread():
+
+def threaded_display():
+    global stringToPrint
+    while True:
+        str_to_display = stringToPrint.replace(".", "")
+        decimals = [i-1 for i, char in enumerate(stringToPrint) if char == "."]  # Adjusted to ge>
+
+        for idx, char in enumerate(str_to_display):
+            GPIO.output(segments, num[char])   # Set segments for the character
+
+            if idx in decimals:
+                GPIO.output(decimal_point, 1)
+            else:
+                GPIO.output(decimal_point, 0)
+
+            GPIO.output(digits[idx], 1)        # Light up the current digit
+            time.sleep(0.002)                  # Adjust this delay to reduce flickering
+            GPIO.output(digits[idx], 0)        # Turn off the current digit to prepare for next
+
+def display_thread(): #probably not needed now
     global stringToPrint, last_displayed_string
     
     while True:
@@ -293,17 +286,6 @@ def dothething():
         #!!!!!!!!!!!!!!!!!!!!!!!DELAY!!!!!!!!!!!!!!!!!!!!!!!!!
         time.sleep(.0015)
 
-        #print("here be throughput in Kbps, raw from pfsense")
-        # crash prevention in case a bandwidth value isn't fetched
-        if t == "\n" or t == "" :
-            print("IT'S EMPTY!!!!!!!!!!!!!!")
-            if oldbw[0] == "\n":
-                print("IT'S STILL EMPTY!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-                oldbw[0] = "999999"
-            t = oldbw[0]
-        #
-        # ACTIVATE FUZZ 
-        #
         counter = counter +1
         #print(counter)
         #print("HISTORICAL VAUES")
@@ -388,10 +370,27 @@ display_thread = threading.Thread(target=dothething)
 display_thread.daemon = True  # Set the thread as a daemon so it exits when the main program exits
 display_thread.start()
 
-try:
-    while True:
-        display_string_with_decimal(stringToPrint)
-except KeyboardInterrupt:
-    print("Script interrupted by user. Exiting...")
-finally:
-    GPIO.cleanup()
+def main():
+    global stringToPrint
+    try:
+        display_thread = threading.Thread(target=threaded_display)
+        display_thread.daemon = True  # Set to daemon so it'll automatically exit with the main t>
+        display_thread.start()
+
+        for _ in range(1, 1000000):
+            stringToPrint = " 4588.8"
+            display_queue.put(stringToPrint)  # Push the new value to the queue
+            print("[Main] Updated to:", stringToPrint)
+            time.sleep(1)
+
+            stringToPrint = " 4699.9"
+            display_queue.put(stringToPrint)  # Push the new value to the queue
+            print("[Main] Updated to:", stringToPrint)
+            time.sleep(1)
+
+    except KeyboardInterrupt:
+        # Clean up GPIOs upon exit
+        GPIO.cleanup()
+
+if __name__ == "__main__":
+    main()

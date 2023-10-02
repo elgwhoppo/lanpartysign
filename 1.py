@@ -48,6 +48,7 @@ GPIO.setup(digits, GPIO.OUT)
 GPIO.setup(decimal_point, GPIO.OUT)
 
 def display_string_with_decimal(input_str):
+    global stringToPrint
     str_to_display = input_str.replace(".", "")
     decimals = [i-1 for i, char in enumerate(input_str) if char == "."]  # Adjusted to get the correct segments
     
@@ -67,7 +68,13 @@ def display_string_with_decimal(input_str):
 def main():
     try:
         for i in range(1, 1000000):
-            stringToPrint = f" {i:.6f}".replace(".", "").replace("00000", " ").replace("0000", "  ").replace("000", "   ").replace("00", "    ").replace("0", "     ")
+            
+            stringToPrint = " 4588.8"
+            # stringToPrint = f" {i:.6f}".replace(".", "").replace("00000", " ").replace("0000", "  ").replace("000", "   ").replace("00", "    ").replace("0", "     ")
+            display_string_with_decimal(stringToPrint)
+            print ("stringToPrint:",stringToPrint)
+            time.sleep(1)
+            stringToPrint = " 4699.9"
             display_string_with_decimal(stringToPrint)
             print ("stringToPrint:",stringToPrint)
             time.sleep(1)

@@ -62,3 +62,30 @@ while True:
 
     print("Sleeping for 1 second...")
     time.sleep(1)
+
+
+#Variable Declaration IfOutOctets and IfInOctets- Modify to fit your environment
+
+#UDM-PRO WAN Interface
+#interfaceOIDout = "1.3.6.1.2.1.2.2.1.16.4" #ifIndex.4
+#interfaceOIDin = "1.3.6.1.2.1.2.2.1.10.4" #ifIndex.4
+
+#USG-PRO-4
+#interfaceOIDout = "1.3.6.1.2.1.2.2.1.16.4" #USG-PRO-4 WAN1 config
+#interfaceOIDin = "1.3.6.1.2.1.2.2.1.10.4"  #USG-PRO-4 WAN1 config
+
+#TBD - 10Gb SNMP port
+#interfaceOIDout = "1.3.6.1.2.1.31.1.1.1.6.1" #USG-PRO-4 WAN1 config
+#interfaceOIDin = "1.3.6.1.2.1.31.1.1.1.10.1"  #USG-PRO-4 WAN1 config
+
+#LAN14 pfSense
+#interfaceOIDout = "1.3.6.1.2.1.31.1.1.1.10.20" #LAN14 SNMP config
+#interfaceOIDin = "1.3.6.1.2.1.31.1.1.1.6.20" #LAN14 SNMP config
+
+#Dlink DGS-1510-28X
+#interfaceOIDout = "1.3.6.1.2.1.2.2.1.16.25" #Dlink DGS-1510-28X Port 25 IfOutOctets, port 25, 26, etc. 
+#interfaceOIDin = "1.3.6.1.2.1.2.2.1.10.25" #Dlink DGS-1510-28X Port 25 IfInOctets, port 25, 26, etc.
+
+#Unifi 16 Port POE Switch port 1
+#interfaceOIDout = "1.3.6.1.2.1.2.2.1.16.1" #Unifi 16 port POE Switch port 1
+#interfaceOIDin = "1.3.6.1.2.1.2.2.1.10.1" #Unifi 16 port POE switch port 1
