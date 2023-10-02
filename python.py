@@ -345,7 +345,9 @@ def main():
         display_thread.start()
 
         while True: 
-            dothething() # Update the string to print
+            # testing
+            stringToPrint = "O_0UHH"
+            #dothething() # Update the string to print
             print("[Main] Pushing the following to the display queue:", stringToPrint)
             display_queue.put(stringToPrint)  # Push the new value to the queue
 
