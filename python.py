@@ -79,10 +79,10 @@ GPIO.setup(digits, GPIO.OUT)
 GPIO.setup(decimal_point, GPIO.OUT)
 
 # Global variable to hold the current value to be displayed
+stringPing = "   "
+stringSpeed = "   "
 stringToPrint = "      "
 
-# Global variable to hold the current value to be displayed
-stringToPrint = "      "
 
 # Use a queue to communicate between threads
 display_queue = queue.Queue()
@@ -339,6 +339,7 @@ def dothething():
 def main():
     global stringToPrint
     try:
+        display_queue.put(stringToPrint)
         display_thread = threading.Thread(target=threaded_display)
         display_thread.daemon = True  # Set to daemon so it'll automatically exit with the main t>
         display_thread.start()
