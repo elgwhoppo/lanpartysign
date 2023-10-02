@@ -350,7 +350,7 @@ def main():
             #dothething() # Update the string to print
             print("[Main] Pushing the following to the display queue:", stringToPrint)
             display_queue.put(stringToPrint)  # Push the new value to the queue
-            time.sleep(1)
+            time.sleep(3)
 
     except KeyboardInterrupt:
         # Clean up GPIOs upon exit
