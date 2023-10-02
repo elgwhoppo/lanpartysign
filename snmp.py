@@ -92,14 +92,13 @@ def getsnmpbw():
 		   ObjectType(ObjectIdentity(interfaceOIDin)))
     )
     if errorIndication:
-	    print(errorIndication)
+        print(errorIndication)
     elif errorStatus:
-	    print('%s at %s' % (errorStatus.prettyPrint(),
-	    					errorIndex and varBinds[int(errorIndex) - 1][0] or '?'))
+        print('%s at %s' % (errorStatus.prettyPrint(),
+        errorIndex and varBinds[int(errorIndex) - 1][0] or '?'))
     else:
-	    for varBind in varBinds:
-		    #print(' = '.join([x.prettyPrint() for x in varBind]))
-		    int1in = varBind
+        for varBind in varBinds:
+            int1in = varBind
             currenttimein = time.time()
 
     # OUT METRICS
