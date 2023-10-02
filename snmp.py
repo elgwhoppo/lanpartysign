@@ -2,7 +2,6 @@
 
 from pysnmp.hlapi import *
 from datetime import datetime
-import urllib2
 import time
 import math
 import os
@@ -72,16 +71,15 @@ def getsnmpbw():
 		   ObjectType(ObjectIdentity(interfaceOIDout)))
     )
     if errorIndication:
-	    print(errorIndication)
-            time.sleep(2)
-            return("999")
+        print(errorIndication)
+        time.sleep(2)
+        return("999")
     elif errorStatus:
 	    print('%s at %s' % (errorStatus.prettyPrint(),
 	    					errorIndex and varBinds[int(errorIndex) - 1][0] or '?'))
     else:
-	    for varBind in varBinds:
-		    #print(' = '.join([x.prettyPrint() for x in varBind]))
-		    int1out = varBind
+        for varBind in varBinds:
+            int1out = varBind
             currenttimeout = time.time()
 			
     # *** get selected interface interface IN rate stuff it in a variable
@@ -163,15 +161,15 @@ def getsnmpbw():
     ifMbitspersecond = ifKbitspersecond/1000
     ifGbitspersecond = ifMbitspersecond/1000
     ifGbitspersecond = round(ifGbitspersecond,1)
-    print "---------------------------------------------------"
-    print "ifinbitspersecond -----> " + str(ifinbitspersecond)
-    print "ifoutbitspersecond ----> " + str(ifoutbitspersecond)
-    print "ifbitspersecond -------> " + str(ifbitspersecond)
-    print "---------------------------------------------------"
-    print "ifKbitspersecond ---> " + str(ifKbitspersecond)
-    print "ifMbitspersecond ---> " + str(ifMbitspersecond)
-    print "ifGbitspersecond ---> " + str(ifGbitspersecond)
-    print "---------------------------------------------------"
+    print("---------------------------------------------------")
+    print("ifinbitspersecond -----> " + str(ifinbitspersecond))
+    print("ifoutbitspersecond ----> " + str(ifoutbitspersecond))
+    print("ifbitspersecond -------> " + str(ifbitspersecond))
+    print("---------------------------------------------------")
+    print("ifKbitspersecond ---> " + str(ifKbitspersecond))
+    print("ifMbitspersecond ---> " + str(ifMbitspersecond))
+    print("ifGbitspersecond ---> " + str(ifGbitspersecond))
+    print("---------------------------------------------------")
 	
     #set variables to old for next round of math
     octetsOLDout = int1out
@@ -195,7 +193,7 @@ def snmptargetonline():
 
 def check_snmp_connectivity():
     # SNMP parameters
-    snmp_target = '10.10.0.1'
+    snmp_target = '192.168.1.40'
     community_string = 'forgetown'
     snmp_oid = '1.3.6.1.2.1.1.1.0'  # Example OID for system description
     
@@ -236,13 +234,13 @@ def check_snmp_connectivity():
 # Get SNMP and main function 
 def getsnmp():
     bps = getsnmpbw()
-    print "BPS from function: ",bps
-    with open("/home/pi/speedsign/bps.txt", 'r') as file:
+    print ("BPS from function: ", bps)
+    with open("/home/pi/lanpartysign/bps.txt", 'r') as file:
         try:
             fcntl.flock(file, fcntl.LOCK_UN)
         except IOError:
             print("Failed to release the lock")
-    bpsfile = open("/home/pi/speedsign/bps.txt", "w")
+    bpsfile = open("/home/pi/lanpartysign/bps.txt", "w")
     bpsstr = str(bps)
     bpsfile.write(bpsstr)
     bpsfile.close()

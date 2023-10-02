@@ -15,4 +15,6 @@
 #SUPPORT_URL="http://www.raspbian.org/RaspbianForums"
 #BUG_REPORT_URL="http://www.raspbian.org/RaspbianBugs"
 
+pip install pysnmp
+
 git clone https://github.com/elgwhoppo/lanpartysign.git
