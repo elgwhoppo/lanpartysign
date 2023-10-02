@@ -19,6 +19,7 @@ import time
 import math
 import re
 import os
+import queue 
 import random
 import http.client
 
@@ -104,6 +105,8 @@ num = {' ':(0,0,0,0,0,0,0),
     '9':(1,1,1,0,1,1,1),
     '_':(0,0,0,0,0,1,0)}
 
+# Use a queue to communicate between threads
+display_queue = queue.Queue()
 
 def threaded_display():
     global stringToPrint
