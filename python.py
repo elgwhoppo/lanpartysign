@@ -29,8 +29,8 @@ digits = (23, 22, 27, 18, 17, 4)       # GPIOs for each of the 6 digits
 decimal_point = 24
 
 # what remote IP should I ping to test for latency?
-#iptoping = "8.8.8.8" #Google DNS IP-Anycast
-iptoping = "139.130.4.5" #Australia DNS
+iptoping = "8.8.8.8" #Google DNS IP-Anycast
+#iptoping = "139.130.4.5" #Australia DNS
 
 # define how often to fetch data and ping in milliseconds (e.g. 1000 = 1 second)
 fetchrate = 750
