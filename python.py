@@ -357,16 +357,16 @@ def dothething():
 
         # 1.5G
         if t >= 1000000000:
-            v = str(var_gbps)[0:1]+str(var_mbps)[0:1]+str("G")
+            v = str(var_gbps)[0:1]+str(".")+str(var_mbps)[0:1]+str("G")
         # 689
         if t >= 100000000 and t < 1000000000:
             v = str(var_mbps)[0:3]
         # 56.3
         if t >= 10000000 and t < 100000000:
-            v = str(var_mbps)[0:2]+str(var_kbps)[0:1]
+            v = str(var_mbps)[0:2]+(".")+str(var_kbps)[0:1]
         # 0.04
         if t < 10000000:
-            v = str(var_mbps)[0:1]+str(var_kbps)[0:2]
+            v = str(var_mbps)[0:1]+(".")+str(var_kbps)[0:2]
 
 
 
@@ -394,9 +394,7 @@ def dothething():
         s = v.rjust(3)+l.rjust(3)
         print("")
         print("   The following will be printed: " + str(s))
-        #SetSix7Seg(s)
-        print("Determine Decimal on this number: " + str(k))
-        #SetDecimal(t)
+        display_string_with_decimal(s)
         print("")
         print("                   End of Loop")   
         print("******************************************************")
