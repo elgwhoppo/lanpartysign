@@ -251,7 +251,6 @@ while True:
         if snmpworkingrn == 1: 
             getsnmp()
         else: 
-            snmp
             print ("SNMP isn't working right now. Sleeping for 10 seconds and repeating...")
             time.sleep(10)
     except KeyboardInterrupt:
