@@ -377,7 +377,7 @@ def dothething():
         stringToPrint = str(l)+str(v)
         print("")
         print("   The following will be printed by the threaded process: " + stringToPrint)
-        display_string_with_decimal(stringToPrint)
+        #display_string_with_decimal(stringToPrint)
         print("")
         print("                   End of Loop")   
         print("******************************************************")
@@ -390,7 +390,7 @@ display_thread.start()
 
 try:
     while True:
-        dothething()
+        display_string_with_decimal(stringToPrint)
 except KeyboardInterrupt:
     print("Script interrupted by user. Exiting...")
 finally:
