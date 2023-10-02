@@ -75,8 +75,8 @@ def getsnmpbw():
         time.sleep(2)
         return("999")
     elif errorStatus:
-	    print('%s at %s' % (errorStatus.prettyPrint(),
-	    					errorIndex and varBinds[int(errorIndex) - 1][0] or '?'))
+        print('%s at %s' % (errorStatus.prettyPrint(),
+        errorIndex and varBinds[int(errorIndex) - 1][0] or '?'))
     else:
         for varBind in varBinds:
             int1out = varBind
@@ -105,7 +105,7 @@ def getsnmpbw():
 	
     # Turn var into a string
     int1out = str(int1out)
-    print "Raw int1out SNMP string: ",int1out
+    print ("Raw int1out SNMP string: ", int1out)
 
     # Take only to the right of the space equals space in the MIB finding
     try: 
@@ -113,10 +113,10 @@ def getsnmpbw():
     except Exception as e:
         print("An error occurred:", str(e))
 	
-    print "Cleaned up intlout 1: ",int1out
+    print ("Cleaned up intlout 1: ", int1out)
     #convert to integer
     int1out = int(int1out)
-    print "Cleaned up intlout 2: ",int1out
+    print ("Cleaned up intlout 2: ", int1out)
     changedbitsout = (int1out - octetsOLDout)
     timedeltaout = (currenttimeout - timeOLDout)
     changedbitsout = abs(changedbitsout)
@@ -124,17 +124,17 @@ def getsnmpbw():
 	# IN METRICS
 	# Turn var into a string
     int1in = str(int1in)
-    print "Raw int1out SNMP string: ",int1in
+    print ("Raw int1out SNMP string: ", int1in)
 
     # Take only to the right of the space equals space in the MIB finding	
     int1in = int1in.split(' = ')[1]
 	
-    print "Cleaned up intlin 1: ",int1in
+    print ("Cleaned up intlin 1: ", int1in)
 	#exmple:   SNMPv2-SMI::mib-2.31.1.1.1.6.2 = 18417094860
 	#example from UDM-PRO has 31 characters: SNMPv2-SMI::mib-2.2.2.1.16.4 = 3542493243
     #convert to integer
     int1in = int(int1in)
-    print "Cleaned up intlin 2: ",int1in
+    print ("Cleaned up intlin 2: ", int1in)
     changedbitsin = (int1in - octetsOLDin)
     timedeltain = (currenttimein - timeOLDin)
     changedbitsin = abs(changedbitsin)
@@ -187,7 +187,7 @@ def snmptargetonline():
         snmptargetpingstatus = "Online"
     else:
         snmptargetpingstatus = "Offline"
-    print snmptarget + "current status: " + snmptargetpingstatus
+    print (snmptarget," current status: ",snmptargetpingstatus)
     return snmptargetpingstatus
 
 def check_snmp_connectivity():
