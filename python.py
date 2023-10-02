@@ -192,24 +192,6 @@ def get_bandwidth_value(t, var_gbps, var_mbps, var_kbps):
     #os.system('clear')
     #time.sleep(fuzzrate*.001)
 
-def getsnmpbworig():
-    global octetsOLDout,timeOLDout,octetsOLDin,timeOLDin,snmpdelaycounter,snmphealth
-    f = open("/home/pi/speedsign/bps.txt", "r")
-    ifbitspersecond = f.read()
-    #print ifbitspersecond
-    #turn into integer
-    if ifbitspersecond is None: 
-        print("SNMP returned NONE. Is the snmp script running? Manually setting to 66.")
-        ifbitspersecond = int(66)
-        return ifbitspersecond		
-    elif ifbitspersecond == "":
-        print("SNMP returned empty. Is the snmp script running? Manually setting to 66.")
-        ifbitspersecond = int(66)
-        return ifbitspersecond
-    else:
-        ifbitspersecond = int(ifbitspersecond)
-        return ifbitspersecond
-
 def getsnmpbw():
     global octetsOLDout, timeOLDout, octetsOLDin, timeOLDin, snmpdelaycounter, snmphealth
 
@@ -235,29 +217,7 @@ def getsnmpbw():
     except Exception as e:
         print("An error occurred: " + str(e))
         return None
-
-def snmptargetonline():
-    hostname = snmptarget
-    response = os.system("ping -c 1 " + hostname)
-    # and then check the response...
-    if response == 0:
-        snmptargetpingstatus = "Online"
-    else:
-        snmptargetpingstatus = "Offline"
-    print(snmptarget + "current status: " + snmptargetpingstatus)
-    return snmptargetpingstatus
-        	
-def iptopingonline():
-    hostname = iptoping
-    response = os.system("ping -c 1 " + hostname)
-    # and then check the response...
-    if response == 0:
-        iptopingstatus = "Online"
-    else:
-        iptopingstatus = "Offline"
-    print(iptoping + "current status: " + iptopingstatus)
-    return iptopingstatus
-
+   	
 def dothething():        
     counter = 0
     global snmpbrokecounter,snmpunchangedvalue,snmpbrokenow
@@ -307,7 +267,7 @@ def dothething():
         print("   Latency to " + iptoping + " is pinging: " + str(y))
         
         #!!!!!!!!!!!!!!!!!!!!!!!DELAY!!!!!!!!!!!!!!!!!!!!!!!!!
-        time.sleep(.15)
+        time.sleep(.0015)
 
         #print("here be throughput in Kbps, raw from pfsense")
         # crash prevention in case a bandwidth value isn't fetched
@@ -367,8 +327,6 @@ def dothething():
         # 0.04
         if t < 10000000:
             v = str(var_mbps)[0:1]+(".")+str(var_kbps)[0:2]
-
-
 
         if ogbps == 66:
             #Set the value to 66 for error handling; will remove the decmial in the SetDecimal function
