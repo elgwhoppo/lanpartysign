@@ -116,13 +116,21 @@ num = {' ':(0,0,0,0,0,0,0),
 
 
 def threaded_display():
-    global stringToPrint
+    current_string = " " * 6  # default value; adjust to your needs
     print("[Thread] Started!")
+
     while True:
-        stringToPrint = display_queue.get()
-        print("[Thread] Got the following from the queue:", stringToPrint)
-        str_to_display = stringToPrint.replace(".", "")
-        decimals = [i-1 for i, char in enumerate(stringToPrint) if char == "."]  # Adjusted to ge>
+        # Try to get a new value from the queue (non-blocking)
+        try:
+            new_string = display_queue.get_nowait()
+            print("[Thread] Got the following from the queue:", new_string)
+            current_string = new_string
+        except queue.Empty:
+            # No new value in the queue
+            pass
+
+        str_to_display = current_string.replace(".", "")
+        decimals = [i-1 for i, char in enumerate(current_string) if char == "."]
 
         for idx, char in enumerate(str_to_display):
             GPIO.output(segments, num[char])   # Set segments for the character
@@ -135,6 +143,7 @@ def threaded_display():
             GPIO.output(digits[idx], 1)        # Light up the current digit
             time.sleep(0.002)                  # Adjust this delay to reduce flickering
             GPIO.output(digits[idx], 0)        # Turn off the current digit to prepare for next
+
 
 def get_bandwidth_value(t, var_gbps, var_mbps, var_kbps):
     v = '999'
