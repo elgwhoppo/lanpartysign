@@ -146,16 +146,25 @@ def threaded_display():
 
 def threaded_get_ping():
     print("[threaded_get_ping] Started!")
+    ping_loop_counter = 0
     while True:
         try:
+            loop_counter += 1
             pingresponse = os.popen("timeout "+str(fetchrate*.001)+" ping -c 1 "+str(iptoping)+" | grep rtt | cut -c 24-28").readlines()
             # a timed out ping will record a "999"
             pingresponse.append("999")
             y = pingresponse[0]
-            print("[threaded_get_ping]:Latency to " + iptoping + " is pinging: " + str(y))
+            y = str(min(999, int(float(y))))[:3] #truncate to 3 digits
             ping_queue.put(y)  # Push the new value to the queue
+
+
+
             print("[threaded_get_ping]:Pushed ",str(y)," to ",ping_queue)
+            if loop_counter % 10 == 0:
+                print("[threaded_display] Ping thread is running. One of the last 10 pings is:", y)
+                ping_loop_counter = 0
             time.sleep(fetchrate*.001)
+
         except Exception as e:
             print("An error occurred: " + str(e))
             return None
