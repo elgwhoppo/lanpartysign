@@ -108,7 +108,6 @@ bps_queue = queue.Queue() #just the bps
 # truth table for segments and where they are.
 # decimal point is on GPIO 24
 num = {' ':(0,0,0,0,0,0,0),
-    '*':(1,1,1,1,1,1,1,1),
     'L':(0,1,0,1,0,1,0),
     'U':(0,1,1,1,1,1,0),
     'R':(0,0,0,1,0,0,1),
@@ -134,36 +133,32 @@ num = {' ':(0,0,0,0,0,0,0),
     '9':(1,1,1,0,1,1,1),
     '_':(0,0,0,0,0,1,0)}
 
-# We will modify this to use the queue
 def display_number_on_digit(value, digit_idx):
-    # Grab the appropriate segment values for the character to display
-    segment_vals = num[value]
-    for i, seg_pin in enumerate(segments):
-        GPIO.output(seg_pin, segment_vals[i])
+    # If the value is ".", only turn on the decimal point.
+    if value == ".":
+        GPIO.output(decimal_point, 1)
+    elif value in num:
+        segment_vals = num[value]
+        for i, seg_pin in enumerate(segments):
+            GPIO.output(seg_pin, segment_vals[i])
+    # Else, the value is not in our dictionary, so don't light up any segments
+    else:
+        GPIO.output(segments, [0]*7)
     GPIO.output(digits[digit_idx], 1)
 
 def diagnostic_test():
     """Runs a diagnostic test to turn on all segments and decimal points."""
     try:
-        # This will light up all segments including decimal points for all digits.
-        all_on_with_decimal = "*"*6 + "."*6
         print("[diagnostic_test] Lighting up all segments and decimal points for all digits.")
-        display_queue.put(all_on_with_decimal)
-        time.sleep(0.5 * 5)  # Simulate the entire diagnostic running for a similar duration
-
-        # If you want to iterate digit by digit (like the original function did):
-        for digit_idx in range(6):
-            # Create a string with spaces for all positions except for the current digit, which will have all segments lit.
-            diagnostic_string = " " * digit_idx + "*" + " " * (5 - digit_idx)
-            # Add decimal points accordingly.
-            diagnostic_decimal = " " * digit_idx + "." + " " * (5 - digit_idx)
-            combined_string = diagnostic_string + diagnostic_decimal
-            print(f"[diagnostic_test] Lighting up segments and decimal point for digit {digit_idx + 1}.")
-            display_queue.put(combined_string)
-            time.sleep(0.1)  # Show each digit for 0.1 seconds
+        for _ in range(5):  # run 5 times
+            # Queue a string with '8' (all segments on) and '.' to turn on the decimal point for each digit
+            diagnostic_string = "8."*6
+            display_queue.put(diagnostic_string)
+            time.sleep(0.5)  # Sleep duration between displaying each test string
 
     except Exception as e:
-        print("[diagnostic_test] An error occurred during the diagnostic test:", e)
+        print("An error occurred during the diagnostic test:", e)
+
 
 
 def display_ip():
