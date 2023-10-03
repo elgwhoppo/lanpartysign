@@ -149,7 +149,7 @@ def threaded_get_ping():
     ping_loop_counter = 0
     while True:
         try:
-            loop_counter += 1
+            ping_loop_counter += 1
             pingresponse = os.popen("timeout "+str(fetchrate*.001)+" ping -c 1 "+str(iptoping)+" | grep rtt | cut -c 24-28").readlines()
             # a timed out ping will record a "999"
             pingresponse.append("999")
