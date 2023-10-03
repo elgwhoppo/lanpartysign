@@ -59,7 +59,6 @@ y = "45.678"
 t = "123456789"
 k = 0
 g = 0
-urlbroke = 0
 
 #Initial Variable Assignment - don't touch
 octetsOLDout = 0
@@ -79,13 +78,12 @@ GPIO.setup(digits, GPIO.OUT)
 GPIO.setup(decimal_point, GPIO.OUT)
 
 # Global variable to hold the current value to be displayed
-stringPing = "   "
-stringSpeed = "   "
 stringToPrint = "      "
 
-
 # Use a queue to communicate between threads
-display_queue = queue.Queue()
+display_queue = queue.Queue() #This is the entire string to be printed
+ping_queue = queue.Queue() #just the ping
+bps_queue = queue.Queue() #just the bps
 
 # truth table for segments and where they are.  i wired them funny as you can see.
 # decimal point is on GPIO 24
@@ -117,13 +115,13 @@ num = {' ':(0,0,0,0,0,0,0),
 
 def threaded_display():
     current_string = " " * 6  # default value; adjust to your needs
-    print("[Thread] Started!")
+    print("[threaded_display] Started!")
 
     while True:
         # Try to get a new value from the queue (non-blocking)
         try:
             new_string = display_queue.get_nowait()
-            print("[Thread] Got the following from the queue:", new_string)
+            print("[threaded_display] Got the following from the queue:", new_string)
             current_string = new_string
         except queue.Empty:
             # No new value in the queue
@@ -145,49 +143,21 @@ def threaded_display():
             GPIO.output(digits[idx], 0)        # Turn off the current digit to prepare for next
 
 
-def get_bandwidth_value(t, var_gbps, var_mbps, var_kbps):
-    v = '999'
+def threaded_get_ping():
+    print("[threaded_get_ping] Started!")
+    while True:
+        try:
+            pingresponse = os.popen("timeout "+str(fetchrate*.001)+" ping -c 1 "+str(iptoping)+" | grep rtt | cut -c 24-28").readlines()
+            # a timed out ping will record a "999"
+            pingresponse.append("999")
+            y = pingresponse[0]
+            print("[threaded_get_ping]:Latency to " + iptoping + " is pinging: " + str(y))
+            display_queue.put(y)  # Push the new value to the queue
+            time.sleep(fetchrate*.001)
+        except Exception as e:
+            print("An error occurred: " + str(e))
+            return None
 
-    # 1.5G
-    if t >= 1000000000:
-        v = str(var_gbps)[0:1]+str(var_mbps)[0:1]+str("G")
-    # 689
-    if t >= 100000000 and t < 1000000000:
-        v = str(var_mbps)[0:3]
-    # 56.3
-    if t >= 10000000 and t < 100000000:
-        v = str(var_mbps)[0:2]+str(var_kbps)[0:1]
-    # 0.04
-    if t < 10000000:
-        v = str(var_mbps)[0:1]+str(var_kbps)[0:2]
-
-    if ogbps == 66:
-        #Set the value to 66 for error handling; will remove the decmial in the SetDecimal function
-        t = 66
-        #Set the verbiage to ERR for error, or blank in the case of this script now
-        #v = "ERR"
-        v = "TBD"
-    if snmpbrokenow == 1:
-        t = 66
-        #Set to blank, err not by design
-        #v = "TBD"
-        v = "O_0"
-    if p >= 999:
-        l = 'UHH'
-    if p >= 100 and p < 999:
-        l = str(p)[0:3]
-    if p >= 10 and p < 99:
-        l = ' '+str(p)[0:2]
-    if p < 9:
-        l = '  '+str(p)[0:1]
-    print("Raw value for bandwidth printing: " +str(v))
-    print("              Raw value for ping: " +str(l))
-    s = v.rjust(3)+l.rjust(3)
-    print("")
-    print ("stringToPrint:",stringToPrint)
-    print("")
-    print("                   End of Loop")   
-    print("******************************************************")
 
 def getsnmpbw():
     global octetsOLDout, timeOLDout, octetsOLDin, timeOLDin, snmpdelaycounter, snmphealth
@@ -221,7 +191,6 @@ def threaded_calculate_string_to_print():
     snmpbrokecounter = 0
     snmpunchangedvalue = 0
     snmpbrokenow = 0
-
 
     #call the SNMP bandwidth function
     bps = getsnmpbw()
@@ -280,12 +249,12 @@ def threaded_calculate_string_to_print():
     var_kbps = int(t)/1000
     var_mbps = int(t)/1000000
     var_gbps = int(t)/1000000000
-    print("                Current Bandwidth")
-    print("                             bps:", var_bps)
-    print("                            Kbps:", var_kbps)
-    print("                            Mbps:", var_mbps)
-    print("                            Gbps:", var_gbps)        
-    print("") 
+    #print("                Current Bandwidth")
+    #print("                             bps:", var_bps)
+    #print("                            Kbps:", var_kbps)
+    #print("                            Mbps:", var_mbps)
+    #print("                            Gbps:", var_gbps)        
+    #print("") 
     k = int(t)/1000
     g = int(t)/1000000
     p = int(math.ceil(float(y)))
@@ -330,6 +299,8 @@ def threaded_calculate_string_to_print():
     stringToPrint = str(l)+str(v)
     print("")
     print("   The following will be printed by the threaded process: " + stringToPrint)
+    print("[Main] Pushing the following to the display queue:", stringToPrint)
+    display_queue.put(stringToPrint)  # Push the new value to the queue
     print("")
     print("                   End of Loop")   
     print("******************************************************")
@@ -339,23 +310,27 @@ def threaded_calculate_string_to_print():
 def main():
     global stringToPrint
     try:
-        #threaded display
+        #threaded run display
         display_thread = threading.Thread(target=threaded_display)
         display_thread.daemon = True  # Set to daemon so it'll automatically exit with the main t>
         display_thread.start()
 
-        #threaded calculate string to print
-        display_thread = threading.Thread(target=threaded_calculate_string_to_print)
+        #threaded ping
+        display_thread = threading.Thread(target=threaded_get_ping)
         display_thread.daemon = True  # Set to daemon so it'll automatically exit with the main t>
-        display_thread.start()
+        display_thread.start()    
+
+        #threaded SNMP
+        #todo
+
+        #threaded calculate string to print
+        #display_thread = threading.Thread(target=threaded_calculate_string_to_print)
+        #display_thread.daemon = True  # Set to daemon so it'll automatically exit with the main t>
+        #display_thread.start()
 
         while True: 
-            # testing
-            #stringToPrint = "O_0UHH"
-            calculate_string_to_print() # Update the string to print
-            print("[Main] Pushing the following to the display queue:", stringToPrint)
-            display_queue.put(stringToPrint)  # Push the new value to the queue
-            time.sleep(0.5)
+            Print("[Main] sleeping 10 seconds...", stringToPrint)
+            time.sleep(10)
 
     except KeyboardInterrupt:
         # Clean up GPIOs upon exit
