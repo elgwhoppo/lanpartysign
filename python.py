@@ -28,6 +28,7 @@ import http.client
 segments = (25, 5, 6, 12, 13, 19, 16)  # GPIOs for segments a-g
 digits = (23, 22, 27, 18, 17, 4)       # GPIOs for each of the 6 digits
 decimal_point = 24
+FREQUENCY = 1000  # PWM frequency in Hz.
 
 # what remote IP should I ping to test for latency?
 iptoping = "8.8.8.8" #Google DNS IP-Anycast
@@ -76,6 +77,11 @@ GPIO.setmode(GPIO.BCM)
 GPIO.setup(segments, GPIO.OUT)
 GPIO.setup(digits, GPIO.OUT)
 GPIO.setup(decimal_point, GPIO.OUT)
+
+# Start PWM at 100% brightness for all segments and the decimal point
+pwms = [GPIO.PWM(pin, FREQUENCY) for pin in segments + (decimal_point, )]
+for pwm in pwms:
+    pwm.start(100)
 
 # Global variable to hold the current value to be displayed
 stringToPrint = "      "
