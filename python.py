@@ -21,6 +21,7 @@ import re
 import os
 import queue 
 import random
+import socket
 import http.client
 
 # Definitions
@@ -88,6 +89,7 @@ bps_queue = queue.Queue() #just the bps
 # truth table for segments and where they are.  i wired them funny as you can see.
 # decimal point is on GPIO 24
 num = {' ':(0,0,0,0,0,0,0),
+    '*':(1,1,1,1,1,1,1,1),
     'L':(0,1,0,1,0,1,0),
     'U':(0,1,1,1,1,1,0),
     'R':(0,0,0,1,0,0,1),
@@ -98,6 +100,7 @@ num = {' ':(0,0,0,0,0,0,0),
     'A':(1,1,1,1,1,0,1),
     'H':(0,1,0,1,1,0,1),
     'T':(0,1,0,1,1,1,1), #number 8, the last one is the middle segment
+    'P':(1,1,1,1,0,0,1), #number 5, the last one is the bottom right
     'B':(0,1,0,1,1,1,1), #number 1, the first one is the top segment
     'D':(0,0,1,1,1,1,1), #number 2, the second one, is top left segment
     '0':(1,1,1,1,1,1,0),
@@ -112,6 +115,58 @@ num = {' ':(0,0,0,0,0,0,0),
     '9':(1,1,1,0,1,1,1),
     '_':(0,0,0,0,0,1,0)}
 
+def diagnostic_test():
+    """Runs a diagnostic test to turn on all segments and decimal points."""
+    try:
+        for _ in range(5):  # run 5 times
+            # Turn on all segments
+            GPIO.output(segments, [1]*7)
+
+            # Turn on all digit positions with decimals
+            for digit in digits:
+                GPIO.output(digit, 1)
+                GPIO.output(decimal_point, 1)
+                time.sleep(0.1)  # Reduced sleep duration
+                GPIO.output(digit, 0)
+                GPIO.output(decimal_point, 0)
+
+    finally:
+        GPIO.cleanup()
+
+def display_ip():
+    """Display each octet of the IP address in the desired format for about 1 minute."""
+
+    def get_ip_address():
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        try:
+            # Doesn't need to be reachable
+            s.connect(('10.254.254.254', 1))
+            IP = s.getsockname()[0]
+        except:
+            IP = '127.0.0.1'
+        finally:
+            s.close()
+        return IP
+
+    ip = get_ip_address()
+    octets = ip.split('.')
+    start_time = time.time()
+
+    formatted_strings = [
+        "ADD 1P",
+        f"{int(octets[1]):03}{int(octets[0]):03}",
+        f"{int(octets[3]):03}{int(octets[2]):03}"
+    ]
+
+    while time.time() - start_time < 60:  # run for about 1 minute
+        for to_display in formatted_strings:
+            end_time = time.time() + 1  # set end time to 1 second from now
+            while time.time() < end_time:
+                for idx, char in enumerate(to_display):
+                    GPIO.output(segments, num[char])  # Set segments for the character
+                    GPIO.output(digits[idx], 1)   # Light up the current digit
+                    time.sleep(0.002)             # Adjust this delay to reduce flickering
+                    GPIO.output(digits[idx], 0)   # Turn off the current digit to prepare for next
 
 def threaded_display():
     current_string = " " * 6  # default value; adjust to your needs
@@ -321,6 +376,9 @@ def threaded_calculate_string_to_print():
 def main():
     global stringToPrint
     try:
+        diagnostic_test()
+        display_ip()
+        
         #threaded run display
         display_thread = threading.Thread(target=threaded_display)
         display_thread.daemon = True  # Set to daemon so it'll automatically exit with the main t>
