@@ -102,8 +102,8 @@ def main():
     try:
         # Display sample strings
         for text in ["1.P._.1.P._.", "123456", "6.5.4.3.2.1."]:
-            display_string(text, duration=2)
             print(f"Displaying text {text}")
+            display_string(text, duration=2)
             time.sleep(1)
 
     except KeyboardInterrupt:

@@ -28,13 +28,13 @@ display_value_lock = threading.Lock()
 stringToPrint = "123456"
 
 # Use a queue to communicate between threads
-display_queue = queue.Queue() #This is the entire string to be printed
-ping_queue = queue.Queue() #just the ping
-bps_queue = queue.Queue() #just the bps
+display_queue = queue.Queue() #This is the entire string to be printed >> goes into threaded_display
+ping_queue = queue.Queue() #just the ping >> goes into display_queue
+bps_queue = queue.Queue() #just the bps >> goes into display_queue
 
 # truth table for segments and where they are.
 # decimal point is on GPIO 24
-num = {' ':(0,0,0,0,0,0,0),
+number_patterns = {' ':(0,0,0,0,0,0,0),
     'L':(0,1,0,1,0,1,0),
     'U':(0,1,1,1,1,1,0),
     'R':(0,0,0,1,0,0,1),
@@ -85,31 +85,41 @@ def cleanup():
 
 
 def threaded_display():
-    current_string = " " * 6  # Default value; adjust to your needs
-    print("[threaded_display] Started!")
-
+    current_string = "      "  # Initialize with blank string of length 6
     while True:
-        # Try to get a new value from the queue (non-blocking)
         try:
+            # Check if a new string is available, non-blocking
             new_string = display_queue.get_nowait()
-            print("[threaded_display] Got the following from the queue:", new_string)
-            current_string = new_string
+            current_string = new_string if new_string else current_string
         except queue.Empty:
-            # No new value in the queue, continue displaying the previous value
             pass
 
-        # Limit the string to 6 characters and pad with spaces if needed
-        current_string = current_string[:6].ljust(6, ' ')
+        display_string(current_string)
+        print(f"Displayed: {current_string}.")
+        time.sleep(0.002)
 
-        for i in range(6):
-            segment_to_display = current_string[i]
-            GPIO.output(segments, num.get(segment_to_display, num[' ']))  # Use ' ' for unsupported characters
+def display_string(s):
+    """Display a string on the seven-segment displays."""
+    expanded_string = []
+    for i in range(len(s)):
+        if s[i] == '.' and i > 0:  # if a dot is found and it's not the first character
+            expanded_string[-1] += '.'  # append the dot to the last character
+        else:
+            expanded_string.append(s[i])  # add the character to the new string
 
-            GPIO.output(digits[i], 1)  # Light up the current digit
-            #ime.sleep(0.002)          # Adjust this delay to reduce flickering
-            time.sleep(0.1)          # Adjust this delay to reduce flickering
-            GPIO.output(digits[i], 0)  # Turn off the current digit to prepare for next
+    # Pad the expanded string with spaces to ensure it's 6 characters long
+    while len(expanded_string) < 6:
+        expanded_string.append(' ')
 
+    for digit, char in zip(digits, expanded_string):
+        pattern = number_patterns.get(char, number_patterns[' '])  # Default to blank if char not recognized
+        GPIO.output(digit, GPIO.HIGH)  # Enable this digit
+
+        for segment, value in zip(segments, pattern):
+            GPIO.output(segment, value)
+
+        time.sleep(0.002)  # To make the display visible
+        GPIO.output(digit, GPIO.LOW)  # Disable this digit
 
 
 def main():
