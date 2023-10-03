@@ -346,7 +346,7 @@ def main():
             try:
                 snmp_string = snmp_queue.get_nowait()
             except queue.Empty:
-                snmp_string = "999"
+                snmp_string = "9.9.9."
             
             print(f"[Main] found ping data to be: ", ping_string)
             print(f"[Main] found snmp data to be: ", snmp_string)
