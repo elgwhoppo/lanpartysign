@@ -108,7 +108,7 @@ def cleanup():
 
 
 def threaded_display():
-    current_string = "      "  # Initialize with blank string of length 6
+    current_string = "      "  # Initialize with a blank string
     while True:
         try:
             # Check if a new string is available, non-blocking
@@ -117,9 +117,10 @@ def threaded_display():
         except queue.Empty:
             pass
 
+        # The key is to run the display method continuously
         display_string(current_string)
-        print(f"Displayed: {current_string}.")
-        time.sleep(0.012)
+        # No sleep in this loop. We want the display method to dominate.
+
 
 def display_string(s):
     """Display a string on the seven-segment displays."""
@@ -191,9 +192,10 @@ def main():
         display_thread.start()
 
         while True:
-            print("[Main] sleeping 10 seconds...", stringToPrint)
-            display_queue.put("123456")
-            time.sleep(3)
+            for text in ["1.P._.1.P._.", "123456", "6.5.4.3.2.1."]:
+                print(f"[Main] Displaying text {text}")
+                display_queue.put(text)
+                time.sleep(2)  # Give each string 2 seconds on the display
 
     except KeyboardInterrupt:
         # Clean up GPIOs upon exit
