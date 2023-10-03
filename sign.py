@@ -279,7 +279,7 @@ def threaded_get_snmp_bps():
 
 
 
-        snmp_queue.put(total_bps)  # Push the new value to the queue
+        snmp_queue.put(v)  # Push the new value to the queue
 
 
         # Store current values for next iteration
