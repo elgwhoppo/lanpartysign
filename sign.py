@@ -250,7 +250,7 @@ def threaded_get_snmp_bps():
         bps_in = in_diff / time_interval
         bps_out = out_diff / time_interval
 
-        total_bps = bps_in + bps_out
+        total_bps = int(bps_in + bps_out)
 
         print("[threaded_get_snmp_bps] Calculated bps: IN =", bps_in, "bps, OUT =", bps_out, "bps. TOTAL =", total_bps, "bps")
 
@@ -321,12 +321,12 @@ def main():
             try:
                 ping_string = ping_queue.get_nowait()
             except queue.Empty:
-                ping_string = None
+                ping_string = "O_0"
             
             try:
                 snmp_string = snmp_queue.get_nowait()
             except queue.Empty:
-                snmp_string = None
+                snmp_string = "999"
             
             print(f"[Main] found ping data to be: ", ping_string)
             print(f"[Main] found snmp data to be: ", snmp_string)
