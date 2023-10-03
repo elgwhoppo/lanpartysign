@@ -84,26 +84,14 @@ number_patterns = {' ':(0,0,0,0,0,0,0,0),
     '9.':(1,1,1,0,1,1,1,1),
     '_.':(0,0,0,0,0,1,0,1)}
 
-#def initialize_pwm():
-#    """Initialize PWM for all segments and digits with global brightness."""
-#    global pwms
-#    for pin in segments:
-#        pwm = GPIO.PWM(pin, FREQUENCY)
-#        pwm.start(GLOBAL_BRIGHTNESS)
-#        pwms.append(pwm)
-
 def setup():
     # initialization stuff
     GPIO.setwarnings(False)
     GPIO.setmode(GPIO.BCM)
     GPIO.setup(segments, GPIO.OUT)
     GPIO.setup(digits, GPIO.OUT)
-#    initialize_pwm()
 
 def cleanup():
-#    """Cleanup GPIO settings."""
-#    for pwm in pwms:
-#        pwm.stop()
     GPIO.cleanup()
 
 
@@ -187,8 +175,8 @@ def test_all_digits():
 def main():
     try:
         setup()  # Initialize
-        #test_single_digit()  # Test single digit without any cycling
-        #test_all_digits() # Test single digit with cycling
+        test_single_digit()  # Test single digit without any cycling
+        test_all_digits() # Test single digit with cycling
 
         # Start the display thread first
         display_thread = threading.Thread(target=threaded_display)
