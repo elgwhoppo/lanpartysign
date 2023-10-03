@@ -34,7 +34,7 @@ stringToPrint = "123456"
 # Use a queue to communicate between threads
 display_queue = queue.Queue() #This is the entire string to be printed >> goes into threaded_display
 ping_queue = queue.Queue() #just the ping >> goes into display_queue
-bps_queue = queue.Queue() #just the bps >> goes into display_queue
+snmp_queue = queue.Queue() #just the bps >> goes into display_queue
 
 # define how often to fetch data and ping in milliseconds (e.g. 1000 = 1 second)
 fetchrate = 750
@@ -309,15 +309,16 @@ def main():
         display_thread.daemon = True  # Set to daemon so it'll automatically exit with the main thread
         display_thread.start()
 
-        display_thread = threading.Thread(target=threaded_get_snmp_bps)
-        display_thread.daemon = True  # Set to daemon so it'll automatically exit with the main thread
-        display_thread.start()
+        #display_thread = threading.Thread(target=threaded_get_snmp_bps)
+        #display_thread.daemon = True  # Set to daemon so it'll automatically exit with the main thread
+        #display_thread.start()
 
         #display_ip()  # Display the IP address for about 1 minute
 
         while True:
             ping_string = ping_queue.get_nowait()
-            for text in ["1.P._.1.P._.", "123456", "6.5.4.3.2.1.",ping_string]:
+            snmp_string = snmp_queue.get_nowait()
+            for text in [ping_string,snmp_string]:
                 print(f"[Main] Displaying text {text}")
                 display_queue.put(text)
                 time.sleep(2)  # Give each string 2 seconds on the display
