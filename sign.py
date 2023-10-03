@@ -202,7 +202,7 @@ def threaded_get_ping():
 
 
 
-            print("[threaded_get_ping]:Pushed ",str(y)," to ",ping_queue)
+            #print("[threaded_get_ping]:Pushed ",str(y)," to ",ping_queue)
             if ping_loop_counter % 10 == 0:
                 print("[threaded_display] Ping thread is running. One of the last 10 pings is:", y)
                 ping_loop_counter = 0
@@ -313,7 +313,7 @@ def main():
         display_thread.daemon = True  # Set to daemon so it'll automatically exit with the main thread
         display_thread.start()
 
-        display_ip()  # Display the IP address for about 1 minute
+        #display_ip()  # Display the IP address for about 1 minute
 
         while True:
             ping_string = ping_queue.get_nowait()
