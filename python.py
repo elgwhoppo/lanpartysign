@@ -138,14 +138,14 @@ def display_number_on_digit(value, digit_idx):
     if value == '.':
         GPIO.output(decimal_point, 1)
     else:
-        # Check if the character is a digit (0-9)
-        if value.isdigit():
+        # Check if the character is in the truth table
+        if value in num:
             segment_vals = num[value]
             for i, seg_pin in enumerate(segments):
                 GPIO.output(seg_pin, segment_vals[i])
             GPIO.output(digits[digit_idx], 1)
         else:
-            # Handle non-digit characters by turning off all segments
+            # Handle characters not in the truth table by turning off all segments
             for seg_pin in segments:
                 GPIO.output(seg_pin, 0)
             GPIO.output(digits[digit_idx], 0)
