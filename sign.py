@@ -140,7 +140,7 @@ def display_string(s):
 
         for segment, value in zip(segments, pattern):
             GPIO.output(segment, value)
-
+        time.sleep(0.004)  # To make the display visible
         GPIO.output(digit, GPIO.LOW)  # Disable this digit
 
 
