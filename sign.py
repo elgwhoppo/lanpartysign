@@ -180,9 +180,9 @@ def main():
         
 
         # Start the display thread first
-        #display_thread = threading.Thread(target=threaded_display)
-        #display_thread.daemon = True  # Set to daemon so it'll automatically exit with the main thread
-        #display_thread.start()
+        display_thread = threading.Thread(target=threaded_display)
+        display_thread.daemon = True  # Set to daemon so it'll automatically exit with the main thread
+        display_thread.start()
 
         while True:
             print("[Main] sleeping 10 seconds...", stringToPrint)
