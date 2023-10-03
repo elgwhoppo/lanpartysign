@@ -119,7 +119,7 @@ def threaded_display():
 
         display_string(current_string)
         print(f"Displayed: {current_string}.")
-        time.sleep(0.002)
+        time.sleep(0.012)
 
 def display_string(s):
     """Display a string on the seven-segment displays."""
@@ -156,7 +156,7 @@ def main():
         while True:
             print("[Main] sleeping 10 seconds...", stringToPrint)
             display_queue.put("1.2.3.4.5.6.")
-            time.sleep(10)
+            time.sleep(3)
 
     except KeyboardInterrupt:
         # Clean up GPIOs upon exit
