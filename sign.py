@@ -121,19 +121,41 @@ def threaded_display():
         display_string(current_string)
 
 
-def display_string(s):
+def display_string(s, duration=1):
     """Display a string on the seven-segment displays."""
-    expanded_string = s.ljust(6, ' ')  # Pad the string to ensure it's 6 characters long
+    # Transform the input string to ensure it's 6 characters long, taking decimals into account
+    num_decimals = s.count('.')
+    num_chars = len(s) - num_decimals
+    s += ' ' * (6 - num_chars)
+    
+    expanded_string = []
+    skip_next = False  # To skip a character if it's a decimal that's been appended to the previous character
 
-    for digit, char in zip(digits, expanded_string):
-        pattern = number_patterns.get(char, number_patterns[' '])  # Default to blank if char not recognized
-        GPIO.output(digit, GPIO.HIGH)  # Enable this digit
+    for i in range(len(s)):
+        if skip_next:
+            skip_next = False
+            continue
 
-        for segment, value in zip(segments, pattern):
-            GPIO.output(segment, value)
+        if s[i] == '.':
+            expanded_string[-1] += '.'  # append the dot to the last character
+        else:
+            if i < len(s) - 1 and s[i + 1] == '.':
+                expanded_string.append(s[i] + '.')
+                skip_next = True
+            else:
+                expanded_string.append(s[i])
 
-        time.sleep(0.001)  # To make the display visible
-        GPIO.output(digit, GPIO.LOW)  # Disable this digit
+    for _ in range(int(duration * 100)):  # Assuming 100Hz refresh rate
+        for digit, char in zip(digits, expanded_string):
+            pattern = number_patterns.get(char, number_patterns[' '])  # Default to blank if char not recognized
+            GPIO.output(digit, GPIO.HIGH)  # Enable this digit
+
+            for segment, value in zip(segments, pattern):
+                GPIO.output(segment, value)
+
+            time.sleep(0.002)  # To make the display visible
+            GPIO.output(digit, GPIO.LOW)  # Disable this digit
+
 
 def test_single_digit():
     """Display the number 8 on the first digit."""
