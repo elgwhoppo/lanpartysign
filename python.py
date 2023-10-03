@@ -197,38 +197,37 @@ def display_ip():
 
 
 def threaded_display():
-    current_string = " " * 6  # default value; adjust to your needs
+    current_string = " " * 12  # default value; adjust for 12 characters
     print("[threaded_display] Started!")
 
     while True:
-    # Try to get a new value from the queue (non-blocking)
+        # Try to get a new value from the queue (non-blocking)
         try:
-            #new_string = display_queue.get_nowait()
-            new_string = "HA10HH"
+            new_string = display_queue.get_nowait()
             print("[threaded_display] Got the following from the queue:", new_string)
             current_string = new_string
         except queue.Empty:
             # No new value in the queue
             pass
 
-        str_to_display = current_string.replace(".", "")
-        decimals = [i for i, char in enumerate(current_string) if char == "."]
-
-        for idx, char in enumerate(str_to_display):
-            if idx >= 6:  # Since you only have 6 digits to display on
-                break
-
-            if idx in decimals:
-                GPIO.output(decimal_point, 1)
-            else:
-                GPIO.output(decimal_point, 0)
+        # Loop through only the number positions in the string (0, 2, 4, ...)
+        for idx in range(0, 12, 2):
+            char = current_string[idx]
             
-            display_number_on_digit(char, idx)
+            # Check if the next character is a decimal
+            is_decimal = current_string[idx + 1] == '.'
+            
+            # Light up decimal if required
+            GPIO.output(decimal_point, is_decimal)
+            
+            # Display the character
+            display_number_on_digit(char, idx // 2)  # Use idx // 2 to get the digit position
             time.sleep(0.002)
 
             # Turn off the current digit to prepare for next
-            GPIO.output(digits[idx], 0)
+            GPIO.output(digits[idx // 2], 0)
             GPIO.output(decimal_point, 0)  # Turn off decimal point as well
+
 
 
 
