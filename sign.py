@@ -169,7 +169,7 @@ def display_ip():
         f"{int(octets[3]):03}.{int(octets[2]):03}"
     ]
 
-    while time.time() - start_time < 60:  # run for about 1 minute
+    while time.time() - start_time < 10:  # run for about 1 minute
         for to_display in formatted_strings:
             print(f"[display_ip] Pushing '{to_display}' to display_queue")
             display_queue.put(to_display)  # Push the formatted string to the queue
@@ -186,14 +186,14 @@ def test_single_digit():
 def test_all_digits():
     """Display the number 8 on all digits one by one."""
     for index, digit in enumerate(digits):
-        pattern = number_patterns['8']
+        pattern = number_patterns['8.']
         GPIO.output(digit, GPIO.HIGH)  # Enable the current digit
 
         for segment, value in zip(segments, pattern):
             GPIO.output(segment, value)
 
         print(f"Displaying on digit {index + 1}")
-        time.sleep(2)  # Display for 2 seconds
+        time.sleep(1)  # Display for 2 seconds
 
         # Turn off the segments for the current digit
         for segment in segments:
@@ -206,7 +206,7 @@ def main():
     try:
         setup()  # Initialize
         #test_single_digit()  # Test single digit without any cycling
-        #test_all_digits() # Test single digit with cycling
+        test_all_digits() # Test single digit with cycling
         
 
         # Start the display thread first
