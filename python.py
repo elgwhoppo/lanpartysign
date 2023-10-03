@@ -154,13 +154,13 @@ def threaded_get_ping():
             # a timed out ping will record a "999"
             pingresponse.append("999")
             y = pingresponse[0]
-            y = str(min(999, int(float(y))))[:3] #truncate to 3 digits
+            y = "{:3}".format(min(999, int(float(y))))
             ping_queue.put(y)  # Push the new value to the queue
 
 
 
             print("[threaded_get_ping]:Pushed ",str(y)," to ",ping_queue)
-            if loop_counter % 10 == 0:
+            if ping_loop_counter % 10 == 0:
                 print("[threaded_display] Ping thread is running. One of the last 10 pings is:", y)
                 ping_loop_counter = 0
             time.sleep(fetchrate*.001)
