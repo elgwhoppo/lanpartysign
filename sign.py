@@ -327,9 +327,9 @@ def main():
         display_thread.daemon = True  # Set to daemon so it'll automatically exit with the main thread
         display_thread.start()
     
-        display_thread = threading.Thread(target=threaded_get_ping)
-        display_thread.daemon = True  # Set to daemon so it'll automatically exit with the main thread
-        display_thread.start()
+        #display_thread = threading.Thread(target=threaded_get_ping)
+        #display_thread.daemon = True  # Set to daemon so it'll automatically exit with the main thread
+        #display_thread.start()
 
         #display_thread = threading.Thread(target=threaded_get_snmp_bps)
         #display_thread.daemon = True  # Set to daemon so it'll automatically exit with the main thread
@@ -346,7 +346,7 @@ def main():
             try:
                 snmp_string = snmp_queue.get_nowait()
             except queue.Empty:
-                snmp_string = "9.9.9."
+                snmp_string = "O_0"
             
             print(f"[Main] found ping data to be: ", ping_string)
             print(f"[Main] found snmp data to be: ", snmp_string)
