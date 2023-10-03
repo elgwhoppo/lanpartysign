@@ -135,14 +135,15 @@ def display_string(s):
         expanded_string.append(' ')
 
     for digit, char in zip(digits, expanded_string):
-            pattern = number_patterns.get(char, number_patterns[' '])
-            GPIO.output(digit, GPIO.HIGH)  # Enable this digit
+        pattern = number_patterns.get(char, number_patterns[' '])
+        GPIO.output(digit, GPIO.HIGH)  # Enable this digit
 
-            for segment, value in zip(segments, pattern):
-                GPIO.output(segment, value)
+        for segment, value in zip(segments, pattern):
+            GPIO.output(segment, value)
 
-            time.sleep(0.006)  # Increased the on-time for each digit
-            GPIO.output(digit, GPIO.LOW)  # Disable this digit
+        time.sleep(0.006)  # Increased the on-time for each digit
+        GPIO.output(digit, GPIO.LOW)  # Disable this digit
+
 
 
 def test_single_digit():
