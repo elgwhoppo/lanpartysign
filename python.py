@@ -156,55 +156,6 @@ def display_number_on_digit(value, digit_idx):
     GPIO.output(digits[digit_idx], 0)
     GPIO.output(decimal_point, 0)
 
-def diagnostic_test():
-    """Runs a diagnostic test to display numbers from 1 to 9 on each digit with the decimal lit up."""
-    try:
-        print("[diagnostic_test] Displaying numbers 1 to 9 on each digit with decimal lit up.")
-        
-        for digit in digits:  # for each digit position
-            for num_char in "123456789":  # cycle through the numbers 1-9
-                to_display = num_char + '.'  # append a decimal for visualization
-                print(f"[diagnostic_test] Sending to queue: {to_display}")
-                display_queue.put(to_display)  # Push the value to the queue for the threaded_display to handle
-                time.sleep(1)  # display each number for 1 second
-
-    except Exception as e:
-        print("An error occurred during the diagnostic test:", e)
-
-
-
-def display_ip():
-    """Push the formatted IP address strings to the display queue for about 1 minute."""
-
-    def get_ip_address():
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        try:
-            # Doesn't need to be reachable
-            s.connect(('10.254.254.254', 1))
-            IP = s.getsockname()[0]
-        except:
-            IP = '127.0.0.1'
-        finally:
-            s.close()
-        return IP
-
-    ip = get_ip_address()
-    octets = ip.split('.')
-    start_time = time.time()
-
-    formatted_strings = [
-        "ADD 1P",
-        f"{int(octets[1]):03}.{int(octets[0]):03}",
-        f"{int(octets[3]):03}.{int(octets[2]):03}"
-    ]
-
-    while time.time() - start_time < 60:  # run for about 1 minute
-        for to_display in formatted_strings:
-            print(f"[display_ip] Pushing '{to_display}' to display_queue")
-            display_queue.put(to_display)  # Push the formatted string to the queue
-            time.sleep(1)  # Display each formatted string for 1 second
-
-
 
 def threaded_display():
     current_string = " " * 12  # default value; adjust for 12 characters
@@ -239,8 +190,52 @@ def threaded_display():
             GPIO.output(digits[idx // 2], 0)
             GPIO.output(decimal_point, 0)  # Turn off decimal point as well
 
+def diagnostic_test():
+    """Runs a diagnostic test to display numbers from 1 to 9 on each digit with the decimal lit up."""
+    try:
+        print("[diagnostic_test] Displaying numbers 1 to 9 on each digit with decimal lit up.")
+        
+        for digit in digits:  # for each digit position
+            for num_char in "123456789":  # cycle through the numbers 1-9
+                to_display = num_char + '.'  # append a decimal for visualization
+                print(f"[diagnostic_test] Sending to queue: {to_display}")
+                display_queue.put(to_display)  # Push the value to the queue for the threaded_display to handle
+                time.sleep(1)  # display each number for 1 second
+
+    except Exception as e:
+        print("An error occurred during the diagnostic test:", e)
 
 
+def display_ip():
+    """Push the formatted IP address strings to the display queue for about 1 minute."""
+
+    def get_ip_address():
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        try:
+            # Doesn't need to be reachable
+            s.connect(('10.254.254.254', 1))
+            IP = s.getsockname()[0]
+        except:
+            IP = '127.0.0.1'
+        finally:
+            s.close()
+        return IP
+
+    ip = get_ip_address()
+    octets = ip.split('.')
+    start_time = time.time()
+
+    formatted_strings = [
+        "ADD 1P",
+        f"{int(octets[1]):03}.{int(octets[0]):03}",
+        f"{int(octets[3]):03}.{int(octets[2]):03}"
+    ]
+
+    while time.time() - start_time < 60:  # run for about 1 minute
+        for to_display in formatted_strings:
+            print(f"[display_ip] Pushing '{to_display}' to display_queue")
+            display_queue.put(to_display)  # Push the formatted string to the queue
+            time.sleep(1)  # Display each formatted string for 1 second
 
 
 def threaded_get_ping():
