@@ -175,6 +175,31 @@ def display_ip():
             display_queue.put(to_display)  # Push the formatted string to the queue
             time.sleep(1)  # Display each formatted string for 1 second
 
+def threaded_get_ping():
+    print("[threaded_get_ping] Started!")
+    ping_loop_counter = 0
+    while True:
+        try:
+            ping_loop_counter += 1
+            pingresponse = os.popen("timeout "+str(fetchrate*.001)+" ping -c 1 "+str(iptoping)+" | grep rtt | cut -c 24-28").readlines()
+            # a timed out ping will record a "999"
+            pingresponse.append("999")
+            y = pingresponse[0]
+            y = "{:3}".format(min(999, int(float(y))))
+            ping_queue.put(y)  # Push the new value to the queue
+
+
+
+            print("[threaded_get_ping]:Pushed ",str(y)," to ",ping_queue)
+            if ping_loop_counter % 10 == 0:
+                print("[threaded_display] Ping thread is running. One of the last 10 pings is:", y)
+                ping_loop_counter = 0
+            time.sleep(fetchrate*.001)
+
+        except Exception as e:
+            print("An error occurred: " + str(e))
+            return None
+
 def test_single_digit():
     """Display the number 8 on the first digit."""
     pattern = number_patterns['8']
@@ -213,11 +238,16 @@ def main():
         display_thread = threading.Thread(target=threaded_display)
         display_thread.daemon = True  # Set to daemon so it'll automatically exit with the main thread
         display_thread.start()
+    
+        display_thread = threading.Thread(target=threaded_get_ping)
+        display_thread.daemon = True  # Set to daemon so it'll automatically exit with the main thread
+        display_thread.start()
 
         display_ip()  # Display the IP address for about 1 minute
 
         while True:
-            for text in ["1.P._.1.P._.", "123456", "6.5.4.3.2.1."]:
+            ping_string = ping_queue.get_nowait()
+            for text in ["1.P._.1.P._.", "123456", "6.5.4.3.2.1.",ping_string]:
                 print(f"[Main] Displaying text {text}")
                 display_queue.put(text)
                 time.sleep(2)  # Give each string 2 seconds on the display
