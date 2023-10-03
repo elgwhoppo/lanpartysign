@@ -285,8 +285,8 @@ def threaded_get_snmp_bps():
         prev_out_value = out_value
         prev_time = current_time
 
-        print("[threaded_get_snmp_bps] Sleeping for 1 second...")
-        time.sleep(1)
+        print("[threaded_get_snmp_bps] Sleeping for 2 seconds...")
+        time.sleep(2)
 
 def test_single_digit():
     """Display the number 8 on the first digit."""
@@ -339,12 +339,12 @@ def main():
 
         while True:
             try:
-                ping_string = ping_queue.get(timeout=0.5)
+                ping_string = ping_queue.get(timeout=1)
             except queue.Empty:
                 ping_string = "O_0"
             
             try:
-                snmp_string = snmp_queue.get(timeout=0.5)
+                snmp_string = snmp_queue.get(timeout=1)
             except queue.Empty:
                 snmp_string = "O_0"
             
