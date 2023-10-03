@@ -192,7 +192,7 @@ def main():
 
         while True:
             print("[Main] sleeping 10 seconds...", stringToPrint)
-            display_queue.put("1.2.3.4.5.6.")
+            display_queue.put("123456")
             time.sleep(3)
 
     except KeyboardInterrupt:
