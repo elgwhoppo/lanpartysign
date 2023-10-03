@@ -215,7 +215,7 @@ def getsnmpbw():
         print("An error occurred: " + str(e))
         return None
    	
-def dothething():        
+def threaded_calculate_string_to_print():        
     counter = 0
     global snmpbrokecounter,snmpunchangedvalue,snmpbrokenow,stringToPrint
     snmpbrokecounter = 0
@@ -226,7 +226,7 @@ def dothething():
     #call the SNMP bandwidth function
     bps = getsnmpbw()
     
-    print("Raw bps value pulled from bps.txt:",bps)
+    print("Raw bps value pulled from bps.txt:", bps)
     
     t = int(bps)
     ogbps = t
@@ -236,34 +236,27 @@ def dothething():
         snmpbrokecounter = 0
     else:
         snmpbrokecounter = snmpbrokecounter+1
-        print("BPS has been the same for this many times:     ",snmpbrokecounter)
+        print("BPS has been the same for this many times:     ", snmpbrokecounter)
         print("")
     
     if snmpbrokecounter > 100:
-        print("SNMP definitely broken. Mark as error: ",snmpbrokecounter)        
+        print("SNMP definitely broken. Mark as error: ", snmpbrokecounter)
         snmpbrokenow = 1
     snmpunchangedvalue = ogbps
 
-    #activate fuzz, let's make bandwidth move a little
-    #normal random
-    bpsmultipler = random.uniform(0.9, 1.1)
-    #5x random
-    #bpsmultipler = random.uniform(5.85, 6.02)
-    
+    #Add some fuzz to the bandwidth
+    bpsmultipler = random.uniform(0.95, 1.05) 
     realvaluembps = t/1000000
-    #print("  Real value Mbps: ",realvaluembps)
     t = t*bpsmultipler
     t = int(t)
     fuzzedvaluembps = t/1000000
-    #print("Fuzzed value Mbps: ",fuzzedvaluembps)
-    #print("")        
+
+    #
     pingresponse = os.popen("timeout "+str(fetchrate*.001)+" ping -c 1 "+str(iptoping)+" | grep rtt | cut -c 24-28").readlines()
     # a timed out ping will record a "999"
     pingresponse.append("999")
     y = pingresponse[0]
     print("   Latency to " + iptoping + " is pinging: " + str(y))
-    
-
 
     counter = counter +1
     #print(counter)
@@ -346,15 +339,20 @@ def dothething():
 def main():
     global stringToPrint
     try:
-        #display_queue.put(stringToPrint)
+        #threaded display
         display_thread = threading.Thread(target=threaded_display)
+        display_thread.daemon = True  # Set to daemon so it'll automatically exit with the main t>
+        display_thread.start()
+
+        #threaded calculate string to print
+        display_thread = threading.Thread(target=threaded_calculate_string_to_print)
         display_thread.daemon = True  # Set to daemon so it'll automatically exit with the main t>
         display_thread.start()
 
         while True: 
             # testing
             #stringToPrint = "O_0UHH"
-            dothething() # Update the string to print
+            calculate_string_to_print() # Update the string to print
             print("[Main] Pushing the following to the display queue:", stringToPrint)
             display_queue.put(stringToPrint)  # Push the new value to the queue
             time.sleep(0.5)
