@@ -29,6 +29,8 @@ segments = (25, 5, 6, 12, 13, 19, 16)  # GPIOs for segments a-g
 digits = (23, 22, 27, 18, 17, 4)       # GPIOs for each of the 6 digits
 decimal_point = 24
 FREQUENCY = 1000  # PWM frequency in Hz.
+GLOBAL_BRIGHTNESS = 100  # 100% brightness
+pwms = []  # This list will hold all PWM instances.
 
 # what remote IP should I ping to test for latency?
 iptoping = "8.8.8.8" #Google DNS IP-Anycast
@@ -71,17 +73,29 @@ bps = 0
 snmpdelaycounter = 0
 snmpunchangedvalue = 0
 
-# initialization stuff
-GPIO.setwarnings(False)
-GPIO.setmode(GPIO.BCM)
-GPIO.setup(segments, GPIO.OUT)
-GPIO.setup(digits, GPIO.OUT)
-GPIO.setup(decimal_point, GPIO.OUT)
+def initialize_pwm():
+    """Initialize PWM for all segments and digits with global brightness."""
+    global pwms
+    for pin in segments:
+        pwm = GPIO.PWM(pin, FREQUENCY)
+        pwm.start(GLOBAL_BRIGHTNESS)
+        pwms.append(pwm)
 
-# Start PWM at 100% brightness for all segments and the decimal point
-pwms = [GPIO.PWM(pin, FREQUENCY) for pin in segments + (decimal_point, )]
-for pwm in pwms:
-    pwm.start(100)
+
+def setup():
+    # initialization stuff
+    GPIO.setwarnings(False)
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(segments, GPIO.OUT)
+    GPIO.setup(digits, GPIO.OUT)
+    GPIO.setup(decimal_point, GPIO.OUT)
+    initialize_pwm()
+
+def cleanup():
+    """Cleanup GPIO settings."""
+    for pwm in pwms:
+        pwm.stop()
+    GPIO.cleanup()
 
 # Global variable to hold the current value to be displayed
 stringToPrint = "      "
@@ -91,7 +105,7 @@ display_queue = queue.Queue() #This is the entire string to be printed
 ping_queue = queue.Queue() #just the ping
 bps_queue = queue.Queue() #just the bps
 
-# truth table for segments and where they are.  i wired them funny as you can see.
+# truth table for segments and where they are.
 # decimal point is on GPIO 24
 num = {' ':(0,0,0,0,0,0,0),
     '*':(1,1,1,1,1,1,1,1),
@@ -139,7 +153,7 @@ def diagnostic_test():
 
 def display_ip():
     """Display each octet of the IP address in the desired format for about 1 minute."""
-    GPIO.setmode(GPIO.BCM)
+
     def get_ip_address():
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         try:
@@ -167,10 +181,17 @@ def display_ip():
             end_time = time.time() + 1  # set end time to 1 second from now
             while time.time() < end_time:
                 for idx, char in enumerate(to_display):
-                    GPIO.output(segments, num[char])  # Set segments for the character
-                    GPIO.output(digits[idx], 1)   # Light up the current digit
-                    time.sleep(0.002)             # Adjust this delay to reduce flickering
-                    GPIO.output(digits[idx], 0)   # Turn off the current digit to prepare for next
+                    if char == ".":
+                        GPIO.output(decimal_point, 1)
+                    else:
+                        GPIO.output(decimal_point, 0)
+                    display_number_on_digit(char, idx)
+                    time.sleep(0.002)  # Adjust this delay to reduce flickering
+
+                    # Turn off the current digit and decimal point to prepare for the next character
+                    GPIO.output(digits[idx], 0)
+                    GPIO.output(decimal_point, 0)
+
 
 def threaded_display():
     current_string = " " * 6  # default value; adjust to your needs
@@ -179,7 +200,6 @@ def threaded_display():
     while True:
         # Try to get a new value from the queue (non-blocking)
         try:
-            #new_string = display_queue.get_nowait()
             new_string = ping_queue.get_nowait()
             print("[threaded_display] Got the following from the queue:", new_string)
             current_string = new_string
@@ -187,20 +207,19 @@ def threaded_display():
             # No new value in the queue
             pass
 
-        str_to_display = current_string.replace(".", "")
-        decimals = [i-1 for i, char in enumerate(current_string) if char == "."]
-
-        for idx, char in enumerate(str_to_display):
-            GPIO.output(segments, num[char])   # Set segments for the character
-
-            if idx in decimals:
+        for idx, char in enumerate(current_string):
+            if char == ".":
                 GPIO.output(decimal_point, 1)
             else:
                 GPIO.output(decimal_point, 0)
+                
+            display_number_on_digit(char, idx)
+            time.sleep(0.002)
 
-            GPIO.output(digits[idx], 1)        # Light up the current digit
-            time.sleep(0.002)                  # Adjust this delay to reduce flickering
-            GPIO.output(digits[idx], 0)        # Turn off the current digit to prepare for next
+            # Turn off the current digit to prepare for next
+            GPIO.output(digits[idx], 0)
+            GPIO.output(decimal_point, 0)  # Turn off decimal point as well
+
 
 
 def threaded_get_ping():
@@ -380,6 +399,8 @@ def threaded_calculate_string_to_print():
 def main():
     global stringToPrint
     try:
+        setup() #initialize
+
         diagnostic_test()
         display_ip()
         
