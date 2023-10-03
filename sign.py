@@ -327,11 +327,12 @@ def main():
                 snmp_string = snmp_queue.get_nowait()
             except queue.Empty:
                 snmp_string = None
-
-            for text in [ping_string,snmp_string]:
-                print(f"[Main] Displaying text {text}")
-                display_queue.put(text)
-                time.sleep(2)  # Give each string 2 seconds on the display
+            
+            print(f"[Main] found ping data to be: ", ping_string)
+            print(f"[Main] found snmp data to be: ", snmp_string)
+            print(f"[Main] sending this to display_queue: ", ping_string,snmp_string)            
+            display_queue.put(ping_string,snmp_string)
+            time.sleep(2)  # Give each string 2 seconds on the display
 
     except KeyboardInterrupt:
         # Clean up GPIOs upon exit
