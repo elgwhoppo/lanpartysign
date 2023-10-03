@@ -119,29 +119,22 @@ def threaded_display():
 
         display_string(current_string)
         print(f"Displayed: {current_string}.")
-        time.sleep(0.012)
+        time.sleep(0.1)  # Reduce the update frequency slightly
 
 def display_string(s):
     """Display a string on the seven-segment displays."""
-    expanded_string = []
-    for i in range(len(s)):
-        if s[i] == '.' and i > 0:  # if a dot is found and it's not the first character
-            expanded_string[-1] += '.'  # append the dot to the last character
-        else:
-            expanded_string.append(s[i])  # add the character to the new string
-
-    # Pad the expanded string with spaces to ensure it's 6 characters long
-    while len(expanded_string) < 6:
-        expanded_string.append(' ')
+    # ... [rest of your display_string function setup] ...
 
     for digit, char in zip(digits, expanded_string):
-        pattern = number_patterns.get(char, number_patterns[' '])  # Default to blank if char not recognized
+        pattern = number_patterns.get(char, number_patterns[' '])
         GPIO.output(digit, GPIO.HIGH)  # Enable this digit
 
         for segment, value in zip(segments, pattern):
             GPIO.output(segment, value)
-        time.sleep(0.004)  # To make the display visible
+
+        time.sleep(0.006)  # Increased the on-time for each digit
         GPIO.output(digit, GPIO.LOW)  # Disable this digit
+
 
 
 def test_single_digit():
@@ -169,7 +162,7 @@ def test_all_digits():
             GPIO.output(segment, GPIO.LOW)
         
         GPIO.output(digit, GPIO.LOW)  # Disable the current digit
-        time.sleep(1)  # Wait for a second before moving to the next digit
+        time.sleep(0.5)  # Wait for a second before moving to the next digit
 
 def main():
     try:
@@ -178,9 +171,9 @@ def main():
         test_all_digits()
 
         # Start the display thread first
-        #display_thread = threading.Thread(target=threaded_display)
-        #display_thread.daemon = True  # Set to daemon so it'll automatically exit with the main thread
-        #display_thread.start()
+        display_thread = threading.Thread(target=threaded_display)
+        display_thread.daemon = True  # Set to daemon so it'll automatically exit with the main thread
+        display_thread.start()
 
         while True:
             print("[Main] sleeping 10 seconds...", stringToPrint)
