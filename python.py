@@ -189,9 +189,12 @@ def threaded_display():
                     digit_segments[i].append(0)
                 print("[threaded_display] Handling unknown character", char, ":", digit_segments)
 
-        # Update the segments for each digit
-        for idx in range(6):
-            GPIO.output(segments[idx], digit_segments[idx])
+            # Update the segments for each digit
+            for idx in range(6):
+                # Ensure digit_segments has the same length as segments
+                if len(digit_segments[idx]) < len(segments):
+                    digit_segments[idx].extend([0] * (len(segments) - len(digit_segments[idx])))
+        GPIO.output(segments[idx], digit_segments[idx])
 
         # Sleep for a short duration to control the display update rate
         time.sleep(0.002)
