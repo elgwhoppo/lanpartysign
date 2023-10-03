@@ -25,7 +25,7 @@ pwms = []  # This list will hold all PWM instances.
 display_value_lock = threading.Lock()
 
 # Global variable to hold the current value to be displayed
-stringToPrint = "1.2.3.4.5.6."
+stringToPrint = "123456"
 
 # Use a queue to communicate between threads
 display_queue = queue.Queue() #This is the entire string to be printed
@@ -95,23 +95,20 @@ def threaded_display():
             print("[threaded_display] Got the following from the queue:", new_string)
             current_string = new_string
         except queue.Empty:
-            # No new value in the queue
+            # No new value in the queue, continue displaying the previous value
             pass
 
-        # Split the string into segments with decimal points
-        segments_with_decimal = current_string.split('.')
+        # Limit the string to 6 characters and pad with spaces if needed
+        current_string = current_string[:6].ljust(6, ' ')
+
         for i in range(6):
-            # Display the segment without the decimal point
-            segment_to_display = segments_with_decimal[i] if i < len(segments_with_decimal) else ' '
-            GPIO.output(segments, num[segment_to_display])
-            
-            # Determine if the decimal point should be displayed
-            decimal_point_enabled = i < (len(segments_with_decimal) - 1)
-            GPIO.output(decimal_point, decimal_point_enabled)
+            segment_to_display = current_string[i]
+            GPIO.output(segments, num.get(segment_to_display, num[' ']))  # Use ' ' for unsupported characters
 
             GPIO.output(digits[i], 1)  # Light up the current digit
             time.sleep(0.002)          # Adjust this delay to reduce flickering
             GPIO.output(digits[i], 0)  # Turn off the current digit to prepare for next
+
 
 
 def main():
