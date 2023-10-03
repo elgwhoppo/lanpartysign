@@ -161,7 +161,7 @@ def threaded_display():
 
     while True:
         try:
-            #new_string = display_queue.get_nowait()
+            # Simulate getting a value from the queue for testing
             new_string = "1.2.3.4.5.6."
             print("[threaded_display] Got the following from the queue:", new_string)
         except queue.Empty:
@@ -176,20 +176,23 @@ def threaded_display():
                 # Handle decimal point
                 for i in range(6):
                     digit_segments[i].append(1)
+                print("[threaded_display] Handling decimal point:", digit_segments)
             elif char in num:
                 # Handle valid characters using the truth table
                 segments = num[char]
                 for i in range(6):
                     digit_segments[i].append(segments[i])
+                print("[threaded_display] Handling character", char, ":", digit_segments)
             else:
                 # Handle characters not in the truth table (e.g., space)
                 for i in range(6):
                     digit_segments[i].append(0)
+                print("[threaded_display] Handling unknown character", char, ":", digit_segments)
 
         # Update the segments for each digit
         for idx in range(6):
             GPIO.output(segments[idx], digit_segments[idx])
-        
+
         # Sleep for a short duration to control the display update rate
         time.sleep(0.002)
 
@@ -197,6 +200,7 @@ def threaded_display():
         for i in range(6):
             GPIO.output(digits[i], 0)
         GPIO.output(decimal_point, 0)
+
 
 
 def diagnostic_test():
