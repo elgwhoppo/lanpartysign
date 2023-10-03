@@ -154,19 +154,9 @@ def main():
         display_thread.daemon = True  # Set to daemon so it'll automatically exit with the main thread
         display_thread.start()
 
-        #diagnostic_test()  # Show diagnostics
-        #display_ip()  # Show IP address
-
-        # Start other threads
-        #ping_thread = threading.Thread(target=threaded_get_ping)
-        #ping_thread.daemon = True
-        #ping_thread.start()
-
-        # TODO: Start other threads if necessary...
-
         while True:
             print("[Main] sleeping 10 seconds...", stringToPrint)
-            display_queue.put(stringToPrint)
+            display_queue.put("1.2.3.4.5.6.")
             time.sleep(10)
 
     except KeyboardInterrupt:
