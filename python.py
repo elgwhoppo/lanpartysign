@@ -134,6 +134,16 @@ num = {' ':(0,0,0,0,0,0,0),
     '9':(1,1,1,0,1,1,1),
     '_':(0,0,0,0,0,1,0)}
 
+# We will modify this to use the queue
+def display_number_on_digit(value, digit_idx):
+    # Grab the appropriate segment values for the character to display
+    segment_vals = num[value]
+    for i, seg_pin in enumerate(segments):
+        GPIO.output(seg_pin, segment_vals[i])
+    GPIO.output(digits[digit_idx], 1)
+
+
+
 def diagnostic_test():
     """Runs a diagnostic test to turn on all segments and decimal points."""
     try:
@@ -194,32 +204,30 @@ def display_ip():
 
 
 def threaded_display():
-    current_string = " " * 6  # default value; adjust to your needs
+    global stringToPrint
     print("[threaded_display] Started!")
-
     while True:
         # Try to get a new value from the queue (non-blocking)
         try:
-            new_string = ping_queue.get_nowait()
+            new_string = display_queue.get_nowait()
             print("[threaded_display] Got the following from the queue:", new_string)
-            current_string = new_string
+            stringToPrint = new_string
         except queue.Empty:
-            # No new value in the queue
+            # No new value in the queue, use the last known value
             pass
 
-        for idx, char in enumerate(current_string):
+        for idx, char in enumerate(stringToPrint):
             if char == ".":
                 GPIO.output(decimal_point, 1)
             else:
                 GPIO.output(decimal_point, 0)
-                
+
             display_number_on_digit(char, idx)
             time.sleep(0.002)
 
             # Turn off the current digit to prepare for next
             GPIO.output(digits[idx], 0)
             GPIO.output(decimal_point, 0)  # Turn off decimal point as well
-
 
 
 def threaded_get_ping():
@@ -395,40 +403,34 @@ def threaded_calculate_string_to_print():
     print("******************************************************")
 
 
-# Create and start the thread, passing the current value of stringToPrint
 def main():
     global stringToPrint
-    try:
-        setup() #initialize
 
-        diagnostic_test()
-        display_ip()
-        
-        #threaded run display
+    try:
+        setup()  # Initialize
+
+        # Start the display thread first
         display_thread = threading.Thread(target=threaded_display)
-        display_thread.daemon = True  # Set to daemon so it'll automatically exit with the main t>
+        display_thread.daemon = True  # Set to daemon so it'll automatically exit with the main thread
         display_thread.start()
 
-        #threaded ping
-        display_thread = threading.Thread(target=threaded_get_ping)
-        display_thread.daemon = True  # Set to daemon so it'll automatically exit with the main t>
-        display_thread.start()    
+        diagnostic_test()  # Show diagnostics
+        display_ip()  # Show IP address
 
-        #threaded SNMP
-        #todo
+        # Start other threads
+        ping_thread = threading.Thread(target=threaded_get_ping)
+        ping_thread.daemon = True
+        ping_thread.start()
 
-        #threaded calculate string to print
-        #display_thread = threading.Thread(target=threaded_calculate_string_to_print)
-        #display_thread.daemon = True  # Set to daemon so it'll automatically exit with the main t>
-        #display_thread.start()
+        # TODO: Start other threads if necessary...
 
-        while True: 
+        while True:
             print("[Main] sleeping 10 seconds...", stringToPrint)
             time.sleep(10)
 
     except KeyboardInterrupt:
         # Clean up GPIOs upon exit
-        GPIO.cleanup()
+        cleanup()
 
 if __name__ == "__main__":
     main()
