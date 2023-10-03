@@ -152,11 +152,30 @@ def test_single_digit():
     for segment, value in zip(segments, pattern):
         GPIO.output(segment, value)
 
+def test_all_digits():
+    """Display the number 8 on all digits one by one."""
+    for index, digit in enumerate(digits):
+        pattern = number_patterns['8']
+        GPIO.output(digit, GPIO.HIGH)  # Enable the current digit
+
+        for segment, value in zip(segments, pattern):
+            GPIO.output(segment, value)
+
+        print(f"Displaying on digit {index + 1}")
+        time.sleep(2)  # Display for 2 seconds
+
+        # Turn off the segments for the current digit
+        for segment in segments:
+            GPIO.output(segment, GPIO.LOW)
+        
+        GPIO.output(digit, GPIO.LOW)  # Disable the current digit
+        time.sleep(1)  # Wait for a second before moving to the next digit
 
 def main():
     try:
         setup()  # Initialize
-        test_single_digit()  # Test single digit without any cycling
+        #test_single_digit()  # Test single digit without any cycling
+        test_all_digits()
 
         # Start the display thread first
         #display_thread = threading.Thread(target=threaded_display)
