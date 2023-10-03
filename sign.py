@@ -226,7 +226,7 @@ def threaded_get_snmp_bps():
                 ObjectType(ObjectIdentity(oid)))
         )
         if errorIndication or errorStatus:
-            print("[threaded_get_snmp_bps]Error fetching OID:", errorIndication or errorStatus)
+            print("[threaded_get_snmp_bps] Error fetching OID:", errorIndication or errorStatus)
             return None
         return int(varBinds[0][1])
 
@@ -237,10 +237,10 @@ def threaded_get_snmp_bps():
         in_value = fetch_oid_value(INTERFACE_OID_IN)
         out_value = fetch_oid_value(INTERFACE_OID_OUT)
 
-        print("[threaded_get_snmp_bps]Fetched values: IN =", in_value, "OUT =", out_value)
+        print("[threaded_get_snmp_bps] Fetched values: IN =", in_value, "OUT =", out_value)
 
         if in_value is None or out_value is None:
-            print("[threaded_get_snmp_bps]One of the values is None. Sleeping for a second...")
+            print("[threaded_get_snmp_bps] One of the values is None. Sleeping for a second...")
             time.sleep(1)
             continue
 
@@ -252,18 +252,18 @@ def threaded_get_snmp_bps():
 
         total_bps = bps_in + bps_out
 
-        print("[threaded_get_snmp_bps]Calculated bps: IN =", bps_in, "bps, OUT =", bps_out, "bps. TOTAL =", total_bps, "bps")
+        print("[threaded_get_snmp_bps] Calculated bps: IN =", bps_in, "bps, OUT =", bps_out, "bps. TOTAL =", total_bps, "bps")
 
-        with open(BPS_FILE_PATH, 'w') as f:
-            f.write(str(int(total_bps)))
-            print("[threaded_get_snmp_bps]Written total bps to file:", BPS_FILE_PATH)
+        #with open(BPS_FILE_PATH, 'w') as f:
+        #    f.write(str(int(total_bps)))
+        #    print("[threaded_get_snmp_bps]Written total bps to file:", BPS_FILE_PATH)
 
         # Store current values for next iteration
         prev_in_value = in_value
         prev_out_value = out_value
         prev_time = current_time
 
-        print("Sleeping for 1 second...")
+        print("[threaded_get_snmp_bps] Sleeping for 1 second...")
         time.sleep(1)
 
 def test_single_digit():
@@ -309,9 +309,9 @@ def main():
         display_thread.daemon = True  # Set to daemon so it'll automatically exit with the main thread
         display_thread.start()
 
-        #display_thread = threading.Thread(target=threaded_get_snmp_bps)
-        #display_thread.daemon = True  # Set to daemon so it'll automatically exit with the main thread
-        #display_thread.start()
+        display_thread = threading.Thread(target=threaded_get_snmp_bps)
+        display_thread.daemon = True  # Set to daemon so it'll automatically exit with the main thread
+        display_thread.start()
 
         #display_ip()  # Display the IP address for about 1 minute
 
@@ -325,7 +325,7 @@ def main():
                 snmp_string = snmp_queue.get_nowait()
             except queue.Empty:
                 snmp_string = None
-                
+
             for text in [ping_string,snmp_string]:
                 print(f"[Main] Displaying text {text}")
                 display_queue.put(text)
