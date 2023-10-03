@@ -206,7 +206,7 @@ def threaded_get_ping():
             if ping_loop_counter % 10 == 0:
                 print("[threaded_display] Ping thread is running. One of the last 10 pings is:", y)
                 ping_loop_counter = 0
-            time.sleep(fetchrate*.001)
+            time.sleep(fetchrate)
 
         except Exception as e:
             print("An error occurred: " + str(e))
@@ -327,9 +327,9 @@ def main():
         display_thread.daemon = True  # Set to daemon so it'll automatically exit with the main thread
         display_thread.start()
     
-        #display_thread = threading.Thread(target=threaded_get_ping)
-        #display_thread.daemon = True  # Set to daemon so it'll automatically exit with the main thread
-        #display_thread.start()
+        display_thread = threading.Thread(target=threaded_get_ping)
+        display_thread.daemon = True  # Set to daemon so it'll automatically exit with the main thread
+        display_thread.start()
 
         #display_thread = threading.Thread(target=threaded_get_snmp_bps)
         #display_thread.daemon = True  # Set to daemon so it'll automatically exit with the main thread
