@@ -84,13 +84,13 @@ number_patterns = {' ':(0,0,0,0,0,0,0,0),
     '9.':(1,1,1,0,1,1,1,1),
     '_.':(0,0,0,0,0,1,0,1)}
 
-def initialize_pwm():
-    """Initialize PWM for all segments and digits with global brightness."""
-    global pwms
-    for pin in segments:
-        pwm = GPIO.PWM(pin, FREQUENCY)
-        pwm.start(GLOBAL_BRIGHTNESS)
-        pwms.append(pwm)
+#def initialize_pwm():
+#    """Initialize PWM for all segments and digits with global brightness."""
+#    global pwms
+#    for pin in segments:
+#        pwm = GPIO.PWM(pin, FREQUENCY)
+#        pwm.start(GLOBAL_BRIGHTNESS)
+#        pwms.append(pwm)
 
 def setup():
     # initialization stuff
@@ -98,12 +98,12 @@ def setup():
     GPIO.setmode(GPIO.BCM)
     GPIO.setup(segments, GPIO.OUT)
     GPIO.setup(digits, GPIO.OUT)
-    initialize_pwm()
+#    initialize_pwm()
 
 def cleanup():
-    """Cleanup GPIO settings."""
-    for pwm in pwms:
-        pwm.stop()
+#    """Cleanup GPIO settings."""
+#    for pwm in pwms:
+#        pwm.stop()
     GPIO.cleanup()
 
 
@@ -119,33 +119,21 @@ def threaded_display():
 
         # The key is to run the display method continuously
         display_string(current_string)
-        # No sleep in this loop. We want the display method to dominate.
 
 
-def display_string(s, duration=1):
+def display_string(s):
     """Display a string on the seven-segment displays."""
-    expanded_string = []
-    for i in range(len(s)):
-        if s[i] == '.' and i > 0:  # if a dot is found and it's not the first character
-            expanded_string[-1] += '.'  # append the dot to the last character
-        else:
-            expanded_string.append(s[i])  # add the character to the new string
+    expanded_string = s.ljust(6, ' ')  # Pad the string to ensure it's 6 characters long
 
-    # Pad the expanded string with spaces to ensure it's 6 characters long
-    while len(expanded_string) < 6:
-        expanded_string.append(' ')
+    for digit, char in zip(digits, expanded_string):
+        pattern = number_patterns.get(char, number_patterns[' '])  # Default to blank if char not recognized
+        GPIO.output(digit, GPIO.HIGH)  # Enable this digit
 
-    for _ in range(int(duration * 100)):  # Assuming 100Hz refresh rate
-        for digit, char in zip(digits, expanded_string):
-            pattern = number_patterns.get(char, number_patterns[' '])  # Default to blank if char not recognized
-            GPIO.output(digit, GPIO.HIGH)  # Enable this digit
+        for segment, value in zip(segments, pattern):
+            GPIO.output(segment, value)
 
-            for segment, value in zip(segments, pattern):
-                GPIO.output(segment, value)
-
-            time.sleep(0.002)  # To make the display visible
-            GPIO.output(digit, GPIO.LOW)  # Disable this digit
-
+        time.sleep(0.001)  # To make the display visible
+        GPIO.output(digit, GPIO.LOW)  # Disable this digit
 
 def test_single_digit():
     """Display the number 8 on the first digit."""
@@ -178,7 +166,7 @@ def main():
     try:
         setup()  # Initialize
         #test_single_digit()  # Test single digit without any cycling
-        
+        #test_all_digits() # Test single digit with cycling
 
         # Start the display thread first
         display_thread = threading.Thread(target=threaded_display)
