@@ -199,38 +199,34 @@ def threaded_display():
     print("[threaded_display] Started!")
 
     while True:
-        # Try to get a new value from the queue (non-blocking)
+    # Try to get a new value from the queue (non-blocking)
         try:
-            new_string = ping_queue.get_nowait()
-            #new_string = "HA1OOH" #use for testing to make sure this is working OK all by itself
+            new_string = display_queue.get_nowait()
             print("[threaded_display] Got the following from the queue:", new_string)
             current_string = new_string
         except queue.Empty:
             # No new value in the queue
             pass
 
-        # Create chunks for display
-        chunks = []
-        i = 0
-        while i < len(current_string):
-            chunk = current_string[i]
-            if i + 1 < len(current_string) and current_string[i + 1] == ".":
-                chunk += "."
-                i += 1
-            chunks.append(chunk)
-            i += 1
+        str_to_display = current_string.replace(".", "")
+        decimals = [i for i, char in enumerate(current_string) if char == "."]
 
-        for idx, chunk in enumerate(chunks):
-            if '.' in chunk:
+        for idx, char in enumerate(str_to_display):
+            if idx >= 6:  # Since you only have 6 digits to display on
+                break
+
+            if idx in decimals:
                 GPIO.output(decimal_point, 1)
             else:
                 GPIO.output(decimal_point, 0)
-            display_number_on_digit(chunk[0], idx)  # Pass only the character, not the '.' to the function
+            
+            display_number_on_digit(char, idx)
             time.sleep(0.002)
 
             # Turn off the current digit to prepare for next
             GPIO.output(digits[idx], 0)
             GPIO.output(decimal_point, 0)  # Turn off decimal point as well
+
 
 
 
