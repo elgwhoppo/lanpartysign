@@ -15,9 +15,8 @@ import http.client
 
 
 # Definitions
-segments = (25, 5, 6, 12, 13, 19, 16)  # GPIOs for segments a-g
+segments = (25, 5, 6, 12, 13, 19, 16, 24)  # GPIOs for segments a-g, decimal on 24
 digits = (23, 22, 27, 18, 17, 4)       # GPIOs for each of the 6 digits
-decimal_point = 24
 FREQUENCY = 1000  # PWM frequency in Hz.
 GLOBAL_BRIGHTNESS = 100  # 100% brightness
 pwms = []  # This list will hold all PWM instances.
@@ -32,33 +31,58 @@ display_queue = queue.Queue() #This is the entire string to be printed >> goes i
 ping_queue = queue.Queue() #just the ping >> goes into display_queue
 bps_queue = queue.Queue() #just the bps >> goes into display_queue
 
-# truth table for segments and where they are.
-# decimal point is on GPIO 24
-number_patterns = {' ':(0,0,0,0,0,0,0),
-    'L':(0,1,0,1,0,1,0),
-    'U':(0,1,1,1,1,1,0),
-    'R':(0,0,0,1,0,0,1),
-    'E':(1,1,0,1,0,1,1),
-    'O':(0,0,0,1,1,1,1),
-    'N':(0,0,0,1,1,0,1),
-    'G':(1,1,0,1,1,1,0),
-    'A':(1,1,1,1,1,0,1),
-    'H':(0,1,0,1,1,0,1),
-    'T':(0,1,0,1,1,1,1), #number 8, the last one is the middle segment
-    'P':(1,1,1,1,0,0,1), #number 5, the last one is the bottom right
-    'B':(0,1,0,1,1,1,1), #number 1, the first one is the top segment
-    'D':(0,0,1,1,1,1,1), #number 2, the second one, is top left segment
-    '0':(1,1,1,1,1,1,0),
-    '1':(0,0,1,0,1,0,0),
-    '2':(1,0,1,1,0,1,1),
-    '3':(1,0,1,0,1,1,1),
-    '4':(0,1,1,0,1,0,1),
-    '5':(1,1,0,0,1,1,1),
-    '6':(1,1,0,1,1,1,1),
-    '7':(1,0,1,0,1,0,0),
-    '8':(1,1,1,1,1,1,1),
-    '9':(1,1,1,0,1,1,1),
-    '_':(0,0,0,0,0,1,0)}
+# Segment patterns for numbers 0-9, some letters also decimals
+number_patterns = {' ':(0,0,0,0,0,0,0,0),
+    'L':(0,1,0,1,0,1,0,0),
+    'U':(0,1,1,1,1,1,0,0),
+    'R':(0,0,0,1,0,0,1,0),
+    'E':(1,1,0,1,0,1,1,0),
+    'O':(0,0,0,1,1,1,1,0),
+    'N':(0,0,0,1,1,0,1,0),
+    'G':(1,1,0,1,1,1,0,0),
+    'A':(1,1,1,1,1,0,1,0),
+    'H':(0,1,0,1,1,0,1,0),
+    'T':(0,1,0,1,1,1,1,0), #number 8, the last one is the middle segment
+    'P':(1,1,1,1,0,0,1,0), #number 5, the last one is the bottom right
+    'B':(0,1,0,1,1,1,1,0), #number 1, the first one is the top segment
+    'D':(0,0,1,1,1,1,1,0), #number 2, the second one, is top left segment
+    '0':(1,1,1,1,1,1,0,0),
+    '1':(0,0,1,0,1,0,0,0),
+    '2':(1,0,1,1,0,1,1,0),
+    '3':(1,0,1,0,1,1,1,0),
+    '4':(0,1,1,0,1,0,1,0),
+    '5':(1,1,0,0,1,1,1,0),
+    '6':(1,1,0,1,1,1,1,0),
+    '7':(1,0,1,0,1,0,0,0),
+    '8':(1,1,1,1,1,1,1,0),
+    '9':(1,1,1,0,1,1,1,0),
+    '_':(0,0,0,0,0,1,0,0),
+    ' ':(0,0,0,0,0,0,0,0),
+    '.':(0,0,0,0,0,0,0,1),
+    'L.':(0,1,0,1,0,1,0,1),
+    'U.':(0,1,1,1,1,1,0,1),
+    'R.':(0,0,0,1,0,0,1,1),
+    'E.':(1,1,0,1,0,1,1,1),
+    'O.':(0,0,0,1,1,1,1,1),
+    'N.':(0,0,0,1,1,0,1,1),
+    'G.':(1,1,0,1,1,1,0,1),
+    'A.':(1,1,1,1,1,0,1,1),
+    'H.':(0,1,0,1,1,0,1,1),
+    'T.':(0,1,0,1,1,1,1,1), #number 8, the last one is the middle segment
+    'P.':(1,1,1,1,0,0,1,1), #number 5, the last one is the bottom right
+    'B.':(0,1,0,1,1,1,1,1), #number 1, the first one is the top segment
+    'D.':(0,0,1,1,1,1,1,1), #number 2, the second one, is top left segment
+    '0.':(1,1,1,1,1,1,0,1),
+    '1.':(0,0,1,0,1,0,0,1),
+    '2.':(1,0,1,1,0,1,1,1),
+    '3.':(1,0,1,0,1,1,1,1),
+    '4.':(0,1,1,0,1,0,1,1),
+    '5.':(1,1,0,0,1,1,1,1),
+    '6.':(1,1,0,1,1,1,1,1),
+    '7.':(1,0,1,0,1,0,0,1),
+    '8.':(1,1,1,1,1,1,1,1),
+    '9.':(1,1,1,0,1,1,1,1),
+    '_.':(0,0,0,0,0,1,0,1)}
 
 def initialize_pwm():
     """Initialize PWM for all segments and digits with global brightness."""

@@ -6,7 +6,7 @@ segments = (25, 5, 6, 12, 13, 19, 16, 24)   # GPIOs for segments a-g, the last f
 digits = (23, 22, 27, 18, 17, 4)        # GPIOs for each of the 6 digits
 FREQUENCY = 1000  # PWM frequency in Hz.
 
-# Segment patterns for numbers 0-9
+# Segment patterns for numbers 0-9, some letters also decimals
 number_patterns = {' ':(0,0,0,0,0,0,0,0),
     'L':(0,1,0,1,0,1,0,0),
     'U':(0,1,1,1,1,1,0,0),
