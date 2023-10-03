@@ -142,24 +142,29 @@ def display_number_on_digit(value, digit_idx):
         GPIO.output(seg_pin, segment_vals[i])
     GPIO.output(digits[digit_idx], 1)
 
-
-
 def diagnostic_test():
     """Runs a diagnostic test to turn on all segments and decimal points."""
     try:
-        for _ in range(5):  # run 5 times
-            # Turn on all segments
-            GPIO.output(segments, [1]*7)
+        # This will light up all segments including decimal points for all digits.
+        all_on_with_decimal = "*"*6 + "."*6
+        print("[diagnostic_test] Lighting up all segments and decimal points for all digits.")
+        display_queue.put(all_on_with_decimal)
+        time.sleep(0.5 * 5)  # Simulate the entire diagnostic running for a similar duration
 
-            # Turn on all digit positions with decimals
-            for digit in digits:
-                GPIO.output(digit, 1)
-                GPIO.output(decimal_point, 1)
-                time.sleep(0.1)  # Reduced sleep duration
-                GPIO.output(digit, 0)
-                GPIO.output(decimal_point, 0)
+        # If you want to iterate digit by digit (like the original function did):
+        for digit_idx in range(6):
+            # Create a string with spaces for all positions except for the current digit, which will have all segments lit.
+            diagnostic_string = " " * digit_idx + "*" + " " * (5 - digit_idx)
+            # Add decimal points accordingly.
+            diagnostic_decimal = " " * digit_idx + "." + " " * (5 - digit_idx)
+            combined_string = diagnostic_string + diagnostic_decimal
+            print(f"[diagnostic_test] Lighting up segments and decimal point for digit {digit_idx + 1}.")
+            display_queue.put(combined_string)
+            time.sleep(0.1)  # Show each digit for 0.1 seconds
+
     except Exception as e:
-        print("An error occurred during the diagnostic test:", e)
+        print("[diagnostic_test] An error occurred during the diagnostic test:", e)
+
 
 def display_ip():
     """Display each octet of the IP address in the desired format for about 1 minute."""
