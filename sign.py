@@ -98,7 +98,6 @@ def setup():
     GPIO.setmode(GPIO.BCM)
     GPIO.setup(segments, GPIO.OUT)
     GPIO.setup(digits, GPIO.OUT)
-    GPIO.setup(decimal_point, GPIO.OUT)
     initialize_pwm()
 
 def cleanup():
