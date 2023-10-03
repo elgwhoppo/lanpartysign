@@ -352,7 +352,7 @@ def main():
             print(f"[Main] found snmp data to be: ", snmp_string)
             stringToPrint = ping_string + snmp_string
             print(f"[Main] sending this to display_queue: ", stringToPrint)
-            display_queue.put(ping_string,snmp_string)
+            display_queue.put(stringToPrint)
             time.sleep(2)  # Give each string 2 seconds on the display
 
     except KeyboardInterrupt:
