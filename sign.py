@@ -12,6 +12,7 @@ import queue
 import random
 import socket
 import http.client
+from pysnmp.hlapi import *
 
 
 # Definitions
@@ -19,6 +20,10 @@ segments = (25, 5, 6, 12, 13, 19, 16, 24)  # GPIOs for segments a-g, decimal on 
 digits = (23, 22, 27, 18, 17, 4)       # GPIOs for each of the 6 digits
 FREQUENCY = 1000  # PWM frequency in Hz.
 GLOBAL_BRIGHTNESS = 100  # 100% brightness
+SNMP_TARGET = "192.168.1.40"
+SNMP_V2_COMMUNITY = "public"
+INTERFACE_OID_IN = "1.3.6.1.2.1.31.1.1.1.6.1"
+INTERFACE_OID_OUT = "1.3.6.1.2.1.31.1.1.1.10.1"
 pwms = []  # This list will hold all PWM instances.
 
 display_value_lock = threading.Lock()
@@ -206,6 +211,60 @@ def threaded_get_ping():
         except Exception as e:
             print("An error occurred: " + str(e))
             return None
+        
+def threaded_get_snmp_bps():
+    prev_in_value = 0
+    prev_out_value = 0
+    prev_time = time.time()
+
+    def fetch_oid_value(oid):
+        errorIndication, errorStatus, _, varBinds = next(
+            getCmd(SnmpEngine(),
+                CommunityData(SNMP_V2_COMMUNITY),
+                UdpTransportTarget((SNMP_TARGET, 161)),
+                ContextData(),
+                ObjectType(ObjectIdentity(oid)))
+        )
+        if errorIndication or errorStatus:
+            print("[threaded_get_snmp_bps]Error fetching OID:", errorIndication or errorStatus)
+            return None
+        return int(varBinds[0][1])
+
+    while True:
+        current_time = time.time()
+        time_interval = current_time - prev_time
+
+        in_value = fetch_oid_value(INTERFACE_OID_IN)
+        out_value = fetch_oid_value(INTERFACE_OID_OUT)
+
+        print("[threaded_get_snmp_bps]Fetched values: IN =", in_value, "OUT =", out_value)
+
+        if in_value is None or out_value is None:
+            print("[threaded_get_snmp_bps]One of the values is None. Sleeping for a second...")
+            time.sleep(1)
+            continue
+
+        in_diff = in_value - prev_in_value
+        out_diff = out_value - prev_out_value
+
+        bps_in = in_diff / time_interval
+        bps_out = out_diff / time_interval
+
+        total_bps = bps_in + bps_out
+
+        print("[threaded_get_snmp_bps]Calculated bps: IN =", bps_in, "bps, OUT =", bps_out, "bps. TOTAL =", total_bps, "bps")
+
+        with open(BPS_FILE_PATH, 'w') as f:
+            f.write(str(int(total_bps)))
+            print("[threaded_get_snmp_bps]Written total bps to file:", BPS_FILE_PATH)
+
+        # Store current values for next iteration
+        prev_in_value = in_value
+        prev_out_value = out_value
+        prev_time = current_time
+
+        print("Sleeping for 1 second...")
+        time.sleep(1)
 
 def test_single_digit():
     """Display the number 8 on the first digit."""
@@ -247,6 +306,10 @@ def main():
         display_thread.start()
     
         display_thread = threading.Thread(target=threaded_get_ping)
+        display_thread.daemon = True  # Set to daemon so it'll automatically exit with the main thread
+        display_thread.start()
+
+        display_thread = threading.Thread(target=threaded_get_snmp_bps)
         display_thread.daemon = True  # Set to daemon so it'll automatically exit with the main thread
         display_thread.start()
 
