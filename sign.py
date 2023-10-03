@@ -34,6 +34,10 @@ bps_queue = queue.Queue() #just the bps >> goes into display_queue
 # define how often to fetch data and ping in milliseconds (e.g. 1000 = 1 second)
 fetchrate = 750
 
+# what remote IP should I ping to test for latency?
+iptoping = "8.8.8.8" #Google DNS IP-Anycast
+#iptoping = "139.130.4.5" #Australia DNS
+
 # Segment patterns for numbers 0-9, some letters also decimals
 number_patterns = {' ':(0,0,0,0,0,0,0,0),
     'L':(0,1,0,1,0,1,0,0),
