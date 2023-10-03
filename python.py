@@ -134,17 +134,27 @@ num = {' ':(0,0,0,0,0,0,0),
     '_':(0,0,0,0,0,1,0)}
 
 def display_number_on_digit(value, digit_idx):
-    # If the value is ".", only turn on the decimal point.
-    if value == ".":
+    # Special handling for the decimal point
+    if value == '.':
         GPIO.output(decimal_point, 1)
-    elif value in num:
-        segment_vals = num[value]
-        for i, seg_pin in enumerate(segments):
-            GPIO.output(seg_pin, segment_vals[i])
-    # Else, the value is not in our dictionary, so don't light up any segments
     else:
-        GPIO.output(segments, [0]*7)
-    GPIO.output(digits[digit_idx], 1)
+        # Check if the character is a digit (0-9)
+        if value.isdigit():
+            segment_vals = num[value]
+            for i, seg_pin in enumerate(segments):
+                GPIO.output(seg_pin, segment_vals[i])
+            GPIO.output(digits[digit_idx], 1)
+        else:
+            # Handle non-digit characters by turning off all segments
+            for seg_pin in segments:
+                GPIO.output(seg_pin, 0)
+            GPIO.output(digits[digit_idx], 0)
+    
+    time.sleep(0.002)  # Adjust this delay to reduce flickering
+
+    # Turn off the current digit and decimal point to prepare for the next character
+    GPIO.output(digits[digit_idx], 0)
+    GPIO.output(decimal_point, 0)
 
 def diagnostic_test():
     """Runs a diagnostic test to display numbers from 1 to 9 on each digit with the decimal lit up."""
@@ -203,7 +213,8 @@ def threaded_display():
     while True:
         # Try to get a new value from the queue (non-blocking)
         try:
-            new_string = display_queue.get_nowait()
+            #new_string = display_queue.get_nowait()
+            new_string = "1.2.3.4.5.6."
             print("[threaded_display] Got the following from the queue:", new_string)
             current_string = new_string
         except queue.Empty:
@@ -416,7 +427,7 @@ def main():
         display_thread.daemon = True  # Set to daemon so it'll automatically exit with the main thread
         display_thread.start()
 
-        diagnostic_test()  # Show diagnostics
+        #diagnostic_test()  # Show diagnostics
         #display_ip()  # Show IP address
 
         # Start other threads
