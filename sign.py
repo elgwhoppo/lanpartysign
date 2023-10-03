@@ -25,7 +25,7 @@ pwms = []  # This list will hold all PWM instances.
 display_value_lock = threading.Lock()
 
 # Global variable to hold the current value to be displayed
-stringToPrint = "      "
+stringToPrint = "1.2.3.4.5.6."
 
 # Use a queue to communicate between threads
 display_queue = queue.Queue() #This is the entire string to be printed
@@ -68,7 +68,6 @@ def initialize_pwm():
         pwm.start(GLOBAL_BRIGHTNESS)
         pwms.append(pwm)
 
-
 def setup():
     # initialization stuff
     GPIO.setwarnings(False)
@@ -86,35 +85,33 @@ def cleanup():
 
 
 def threaded_display():
-    current_string = " " * 6  # default value; adjust to your needs
+    current_string = " " * 6  # Default value; adjust to your needs
     print("[threaded_display] Started!")
 
     while True:
         # Try to get a new value from the queue (non-blocking)
         try:
-            #new_string = display_queue.get_nowait()
-            #new_string = ping_queue.get_nowait()
-            new_string = "123888"
+            new_string = display_queue.get_nowait()
             print("[threaded_display] Got the following from the queue:", new_string)
             current_string = new_string
         except queue.Empty:
             # No new value in the queue
             pass
 
-        str_to_display = current_string.replace(".", "")
-        decimals = [i-1 for i, char in enumerate(current_string) if char == "."]
+        # Split the string into segments with decimal points
+        segments_with_decimal = current_string.split('.')
+        for i in range(6):
+            # Display the segment without the decimal point
+            segment_to_display = segments_with_decimal[i] if i < len(segments_with_decimal) else ' '
+            GPIO.output(segments, num[segment_to_display])
+            
+            # Determine if the decimal point should be displayed
+            decimal_point_enabled = i < (len(segments_with_decimal) - 1)
+            GPIO.output(decimal_point, decimal_point_enabled)
 
-        for idx, char in enumerate(str_to_display):
-            GPIO.output(segments, num[char])   # Set segments for the character
-
-            if idx in decimals:
-                GPIO.output(decimal_point, 1)
-            else:
-                GPIO.output(decimal_point, 0)
-
-            GPIO.output(digits[idx], 1)        # Light up the current digit
-            time.sleep(0.002)                  # Adjust this delay to reduce flickering
-            GPIO.output(digits[idx], 0)        # Turn off the current digit to prepare for next
+            GPIO.output(digits[i], 1)  # Light up the current digit
+            time.sleep(0.002)          # Adjust this delay to reduce flickering
+            GPIO.output(digits[i], 0)  # Turn off the current digit to prepare for next
 
 
 def main():
@@ -138,6 +135,7 @@ def main():
 
         while True:
             print("[Main] sleeping 10 seconds...", stringToPrint)
+            display_queue.put(stringToPrint)
             time.sleep(10)
 
     except KeyboardInterrupt:
