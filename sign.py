@@ -217,27 +217,34 @@ def threaded_get_snmp_bps():
     prev_out_value = 0
     prev_time = time.time()
 
-    def fetch_oid_value(oid):
+    def fetch_oid_values(*oids):
+        # Request multiple OIDs in one go
         errorIndication, errorStatus, _, varBinds = next(
             getCmd(SnmpEngine(),
-                CommunityData(SNMP_V2_COMMUNITY),
-                UdpTransportTarget((SNMP_TARGET, 161)),
-                ContextData(),
-                ObjectType(ObjectIdentity(oid)))
+                   CommunityData(SNMP_V2_COMMUNITY),
+                   UdpTransportTarget((SNMP_TARGET, 161)),
+                   ContextData(),
+                   *[ObjectType(ObjectIdentity(oid)) for oid in oids])
         )
         if errorIndication or errorStatus:
-            print("[threaded_get_snmp_bps] Error fetching OID:", errorIndication or errorStatus)
-            return None
-        return int(varBinds[0][1])
+            print("[threaded_get_snmp_bps] Error fetching OIDs:", errorIndication or errorStatus)
+            return [None] * len(oids)
+        return [int(varBind[1]) for varBind in varBinds]
+
+    def format_bps(t):
+        # Simplified the data formatting logic
+        thresholds = [(1_000_000_000, 'G', 1_000_000), (100_000_000, '', 1), 
+                      (10_000_000, '.', 1_000), (0, '.', 100)]
+        for thresh, symbol, divisor in thresholds:
+            if t >= thresh:
+                return f"{t // divisor}{symbol}{(t % divisor) // (divisor // 10)}"
+        return "0.00"
 
     while True:
         current_time = time.time()
         time_interval = current_time - prev_time
 
-        in_value = fetch_oid_value(INTERFACE_OID_IN)
-        out_value = fetch_oid_value(INTERFACE_OID_OUT)
-
-        print("[threaded_get_snmp_bps] Fetched values: IN =", in_value, "OUT =", out_value)
+        in_value, out_value = fetch_oid_values(INTERFACE_OID_IN, INTERFACE_OID_OUT)
 
         if in_value is None or out_value is None:
             print("[threaded_get_snmp_bps] One of the values is None. Sleeping for a second...")
@@ -249,44 +256,19 @@ def threaded_get_snmp_bps():
 
         bps_in = in_diff / time_interval
         bps_out = out_diff / time_interval
-
         total_bps = int(bps_in + bps_out)
 
-        print("[threaded_get_snmp_bps] Calculated bps: IN =", bps_in, "bps, OUT =", bps_out, "bps. TOTAL =", total_bps, "bps")
-
-        t = total_bps
-
-        #maths
-        var_bps = int(t)
-        var_kbps = int(t)/1000
-        var_mbps = int(t)/1000000
-        var_gbps = int(t)/1000000000
-    
-        # 1.5G
-        if t >= 1000000000:
-            v = str(var_gbps)[0:1]+str(".")+str(var_mbps)[0:1]+str("G")
-        # 689
-        if t >= 100000000 and t < 1000000000:
-            v = str(var_mbps)[0:3]
-        # 56.3
-        if t >= 10000000 and t < 100000000:
-            v = str(var_mbps)[0:2]+(".")+str(var_kbps)[0:1]
-        # 0.04
-        if t < 10000000:
-            v = str(var_mbps)[0:1]+(".")+str(var_kbps)[0:2]
-
+        v = format_bps(total_bps)
         print("[threaded_get_snmp_bps] Properly formatted: ", v)
-
         snmp_queue.put(v)  # Push the new value to the queue
-
 
         # Store current values for next iteration
         prev_in_value = in_value
         prev_out_value = out_value
         prev_time = current_time
 
-        print("[threaded_get_snmp_bps] Sleeping for 2 seconds...")
         time.sleep(2)
+
 
 def test_single_digit():
     """Display the number 8 on the first digit."""
