@@ -203,7 +203,8 @@ def threaded_display():
     while True:
     # Try to get a new value from the queue (non-blocking)
         try:
-            new_string = display_queue.get_nowait()
+            #new_string = display_queue.get_nowait()
+            new_string = "HA10HH"
             print("[threaded_display] Got the following from the queue:", new_string)
             current_string = new_string
         except queue.Empty:
