@@ -162,7 +162,7 @@ def diagnostic_test():
 
 
 def display_ip():
-    """Display each octet of the IP address in the desired format for about 1 minute."""
+    """Push the formatted IP address strings to the display queue for about 1 minute."""
 
     def get_ip_address():
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -182,25 +182,16 @@ def display_ip():
 
     formatted_strings = [
         "ADD 1P",
-        f"{int(octets[1]):03}{int(octets[0]):03}",
-        f"{int(octets[3]):03}{int(octets[2]):03}"
+        f"{int(octets[1]):03}.{int(octets[0]):03}",
+        f"{int(octets[3]):03}.{int(octets[2]):03}"
     ]
 
     while time.time() - start_time < 60:  # run for about 1 minute
         for to_display in formatted_strings:
-            end_time = time.time() + 1  # set end time to 1 second from now
-            while time.time() < end_time:
-                for idx, char in enumerate(to_display):
-                    if char == ".":
-                        GPIO.output(decimal_point, 1)
-                    else:
-                        GPIO.output(decimal_point, 0)
-                    display_number_on_digit(char, idx)
-                    time.sleep(0.002)  # Adjust this delay to reduce flickering
+            print(f"[display_ip] Pushing '{to_display}' to display_queue")
+            display_queue.put(to_display)  # Push the formatted string to the queue
+            time.sleep(1)  # Display each formatted string for 1 second
 
-                    # Turn off the current digit and decimal point to prepare for the next character
-                    GPIO.output(digits[idx], 0)
-                    GPIO.output(decimal_point, 0)
 
 
 def threaded_display():
@@ -211,6 +202,7 @@ def threaded_display():
         # Try to get a new value from the queue (non-blocking)
         try:
             new_string = ping_queue.get_nowait()
+            #new_string = "HA1OOH" #use for testing to make sure this is working OK all by itself
             print("[threaded_display] Got the following from the queue:", new_string)
             current_string = new_string
         except queue.Empty:
