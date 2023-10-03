@@ -206,7 +206,7 @@ def threaded_get_ping():
             if ping_loop_counter % 10 == 0:
                 print("[threaded_display] Ping thread is running. One of the last 10 pings is:", y)
                 ping_loop_counter = 0
-            time.sleep(0.75)
+            time.sleep(0.25)
 
         except Exception as e:
             print("An error occurred: " + str(e))
@@ -335,7 +335,7 @@ def main():
             stringToPrint = ping_string + snmp_string
             print(f"[Main] sending this to display_queue: ", stringToPrint)
             display_queue.put(stringToPrint)
-            time.sleep(2)  # Give each string 2 seconds on the display
+            time.sleep(0.25)  # Give each string 2 seconds on the display
 
     except KeyboardInterrupt:
         # Clean up GPIOs upon exit
