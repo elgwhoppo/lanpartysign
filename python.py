@@ -98,7 +98,7 @@ def cleanup():
     GPIO.cleanup()
 
 # Global variable to hold the current value to be displayed
-stringToPrint = "      "
+stringToPrint = "            "
 
 # Use a queue to communicate between threads
 display_queue = queue.Queue() #This is the entire string to be printed
