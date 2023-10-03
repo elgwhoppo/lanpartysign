@@ -254,6 +254,8 @@ def threaded_get_snmp_bps():
 
         print("[threaded_get_snmp_bps] Calculated bps: IN =", bps_in, "bps, OUT =", bps_out, "bps. TOTAL =", total_bps, "bps")
 
+
+        snmp_queue.put(bps)  # Push the new value to the queue
         #with open(BPS_FILE_PATH, 'w') as f:
         #    f.write(str(int(total_bps)))
         #    print("[threaded_get_snmp_bps]Written total bps to file:", BPS_FILE_PATH)
