@@ -122,35 +122,29 @@ def threaded_display():
         # No sleep in this loop. We want the display method to dominate.
 
 
-def display_string(s):
+def display_string(s, duration=1):
     """Display a string on the seven-segment displays."""
     expanded_string = []
     for i in range(len(s)):
-        if s[i] == '.' and i > 0:
-            expanded_string[-1] += '.'
+        if s[i] == '.' and i > 0:  # if a dot is found and it's not the first character
+            expanded_string[-1] += '.'  # append the dot to the last character
         else:
-            expanded_string.append(s[i])
+            expanded_string.append(s[i])  # add the character to the new string
 
+    # Pad the expanded string with spaces to ensure it's 6 characters long
     while len(expanded_string) < 6:
         expanded_string.append(' ')
 
-    for digit, char in zip(digits, expanded_string):
-        pattern = number_patterns.get(char, number_patterns[' '])
-        
-        # First, turn off all digits
-        for d in digits:
-            GPIO.output(d, GPIO.LOW)
-        
-        # Then set the segment states for the current character
-        for segment, value in zip(segments, pattern):
-            GPIO.output(segment, value)
-        
-        # Now, turn on the current digit
-        GPIO.output(digit, GPIO.HIGH)
-        
-        # Pause for a while so the digit is visible
-        time.sleep(0.003)
+    for _ in range(int(duration * 100)):  # Assuming 100Hz refresh rate
+        for digit, char in zip(digits, expanded_string):
+            pattern = number_patterns.get(char, number_patterns[' '])  # Default to blank if char not recognized
+            GPIO.output(digit, GPIO.HIGH)  # Enable this digit
 
+            for segment, value in zip(segments, pattern):
+                GPIO.output(segment, value)
+
+            time.sleep(0.002)  # To make the display visible
+            GPIO.output(digit, GPIO.LOW)  # Disable this digit
 
 
 def test_single_digit():
