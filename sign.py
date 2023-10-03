@@ -121,7 +121,7 @@ def threaded_display():
         display_string(current_string)
 
 
-def display_string(s, duration=1):
+def display_string(s, duration=0.5):
     """Display a string on the seven-segment displays."""
     # Transform the input string to ensure it's 6 characters long, taking decimals into account
     num_decimals = s.count('.')
@@ -145,7 +145,7 @@ def display_string(s, duration=1):
             else:
                 expanded_string.append(s[i])
 
-    for _ in range(int(duration * 100)):  # Assuming 100Hz refresh rate
+    for _ in range(int(duration * 12)):  # Assuming 12Hz refresh rate for each character
         for digit, char in zip(digits, expanded_string):
             pattern = number_patterns.get(char, number_patterns[' '])  # Default to blank if char not recognized
             GPIO.output(digit, GPIO.HIGH)  # Enable this digit
@@ -153,7 +153,7 @@ def display_string(s, duration=1):
             for segment, value in zip(segments, pattern):
                 GPIO.output(segment, value)
 
-            time.sleep(0.002)  # To make the display visible
+            time.sleep(0.005)  # To make the display visible
             GPIO.output(digit, GPIO.LOW)  # Disable this digit
 
 def display_ip():
@@ -313,9 +313,9 @@ def main():
         display_thread.daemon = True  # Set to daemon so it'll automatically exit with the main thread
         display_thread.start()
 
-        display_thread = threading.Thread(target=threaded_get_snmp_bps)
-        display_thread.daemon = True  # Set to daemon so it'll automatically exit with the main thread
-        display_thread.start()
+        #display_thread = threading.Thread(target=threaded_get_snmp_bps)
+        #display_thread.daemon = True  # Set to daemon so it'll automatically exit with the main thread
+        #display_thread.start()
 
         #display_ip()  # Display the IP address for about 1 minute
 
