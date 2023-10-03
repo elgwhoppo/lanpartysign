@@ -255,6 +255,12 @@ def threaded_get_snmp_bps():
         print("[threaded_get_snmp_bps] Calculated bps: IN =", bps_in, "bps, OUT =", bps_out, "bps. TOTAL =", total_bps, "bps")
 
         t = total_bps
+
+        #maths
+        var_bps = int(t)
+        var_kbps = int(t)/1000
+        var_mbps = int(t)/1000000
+        var_gbps = int(t)/1000000000
     
         # 1.5G
         if t >= 1000000000:
