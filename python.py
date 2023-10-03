@@ -156,39 +156,48 @@ def display_number_on_digit(value, digit_idx):
     GPIO.output(digits[digit_idx], 0)
     GPIO.output(decimal_point, 0)
 
-
 def threaded_display():
-    current_string = " " * 12  # default value; adjust for 12 characters
     print("[threaded_display] Started!")
 
     while True:
-        # Try to get a new value from the queue (non-blocking)
         try:
             #new_string = display_queue.get_nowait()
             new_string = "1.2.3.4.5.6."
             print("[threaded_display] Got the following from the queue:", new_string)
-            current_string = new_string
         except queue.Empty:
-            # No new value in the queue
             pass
 
-        # Loop through only the number positions in the string (0, 2, 4, ...)
-        for idx in range(0, 12, 2):
-            char = current_string[idx]
-            
-            # Check if the next character is a decimal
-            is_decimal = current_string[idx + 1] == '.'
-            
-            # Light up decimal if required
-            GPIO.output(decimal_point, is_decimal)
-            
-            # Display the character
-            display_number_on_digit(char, idx // 2)  # Use idx // 2 to get the digit position
-            time.sleep(0.002)
+        # Initialize a list to store segment values for each digit
+        digit_segments = [[] for _ in range(6)]
 
-            # Turn off the current digit to prepare for next
-            GPIO.output(digits[idx // 2], 0)
-            GPIO.output(decimal_point, 0)  # Turn off decimal point as well
+        # Iterate through each character in the new string
+        for char in new_string:
+            if char == '.':
+                # Handle decimal point
+                for i in range(6):
+                    digit_segments[i].append(1)
+            elif char in num:
+                # Handle valid characters using the truth table
+                segments = num[char]
+                for i in range(6):
+                    digit_segments[i].append(segments[i])
+            else:
+                # Handle characters not in the truth table (e.g., space)
+                for i in range(6):
+                    digit_segments[i].append(0)
+
+        # Update the segments for each digit
+        for idx in range(6):
+            GPIO.output(segments[idx], digit_segments[idx])
+        
+        # Sleep for a short duration to control the display update rate
+        time.sleep(0.002)
+
+        # Turn off all digits and decimal point
+        for i in range(6):
+            GPIO.output(digits[i], 0)
+        GPIO.output(decimal_point, 0)
+
 
 def diagnostic_test():
     """Runs a diagnostic test to display numbers from 1 to 9 on each digit with the decimal lit up."""
