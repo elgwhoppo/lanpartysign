@@ -106,7 +106,8 @@ def threaded_display():
             GPIO.output(segments, num.get(segment_to_display, num[' ']))  # Use ' ' for unsupported characters
 
             GPIO.output(digits[i], 1)  # Light up the current digit
-            time.sleep(0.002)          # Adjust this delay to reduce flickering
+            #ime.sleep(0.002)          # Adjust this delay to reduce flickering
+            time.sleep(0.1)          # Adjust this delay to reduce flickering
             GPIO.output(digits[i], 0)  # Turn off the current digit to prepare for next
 
 

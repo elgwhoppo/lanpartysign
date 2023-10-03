@@ -2,7 +2,7 @@ import RPi.GPIO as GPIO
 import time
 
 # Definitions
-segments = (25, 5, 6, 12, 13, 19, 16, 24)   # GPIOs for segments a-g
+segments = (25, 5, 6, 12, 13, 19, 16, 24)   # GPIOs for segments a-g, the last for decimal
 digits = (23, 22, 27, 18, 17, 4)        # GPIOs for each of the 6 digits
 FREQUENCY = 1000  # PWM frequency in Hz.
 
@@ -33,6 +33,7 @@ number_patterns = {' ':(0,0,0,0,0,0,0,0),
     '9':(1,1,1,0,1,1,1,0),
     '_':(0,0,0,0,0,1,0,0),
     ' ':(0,0,0,0,0,0,0,0),
+    '.':(0,0,0,0,0,0,0,1),
     'L.':(0,1,0,1,0,1,0,1),
     'U.':(0,1,1,1,1,1,0,1),
     'R.':(0,0,0,1,0,0,1,1),
@@ -61,7 +62,7 @@ number_patterns = {' ':(0,0,0,0,0,0,0,0),
 def setup():
     """Initialize GPIO pins."""
     GPIO.setmode(GPIO.BCM)
-    for pin in segments + digits + (decimal_point, ):
+    for pin in segments + digits:
         GPIO.setup(pin, GPIO.OUT)
         GPIO.output(pin, GPIO.LOW)
 
@@ -69,38 +70,46 @@ def cleanup():
     """Cleanup GPIO settings."""
     GPIO.cleanup()
 
+
+def display_string(s, duration=1):
+    """Display a string on the seven-segment displays."""
+    expanded_string = []
+    for i in range(len(s)):
+        if s[i] == '.' and i > 0:  # if a dot is found and it's not the first character
+            expanded_string[-1] += '.'  # append the dot to the last character
+        else:
+            expanded_string.append(s[i])  # add the character to the new string
+
+    # Pad the expanded string with spaces to ensure it's 6 characters long
+    while len(expanded_string) < 6:
+        expanded_string.append(' ')
+
+    for _ in range(int(duration * 100)):  # Assuming 100Hz refresh rate
+        for digit, char in zip(digits, expanded_string):
+            pattern = number_patterns.get(char, number_patterns[' '])  # Default to blank if char not recognized
+            GPIO.output(digit, GPIO.HIGH)  # Enable this digit
+
+            for segment, value in zip(segments, pattern):
+                GPIO.output(segment, value)
+
+            time.sleep(0.002)  # To make the display visible
+            GPIO.output(digit, GPIO.LOW)  # Disable this digit
+
+
 def main():
     setup()
 
-    # Turn on all digits
-    for digit in digits:
-        GPIO.output(digit, GPIO.HIGH)
-
-            
-    # Initialize PWM for all segment pins.
-    pwms = [GPIO.PWM(pin, FREQUENCY) for pin in segments]
-    for pwm in pwms:
-        pwm.start(100)
-
     try:
-        # Display numbers 0-9 with varying brightness levels
-        for number in range(0, 10):
-            pattern = number_patterns[str(number)]
-            brightness = 100 if number == 0 else number * 10
-            for i, pwm in enumerate(pwms):
-                if pattern[i]:
-                    pwm.ChangeDutyCycle(brightness)  # Modify brightness as per the number
-                else:
-                    pwm.ChangeDutyCycle(0)  # Turn off segment
-            print(f"Displaying number {number} at {brightness}% brightness")
+        # Display sample strings
+        for text in ["1.P._.1.P._.", "123456", "6.5.4.3.2.1."]:
+            display_string(text, duration=2)
+            print(f"Displaying text {text}")
             time.sleep(1)
 
     except KeyboardInterrupt:
         pass
 
     finally:
-        for pwm in pwms:
-            pwm.stop()
         cleanup()
 
 if __name__ == "__main__":
