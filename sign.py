@@ -316,8 +316,16 @@ def main():
         #display_ip()  # Display the IP address for about 1 minute
 
         while True:
-            ping_string = ping_queue.get_nowait()
-            snmp_string = snmp_queue.get_nowait()
+            try:
+                ping_string = ping_queue.get_nowait()
+            except queue.Empty:
+                ping_string = None
+            
+            try:
+                snmp_string = snmp_queue.get_nowait()
+            except queue.Empty:
+                snmp_string = None
+                
             for text in [ping_string,snmp_string]:
                 print(f"[Main] Displaying text {text}")
                 display_queue.put(text)
