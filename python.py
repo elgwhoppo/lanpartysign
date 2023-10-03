@@ -120,7 +120,8 @@ def threaded_display():
     while True:
         # Try to get a new value from the queue (non-blocking)
         try:
-            new_string = display_queue.get_nowait()
+            #new_string = display_queue.get_nowait()
+            new_string = ping_queue.get_nowait()
             print("[threaded_display] Got the following from the queue:", new_string)
             current_string = new_string
         except queue.Empty:
@@ -152,7 +153,8 @@ def threaded_get_ping():
             pingresponse.append("999")
             y = pingresponse[0]
             print("[threaded_get_ping]:Latency to " + iptoping + " is pinging: " + str(y))
-            display_queue.put(y)  # Push the new value to the queue
+            ping_queue.put(y)  # Push the new value to the queue
+            print("[threaded_get_ping]:Pushed ",str(y)," to ",ping_queue)
             time.sleep(fetchrate*.001)
         except Exception as e:
             print("An error occurred: " + str(e))
@@ -329,7 +331,7 @@ def main():
         #display_thread.start()
 
         while True: 
-            Print("[Main] sleeping 10 seconds...", stringToPrint)
+            print("[Main] sleeping 10 seconds...", stringToPrint)
             time.sleep(10)
 
     except KeyboardInterrupt:
