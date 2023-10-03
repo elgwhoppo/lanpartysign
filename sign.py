@@ -339,12 +339,12 @@ def main():
 
         while True:
             try:
-                ping_string = ping_queue.get_nowait()
+                ping_string = ping_queue.get(timeout=0.5)
             except queue.Empty:
                 ping_string = "O_0"
             
             try:
-                snmp_string = snmp_queue.get_nowait()
+                snmp_string = snmp_queue.get(timeout=0.5)
             except queue.Empty:
                 snmp_string = "O_0"
             
