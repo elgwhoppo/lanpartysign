@@ -204,30 +204,42 @@ def display_ip():
 
 
 def threaded_display():
-    global stringToPrint
+    current_string = " " * 6  # default value; adjust to your needs
     print("[threaded_display] Started!")
+
     while True:
         # Try to get a new value from the queue (non-blocking)
         try:
-            new_string = display_queue.get_nowait()
+            new_string = ping_queue.get_nowait()
             print("[threaded_display] Got the following from the queue:", new_string)
-            stringToPrint = new_string
+            current_string = new_string
         except queue.Empty:
-            # No new value in the queue, use the last known value
+            # No new value in the queue
             pass
 
-        for idx, char in enumerate(stringToPrint):
-            if char == ".":
+        # Create chunks for display
+        chunks = []
+        i = 0
+        while i < len(current_string):
+            chunk = current_string[i]
+            if i + 1 < len(current_string) and current_string[i + 1] == ".":
+                chunk += "."
+                i += 1
+            chunks.append(chunk)
+            i += 1
+
+        for idx, chunk in enumerate(chunks):
+            if '.' in chunk:
                 GPIO.output(decimal_point, 1)
             else:
                 GPIO.output(decimal_point, 0)
-
-            display_number_on_digit(char, idx)
+            display_number_on_digit(chunk[0], idx)  # Pass only the character, not the '.' to the function
             time.sleep(0.002)
 
             # Turn off the current digit to prepare for next
             GPIO.output(digits[idx], 0)
             GPIO.output(decimal_point, 0)  # Turn off decimal point as well
+
 
 
 def threaded_get_ping():
