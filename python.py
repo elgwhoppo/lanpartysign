@@ -168,7 +168,7 @@ def threaded_display():
             pass
 
         # Initialize a list to store segment values for each digit
-        digit_segments = [[] for _ in range(6)]
+        digit_segments = [[], [], [], [], [], []]
 
         # Iterate through each character in the new string
         for char in new_string:
