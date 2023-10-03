@@ -147,14 +147,16 @@ def display_number_on_digit(value, digit_idx):
     GPIO.output(digits[digit_idx], 1)
 
 def diagnostic_test():
-    """Runs a diagnostic test to turn on all segments and decimal points."""
+    """Runs a diagnostic test to display numbers from 1 to 9 on each digit with the decimal lit up."""
     try:
-        print("[diagnostic_test] Lighting up all segments and decimal points for all digits.")
-        for _ in range(5):  # run 5 times
-            # Queue a string with '8' (all segments on) and '.' to turn on the decimal point for each digit
-            diagnostic_string = "8."*6
-            display_queue.put(diagnostic_string)
-            time.sleep(0.5)  # Sleep duration between displaying each test string
+        print("[diagnostic_test] Displaying numbers 1 to 9 on each digit with decimal lit up.")
+        
+        for digit in digits:  # for each digit position
+            for num_char in "123456789":  # cycle through the numbers 1-9
+                to_display = num_char + '.'  # append a decimal for visualization
+                print(f"[diagnostic_test] Sending to queue: {to_display}")
+                display_queue.put(to_display)  # Push the value to the queue for the threaded_display to handle
+                time.sleep(1)  # display each number for 1 second
 
     except Exception as e:
         print("An error occurred during the diagnostic test:", e)
@@ -415,12 +417,12 @@ def main():
         display_thread.start()
 
         diagnostic_test()  # Show diagnostics
-        display_ip()  # Show IP address
+        #display_ip()  # Show IP address
 
         # Start other threads
-        ping_thread = threading.Thread(target=threaded_get_ping)
-        ping_thread.daemon = True
-        ping_thread.start()
+        #ping_thread = threading.Thread(target=threaded_get_ping)
+        #ping_thread.daemon = True
+        #ping_thread.start()
 
         # TODO: Start other threads if necessary...
 
