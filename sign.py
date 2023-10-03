@@ -144,6 +144,36 @@ def display_string(s, duration=1):
             time.sleep(0.002)  # To make the display visible
             GPIO.output(digit, GPIO.LOW)  # Disable this digit
 
+def display_ip():
+    """Push the formatted IP address strings to the display queue for about 1 minute."""
+
+    def get_ip_address():
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        try:
+            # Doesn't need to be reachable
+            s.connect(('10.254.254.254', 1))
+            IP = s.getsockname()[0]
+        except:
+            IP = '127.0.0.1'
+        finally:
+            s.close()
+        return IP
+
+    ip = get_ip_address()
+    octets = ip.split('.')
+    start_time = time.time()
+
+    formatted_strings = [
+        "ADD 1P",
+        f"{int(octets[1]):03}.{int(octets[0]):03}",
+        f"{int(octets[3]):03}.{int(octets[2]):03}"
+    ]
+
+    while time.time() - start_time < 60:  # run for about 1 minute
+        for to_display in formatted_strings:
+            print(f"[display_ip] Pushing '{to_display}' to display_queue")
+            display_queue.put(to_display)  # Push the formatted string to the queue
+            time.sleep(1)  # Display each formatted string for 1 second
 
 def test_single_digit():
     """Display the number 8 on the first digit."""
@@ -177,6 +207,7 @@ def main():
         setup()  # Initialize
         test_single_digit()  # Test single digit without any cycling
         test_all_digits() # Test single digit with cycling
+        display_ip()
 
         # Start the display thread first
         display_thread = threading.Thread(target=threaded_display)
