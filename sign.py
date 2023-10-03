@@ -144,14 +144,24 @@ def display_string(s):
         GPIO.output(digit, GPIO.LOW)  # Disable this digit
 
 
+def test_single_digit():
+    """Display the number 8 on the first digit."""
+    pattern = number_patterns['8']
+    GPIO.output(digits[0], GPIO.HIGH)  # Enable the first digit
+
+    for segment, value in zip(segments, pattern):
+        GPIO.output(segment, value)
+
+
 def main():
     try:
         setup()  # Initialize
+        test_single_digit()  # Test single digit without any cycling
 
         # Start the display thread first
-        display_thread = threading.Thread(target=threaded_display)
-        display_thread.daemon = True  # Set to daemon so it'll automatically exit with the main thread
-        display_thread.start()
+        #display_thread = threading.Thread(target=threaded_display)
+        #display_thread.daemon = True  # Set to daemon so it'll automatically exit with the main thread
+        #display_thread.start()
 
         while True:
             print("[Main] sleeping 10 seconds...", stringToPrint)
