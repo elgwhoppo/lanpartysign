@@ -238,7 +238,7 @@ def main():
     try:
         setup()  # Initialize
         #test_single_digit()  # Test single digit without any cycling
-        test_all_digits() # Test single digit with cycling
+        #test_all_digits() # Test single digit with cycling
         
 
         # Start the display thread first
