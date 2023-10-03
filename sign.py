@@ -254,16 +254,37 @@ def threaded_get_snmp_bps():
 
         print("[threaded_get_snmp_bps] Calculated bps: IN =", bps_in, "bps, OUT =", bps_out, "bps. TOTAL =", total_bps, "bps")
 
+        t = total_bps
+    
+        # 1.5G
+        if t >= 1000000000:
+            v = str(var_gbps)[0:1]+str(".")+str(var_mbps)[0:1]+str("G")
+        # 689
+        if t >= 100000000 and t < 1000000000:
+            v = str(var_mbps)[0:3]
+        # 56.3
+        if t >= 10000000 and t < 100000000:
+            v = str(var_mbps)[0:2]+(".")+str(var_kbps)[0:1]
+        # 0.04
+        if t < 10000000:
+            v = str(var_mbps)[0:1]+(".")+str(var_kbps)[0:2]
+
+        print("[threaded_get_snmp_bps] Properly formatted: ", v)
+
+
 
         snmp_queue.put(total_bps)  # Push the new value to the queue
-        #with open(BPS_FILE_PATH, 'w') as f:
-        #    f.write(str(int(total_bps)))
-        #    print("[threaded_get_snmp_bps]Written total bps to file:", BPS_FILE_PATH)
+
 
         # Store current values for next iteration
         prev_in_value = in_value
         prev_out_value = out_value
         prev_time = current_time
+
+
+        
+
+
 
         print("[threaded_get_snmp_bps] Sleeping for 1 second...")
         time.sleep(1)
