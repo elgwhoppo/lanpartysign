@@ -206,7 +206,7 @@ def threaded_get_ping():
             if ping_loop_counter % 10 == 0:
                 print("[threaded_display] Ping thread is running. One of the last 10 pings is:", y)
                 ping_loop_counter = 0
-            time.sleep(fetchrate*.01)
+            time.sleep(0.75)
 
         except Exception as e:
             print("An error occurred: " + str(e))
