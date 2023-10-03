@@ -277,8 +277,6 @@ def threaded_get_snmp_bps():
 
         print("[threaded_get_snmp_bps] Properly formatted: ", v)
 
-
-
         snmp_queue.put(v)  # Push the new value to the queue
 
 
@@ -286,11 +284,6 @@ def threaded_get_snmp_bps():
         prev_in_value = in_value
         prev_out_value = out_value
         prev_time = current_time
-
-
-        
-
-
 
         print("[threaded_get_snmp_bps] Sleeping for 1 second...")
         time.sleep(1)
@@ -334,13 +327,13 @@ def main():
         display_thread.daemon = True  # Set to daemon so it'll automatically exit with the main thread
         display_thread.start()
     
-        display_thread = threading.Thread(target=threaded_get_ping)
-        display_thread.daemon = True  # Set to daemon so it'll automatically exit with the main thread
-        display_thread.start()
+        #display_thread = threading.Thread(target=threaded_get_ping)
+        #display_thread.daemon = True  # Set to daemon so it'll automatically exit with the main thread
+        #display_thread.start()
 
-        display_thread = threading.Thread(target=threaded_get_snmp_bps)
-        display_thread.daemon = True  # Set to daemon so it'll automatically exit with the main thread
-        display_thread.start()
+        #display_thread = threading.Thread(target=threaded_get_snmp_bps)
+        #display_thread.daemon = True  # Set to daemon so it'll automatically exit with the main thread
+        #display_thread.start()
 
         #display_ip()  # Display the IP address for about 1 minute
 
