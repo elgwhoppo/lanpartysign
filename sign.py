@@ -207,12 +207,14 @@ def main():
         setup()  # Initialize
         #test_single_digit()  # Test single digit without any cycling
         #test_all_digits() # Test single digit with cycling
-        display_ip()
+        
 
         # Start the display thread first
         display_thread = threading.Thread(target=threaded_display)
         display_thread.daemon = True  # Set to daemon so it'll automatically exit with the main thread
         display_thread.start()
+
+        display_ip()  # Display the IP address for about 1 minute
 
         while True:
             for text in ["1.P._.1.P._.", "123456", "6.5.4.3.2.1."]:
