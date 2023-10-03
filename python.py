@@ -70,7 +70,6 @@ bps = 0
 snmpdelaycounter = 0
 snmpunchangedvalue = 0
 
-
 # initialization stuff
 GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BCM)
@@ -129,13 +128,12 @@ def diagnostic_test():
                 time.sleep(0.1)  # Reduced sleep duration
                 GPIO.output(digit, 0)
                 GPIO.output(decimal_point, 0)
-
-    finally:
-        GPIO.cleanup()
+    except Exception as e:
+        print("An error occurred during the diagnostic test:", e)
 
 def display_ip():
     """Display each octet of the IP address in the desired format for about 1 minute."""
-
+    GPIO.setmode(GPIO.BCM)
     def get_ip_address():
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         try:
