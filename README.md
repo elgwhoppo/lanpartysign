@@ -5,7 +5,7 @@ Hardware
 ========
 Raspberry Pi
 ------------
-We used a Raspberry Pi 2, but any Raspberry Pi with at least 14 available GPIO
+We used a Raspberry Pi 3, but any Raspberry Pi with at least 14 available GPIO
 pins should do.
 
 Aluminum street sign
@@ -120,19 +120,14 @@ The enclosure for the Raspberry Pi and LED driver board are double-sided-taped t
 
 Software
 ========
-We used:
--   The latest copy of Raspbian as of November 2016. Nothing special here.
--   Python 2.7.9. Nothing special here either
--   https://pypi.org/project/pysnmp/ - sudo pip install pysnmp
--   The RPIO library. This allows us to use a DMA for the precise timing
+We used on rebuild: 
+-   Raspberry Pi OS (32-bit)
+-   Python 3.9.2 that came with updated Rasberry Pi OS
+-   Screen for the watchdog process - sudo apt install screen 
+-   https://pypi.org/project/pysnmp/ - sudo pip3 install pysnmp
+-   pip3 install pyasn1==0.4.8 (had to downgrade for compatability)
+-   The RPi.GPIO library. This allows us to use a DMA for the precise timing
     required for multiplexing. We installed it straight from GitHub:
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-cd ~
-git clone https://github.com/metachris/RPIO.git --branch v2 --single-branch
-cd RPIO
-sudo python setup.py install
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The Python Script
 =================
@@ -191,8 +186,8 @@ Some of the parts may need to change based on your needs of the sign as well as 
 - 1x 40pin IDE cable
 - 1x pair of male and female barrel connectors https://www.amazon.com/gp/product/B01G6EAY0E/ref=oh\_aui\_search\_detailpage?ie=UTF8&psc=1
 
-### Raspberry Pi 2
-- Raspberry Pi 2 single board computer https://www.raspberrypi.org/products/raspberry-pi-2-model-b/
+### Raspberry Pi 3
+- Raspberry Pi 3 single board computer https://www.raspberrypi.com/products/raspberry-pi-3-model-b-plus/
 - 8GB SD card https://www.amazon.com/gp/product/B000WH6H1M/ref=oh\_aui\_detailpage\_o01\_s00?ie=UTF8&psc=1
 
 ### Enclosures
