@@ -169,7 +169,7 @@ def display(data):
 if __name__ == '__main__':
     # Initialization for the display
     setup()
-    wake_up_display()
+    #wake_up_display()
     # Create pipes for SNMP and ping
     parent_conn_snmp, child_conn_snmp = Pipe()
     parent_conn_ping, child_conn_ping = Pipe()
