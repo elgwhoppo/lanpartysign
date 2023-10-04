@@ -85,19 +85,21 @@ def cleanup():
 
 def wake_up_display():
     """Wake up function to test all segments by quickly moving 8 through all the segments."""
+    for _ in range(500):  # Display "HAIOHH" 50 times to increase visibility
+        display_string("HA1 OH")
+        #time.sleep(0.02)
+
     for _ in range(5):  # Repeat 5 times
         for pos in range(6):  # Assuming you have a 6-character display
             data = ' ' * pos + '8' + ' ' * (5 - pos)
             
-            for _ in range(10):  # Display each pattern 10 times to increase visibility
+            for _ in range(20):  # Display each pattern 10 times to increase visibility
                 display_string(data)
-                time.sleep(0.02)  # Adjusted the sleep time
+                #time.sleep(0.02)  # Adjusted the sleep time
 
-            time.sleep(0.5)  # Wait for 0.5 seconds between patterns
+            time.sleep(0.2)  # Wait for 0.5 seconds between patterns
 
-    for _ in range(50):  # Display "HAIOHH" 50 times to increase visibility
-        display_string("HAI OH")
-        time.sleep(0.02)
+
 
     display_string("      ")  # Clear the display
 
