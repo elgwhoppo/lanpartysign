@@ -1,5 +1,5 @@
 from multiprocessing import Process, Pipe
-import snmp_old  # Import the snmp module
+import snmp  # Import the snmp module
 import ping  # Import the ping module
 import time
 import RPi.GPIO as GPIO
@@ -19,6 +19,7 @@ segments = (25, 5, 6, 12, 13, 19, 16, 24)  # GPIOs for segments a-g, decimal on 
 digits = (23, 22, 27, 18, 17, 4)       # GPIOs for each of the 6 digits
 FREQUENCY = 1000  # PWM frequency in Hz.
 pwms = []  # This list will hold all PWM instances.
+
 
 # Segment patterns for numbers 0-9, some letters also decimals
 number_patterns = {' ':(0,0,0,0,0,0,0,0),
@@ -121,7 +122,6 @@ def display_string(data):
         time.sleep(0.003)  # Adjust this sleep for the correct display time per digit
         GPIO.output(digit, GPIO.LOW)  # Disable this digit
 
-
 def display(data):
     # Simulated display function
     print(data)
@@ -135,7 +135,7 @@ if __name__ == '__main__':
     parent_conn_ping, child_conn_ping = Pipe()
 
     # Create child processes
-    p_snmp = Process(target=snmp_old.snmp_child, args=(child_conn_snmp,))
+    p_snmp = Process(target=snmp.snmp_child, args=(child_conn_snmp,))
     p_ping = Process(target=ping.ping_child, args=(child_conn_ping,))
 
     # Start child processes

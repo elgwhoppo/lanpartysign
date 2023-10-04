@@ -1,14 +1,14 @@
 from pysnmp.hlapi import *
+import time
 import subprocess
 import re
-import time
 from multiprocessing import Pipe
 
 SNMP_TARGET = "192.168.1.40"
 SNMP_V2_COMMUNITY = "public"
 INTERFACE_OID_IN = "1.3.6.1.2.1.31.1.1.1.6.1"
 INTERFACE_OID_OUT = "1.3.6.1.2.1.31.1.1.1.10.1"
-POLL_INTERVAL = 3  # seconds
+POLL_INTERVAL = 2  # seconds
 
 def fetch_snmp_data(oid):
     errorIndication, errorStatus, errorIndex, varBinds = next(
@@ -68,10 +68,8 @@ def snmp_child(pipe):
 
 
 if __name__ == '__main__':
-    #parent_conn, child_conn = Pipe()
-    #snmp_child(child_conn)  # Call snmp_child directly when running the script standalone
-
-        # This section is for testing the script directly
+#    parent_conn, child_conn = Pipe()
+#    snmp_child()  # Call snmp_child directly when running the script standalone
     while True:
         print(snmp_child())
         time.sleep(1)
