@@ -86,20 +86,21 @@ def handle_error(pipe, message):
 def snmp_child(pipe=None):
     while True:
         # Check connectivity to SNMP target
-        if not can_ping(SNMP_TARGET):
-            handle_error(pipe, "Cannot ping target")
-            continue
+        while not can_ping(SNMP_TARGET):
+            handle_error(pipe, "UHH")
+            time.sleep(POLL_INTERVAL)
 
         # Check SNMP availability on the target
-        if not can_snmp(SNMP_TARGET, SNMP_V2_COMMUNITY):
-            handle_error(pipe, "Cannot SNMP to target")
-            continue
+        while not can_snmp(SNMP_TARGET, SNMP_V2_COMMUNITY):
+            handle_error(pipe, "UHH")
+            time.sleep(POLL_INTERVAL)
+
+        # Let's fetch the time and SNMP data once before entering the loop.
+        prev_time = time.time()
+        prev_in = fetch_snmp_data(INTERFACE_OID_IN)
+        prev_out = fetch_snmp_data(INTERFACE_OID_OUT)
 
         try:
-            prev_in = fetch_snmp_data(INTERFACE_OID_IN)
-            prev_out = fetch_snmp_data(INTERFACE_OID_OUT)
-            prev_time = time.time()
-
             # Once both checks pass, enter this inner loop to continuously fetch SNMP data
             while True:
                 time.sleep(POLL_INTERVAL)
@@ -121,15 +122,17 @@ def snmp_child(pipe=None):
                 else:
                     print(formatted_total)
 
-                prev_in, prev_out = current_in, current_out
+                # Save the current values as the previous values for the next iteration.
+                prev_in, prev_out, prev_time = current_in, current_out, current_time
 
         except (socket.error, pysnmp.error.PySnmpError, pysnmp.carrier.error.CarrierError):
-            handle_error(pipe, "SNMP or Network error occurred")
+            handle_error(pipe, "UHH")
             continue
         
         except Exception as e:
-            handle_error(pipe, f"Unknown error: {e}")
+            handle_error(pipe, "UHH")
             continue
+
 
 
 if __name__ == '__main__':
