@@ -42,6 +42,10 @@ def can_snmp(target, community):
         return False
 
 def snmp_fetch(pipe):
+    prev_time = time.time()
+    prev_in = fetch_snmp_data(INTERFACE_OID_IN)
+    prev_out = fetch_snmp_data(INTERFACE_OID_OUT)
+
     while True:
         # Check connectivity to SNMP target
         while not can_ping(SNMP_TARGET):
@@ -52,10 +56,6 @@ def snmp_fetch(pipe):
         while not can_snmp(SNMP_TARGET, SNMP_V2_COMMUNITY):
             handle_error(pipe, "UHH")
             time.sleep(POLL_INTERVAL)
-
-        prev_time = time.time()
-        prev_in = fetch_snmp_data(INTERFACE_OID_IN)
-        prev_out = fetch_snmp_data(INTERFACE_OID_OUT)
 
         current_time = time.time()
         actual_interval = current_time - prev_time
@@ -79,6 +79,9 @@ def snmp_fetch(pipe):
             pipe.send(data_to_send)
         else:
             print(data_to_send['debug'])
+
+        # Save the current values as the previous values for the next iteration.
+        prev_in, prev_out, prev_time = current_in, current_out, current_time
 
         time.sleep(POLL_INTERVAL)
 
