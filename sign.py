@@ -123,8 +123,6 @@ def wake_up_display():
             for _ in range(100):  # Display each pattern 100 times for visibility
                 display_string(pattern)
 
-
-
     display_string("      ")  # Clear the display
 
 def display_string(data):
