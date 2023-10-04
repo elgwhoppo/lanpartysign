@@ -27,7 +27,7 @@ def ping_child(pipe):
             # Extract the ping time using regex
             ping_time = float(re.search(r"time=(\d+.\d+)", response).group(1))
             formatted_ping = "{:3.0f}".format(ping_time)  # Format to have 3 digits
-
+            print(f"Ping time: {formatted_ping}")
             pipe.send(formatted_ping)  # Send the ping time to the parent process
 
         except subprocess.CalledProcessError:

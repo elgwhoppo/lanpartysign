@@ -1,4 +1,6 @@
 from pysnmp.hlapi import *
+import subprocess
+import re
 import time
 from multiprocessing import Pipe
 
@@ -34,27 +36,42 @@ def format_bps(value):
     else:
         return f"{value:.2f}"
 
-def snmp_child():
+def snmp_child(pipe):
     while True:
         prev_in = fetch_snmp_data(INTERFACE_OID_IN)
         prev_out = fetch_snmp_data(INTERFACE_OID_OUT)
         time.sleep(POLL_INTERVAL)
 
         while True:
-            current_in = fetch_snmp_data(INTERFACE_OID_IN)
-            current_out = fetch_snmp_data(INTERFACE_OID_OUT)
+            try: 
+                current_in = fetch_snmp_data(INTERFACE_OID_IN)
+                current_out = fetch_snmp_data(INTERFACE_OID_OUT)
 
-            in_rate = (current_in - prev_in) * 8 / POLL_INTERVAL  # convert bytes to bits
-            out_rate = (current_out - prev_out) * 8 / POLL_INTERVAL
+                in_rate = (current_in - prev_in) * 8 / POLL_INTERVAL  # convert bytes to bits
+                out_rate = (current_out - prev_out) * 8 / POLL_INTERVAL
 
-            total_bps = in_rate + out_rate
-            formatted_total = format_bps(total_bps)
+                total_bps = in_rate + out_rate
+                formatted_total = format_bps(total_bps)
 
-            print(f"SNMP Data: {formatted_total}")
+                print(f"SNMP Data: {formatted_total}")
+
+                pipe.send(formatted_total)
+
+            except subprocess.CalledProcessError:
+                pipe.send("O_0")  # Send three dots if the ping fails
+            except Exception as e:
+                pipe.send("O_0")
+
 
             prev_in, prev_out = current_in, current_out
             time.sleep(POLL_INTERVAL)
 
+
 if __name__ == '__main__':
-    parent_conn, child_conn = Pipe()
-    snmp_child(child_conn)  # Call snmp_child directly when running the script standalone
+    #parent_conn, child_conn = Pipe()
+    #snmp_child(child_conn)  # Call snmp_child directly when running the script standalone
+
+        # This section is for testing the script directly
+    while True:
+        print(snmp_child())
+        time.sleep(1)
