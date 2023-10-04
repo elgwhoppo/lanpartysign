@@ -126,8 +126,7 @@ We used on rebuild:
 -   Screen for the watchdog process - sudo apt install screen 
 -   https://pypi.org/project/pysnmp/ - sudo pip3 install pysnmp
 -   pip3 install pyasn1==0.4.8 (had to downgrade for compatability)
--   The RPi.GPIO library. This allows us to use a DMA for the precise timing
-    required for multiplexing. We installed it straight from GitHub:
+-   The RPi.GPIO library. No install required with python 3.9.2. 
 
 The Python Script
 =================
