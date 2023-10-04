@@ -13,7 +13,7 @@ SNMP_V2_COMMUNITY = "public"
 INTERFACE_OID_IN = "1.3.6.1.2.1.31.1.1.1.6.1"
 INTERFACE_OID_OUT = "1.3.6.1.2.1.31.1.1.1.10.1"
 SNMP_UPTIME_OID = "1.3.6.1.2.1.31.1.1.1.10.1"
-POLL_INTERVAL = 2  # seconds
+POLL_INTERVAL = 5  # seconds
 
 def fetch_snmp_data(oid):
     errorIndication, errorStatus, errorIndex, varBinds = next(
@@ -103,7 +103,7 @@ def snmp_child(pipe=None):
         try:
             # Once both checks pass, enter this inner loop to continuously fetch SNMP data
             while True:
-                time.sleep(POLL_INTERVAL)
+                start_time = time.time()  # record start time of this iteration
 
                 current_time = time.time()
                 actual_interval = current_time - prev_time
@@ -118,9 +118,9 @@ def snmp_child(pipe=None):
                 formatted_total = format_bps(total_bps)
 
                 data_to_send = {
-                'data': formatted_total,
-                'debug': f"Raw in: {current_in}, Raw out: {current_out}, Interval: {actual_interval:.2f}s, "
-                         f"In rate: {in_rate:.2f}, Out rate: {out_rate:.2f}, Total rate: {formatted_total}",
+                    'data': formatted_total,
+                    'debug': f"Raw in: {current_in}, Raw out: {current_out}, Interval: {actual_interval:.2f}s, "
+                             f"In rate: {in_rate:.2f}, Out rate: {out_rate:.2f}, Total rate: {formatted_total}",
                 }
 
                 if pipe:
@@ -131,6 +131,13 @@ def snmp_child(pipe=None):
                 # Save the current values as the previous values for the next iteration.
                 prev_in, prev_out, prev_time = current_in, current_out, current_time
 
+                end_time = time.time()  # record end time of this iteration
+                elapsed_time = end_time - start_time  # find out how long it took
+                sleep_time = POLL_INTERVAL - elapsed_time  # adjust sleep time
+
+                if sleep_time > 0:  # Only sleep if there's time remaining in the desired interval
+                    time.sleep(sleep_time)
+
         except (socket.error, pysnmp.error.PySnmpError, pysnmp.carrier.error.CarrierError):
             handle_error(pipe, "UHH")
             continue
@@ -138,7 +145,6 @@ def snmp_child(pipe=None):
         except Exception as e:
             handle_error(pipe, "UHH")
             continue
-
 
 
 if __name__ == '__main__':
