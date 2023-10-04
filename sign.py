@@ -83,6 +83,19 @@ def setup():
 def cleanup():
     GPIO.cleanup()
 
+def wake_up_display():
+    """Wake up function to test all segments by quickly moving 8 through all the segments."""
+    display_string("HAI OH")
+    time.sleep(5)  # Hold for 5 seconds
+
+    for _ in range(5):  # Repeat 5 times
+        for pos in range(6):  # Assuming you have a 6-character display
+            data = ' ' * pos + '8' + ' ' * (5 - pos)
+            display_string(data)  # Display the pattern on the segments
+            time.sleep(0.2)  # Wait for 0.2 seconds
+    display_string("      ")  # Clear the display
+
+
 def display_string(data):
     """Display the combined SNMP and ping data on the seven-segment displays."""
 

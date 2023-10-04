@@ -5,8 +5,10 @@ import socket
 from multiprocessing import Pipe
 
 POLL_INTERVAL = 0.1  # seconds
+#IP_TO_PING = "203.50.2.71" # Australia DNS
+IP_TO_PING = "8.8.8.8" # Google DNS
 
-def ping_target(address="8.8.8.8"):
+def ping_target(address=IP_TO_PING):
     """Ping the specified address and return the response time in ms as a whole number."""
     try:
         response = subprocess.check_output(['ping', '-c', '1', address])
@@ -21,7 +23,7 @@ def ping_child(pipe=None):
     while True:
         try:
             response = subprocess.check_output(
-                ['ping', '-c', '1', '8.8.8.8'],
+                ['ping', '-c', '1', IP_TO_PING],
                 stderr=subprocess.STDOUT,  # get all output
                 universal_newlines=True  # return string not bytes
             )
