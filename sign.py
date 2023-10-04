@@ -1,10 +1,11 @@
-# 1.0 refactor
-
+from multiprocessing import Process, Pipe
+import snmp_old  # Import the snmp module
+import ping  # Import the ping module
+import time
 import RPi.GPIO as GPIO
 from datetime import datetime
 import urllib.request, urllib.error
 import threading
-import time
 import math
 import re
 import os
@@ -12,36 +13,12 @@ import queue
 import random
 import socket
 import http.client
-from pysnmp.hlapi import *
-
 
 # Definitions
 segments = (25, 5, 6, 12, 13, 19, 16, 24)  # GPIOs for segments a-g, decimal on 24
 digits = (23, 22, 27, 18, 17, 4)       # GPIOs for each of the 6 digits
 FREQUENCY = 1000  # PWM frequency in Hz.
-GLOBAL_BRIGHTNESS = 100  # 100% brightness
-SNMP_TARGET = "192.168.1.40"
-SNMP_V2_COMMUNITY = "public"
-INTERFACE_OID_IN = "1.3.6.1.2.1.31.1.1.1.6.1"
-INTERFACE_OID_OUT = "1.3.6.1.2.1.31.1.1.1.10.1"
 pwms = []  # This list will hold all PWM instances.
-
-display_value_lock = threading.Lock()
-
-# Global variable to hold the current value to be displayed
-stringToPrint = "123456"
-
-# Use a queue to communicate between threads
-display_queue = queue.Queue() #This is the entire string to be printed >> goes into threaded_display
-ping_queue = queue.Queue() #just the ping >> goes into display_queue
-snmp_queue = queue.Queue() #just the bps >> goes into display_queue
-
-# define how often to fetch data and ping in milliseconds (e.g. 1000 = 1 second)
-fetchrate = 750
-
-# what remote IP should I ping to test for latency?
-iptoping = "8.8.8.8" #Google DNS IP-Anycast
-#iptoping = "139.130.4.5" #Australia DNS
 
 # Segment patterns for numbers 0-9, some letters also decimals
 number_patterns = {' ':(0,0,0,0,0,0,0,0),
@@ -70,7 +47,6 @@ number_patterns = {' ':(0,0,0,0,0,0,0,0),
     '9':(1,1,1,0,1,1,1,0),
     '_':(0,0,0,0,0,1,0,0),
     ' ':(0,0,0,0,0,0,0,0),
-    '.':(0,0,0,0,0,0,0,1),
     'L.':(0,1,0,1,0,1,0,1),
     'U.':(0,1,1,1,1,1,0,1),
     'R.':(0,0,0,1,0,0,1,1),
@@ -106,240 +82,87 @@ def setup():
 def cleanup():
     GPIO.cleanup()
 
+def display_string(data):
+    """Display the combined SNMP and ping data on the seven-segment displays."""
 
-def threaded_display():
-    current_string = "      "  # Initialize with a blank string
-    while True:
-        try:
-            # Check if a new string is available, non-blocking
-            new_string = display_queue.get_nowait()
-            current_string = new_string if new_string else current_string
-        except queue.Empty:
-            pass
+    #print("Received data:", data)
 
-        # The key is to run the display method continuously
-        display_string(current_string)
+    # Formatting data
+    formatted_data = str(data).ljust(12)[:12]  # assuming the display can show 6 characters at a time.
+    #print("Formatted data:", formatted_data)
 
+    # Add leading zeros if necessary
+    if '.' in formatted_data:
+        integer_part, decimal_part = formatted_data.split('.')
+        integer_part = integer_part.rjust(4, '0')
+        formatted_data = f"{integer_part}.{decimal_part}"
 
-def display_string(s, duration=0.5):
-    """Display a string on the seven-segment displays."""
-    # Transform the input string to ensure it's 6 characters long, taking decimals into account
-    num_decimals = s.count('.')
-    num_chars = len(s) - num_decimals
-    s += ' ' * (6 - num_chars)
-    
+    #print("Formatted data with leading zeros:", formatted_data)
+
+    # Break down the string into individual characters, considering '.' as part of the preceding character.
     expanded_string = []
-    skip_next = False  # To skip a character if it's a decimal that's been appended to the previous character
-
-    for i in range(len(s)):
-        if skip_next:
-            skip_next = False
-            continue
-
-        if s[i] == '.':
-            expanded_string[-1] += '.'  # append the dot to the last character
+    for i in range(len(formatted_data)):
+        if formatted_data[i] == '.' and i > 0:
+            expanded_string[-1] += '.'
         else:
-            if i < len(s) - 1 and s[i + 1] == '.':
-                expanded_string.append(s[i] + '.')
-                skip_next = True
-            else:
-                expanded_string.append(s[i])
+            expanded_string.append(formatted_data[i])
 
-    for _ in range(int(duration * 12)):  # Assuming 12Hz refresh rate for each character
-        for digit, char in zip(digits, expanded_string):
-            pattern = number_patterns.get(char, number_patterns[' '])  # Default to blank if char not recognized
-            GPIO.output(digit, GPIO.HIGH)  # Enable this digit
+    #print("Expanded string:", expanded_string)
 
-            for segment, value in zip(segments, pattern):
-                GPIO.output(segment, value)
-
-            time.sleep(0.005)  # To make the display visible
-            GPIO.output(digit, GPIO.LOW)  # Disable this digit
-
-def display_ip():
-    """Push the formatted IP address strings to the display queue for about 1 minute."""
-
-    def get_ip_address():
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        try:
-            # Doesn't need to be reachable
-            s.connect(('10.254.254.254', 1))
-            IP = s.getsockname()[0]
-        except:
-            IP = '127.0.0.1'
-        finally:
-            s.close()
-        return IP
-
-    ip = get_ip_address()
-    octets = ip.split('.')
-    start_time = time.time()
-
-    formatted_strings = [
-        "ADD 1P",
-        f"{int(octets[1]):03}.{int(octets[0]):03}",
-        f"{int(octets[3]):03}.{int(octets[2]):03}"
-    ]
-
-    while time.time() - start_time < 10:  # run for about 1 minute
-        for to_display in formatted_strings:
-            print(f"[display_ip] Pushing '{to_display}' to display_queue")
-            display_queue.put(to_display)  # Push the formatted string to the queue
-            time.sleep(1)  # Display each formatted string for 1 second
-
-def threaded_get_ping():
-    print("[threaded_get_ping] Started!")
-    ping_loop_counter = 0
-    while True:
-        try:
-            ping_loop_counter += 1
-            pingresponse = os.popen("timeout "+str(fetchrate*.001)+" ping -c 1 "+str(iptoping)+" | grep rtt | cut -c 24-28").readlines()
-            # a timed out ping will record a "999"
-            pingresponse.append("999")
-            y = pingresponse[0]
-            y = "{:3}".format(min(999, int(float(y))))
-            ping_queue.put(y)  # Push the new value to the queue
-
-
-
-            #print("[threaded_get_ping]:Pushed ",str(y)," to ",ping_queue)
-            if ping_loop_counter % 10 == 0:
-                print("[threaded_display] Ping thread is running. One of the last 10 pings is:", y)
-                ping_loop_counter = 0
-            time.sleep(0.25)
-
-        except Exception as e:
-            print("An error occurred: " + str(e))
-            return None
-        
-def threaded_get_snmp_bps():
-    prev_in_value = 0
-    prev_out_value = 0
-    prev_time = time.time()
-
-    def fetch_oid_values(*oids):
-        # Request multiple OIDs in one go
-        errorIndication, errorStatus, _, varBinds = next(
-            getCmd(SnmpEngine(),
-                   CommunityData(SNMP_V2_COMMUNITY),
-                   UdpTransportTarget((SNMP_TARGET, 161)),
-                   ContextData(),
-                   *[ObjectType(ObjectIdentity(oid)) for oid in oids])
-        )
-        if errorIndication or errorStatus:
-            print("[threaded_get_snmp_bps] Error fetching OIDs:", errorIndication or errorStatus)
-            return [None] * len(oids)
-        return [int(varBind[1]) for varBind in varBinds]
-
-    def format_bps(t):
-        # Simplified the data formatting logic
-        thresholds = [(1_000_000_000, 'G', 1_000_000), (100_000_000, '', 1), 
-                      (10_000_000, '.', 1_000), (0, '.', 100)]
-        for thresh, symbol, divisor in thresholds:
-            if t >= thresh:
-                return f"{t // divisor}{symbol}{(t % divisor) // (divisor // 10)}"
-        return "0.00"
-
-    while True:
-        current_time = time.time()
-        time_interval = current_time - prev_time
-
-        in_value, out_value = fetch_oid_values(INTERFACE_OID_IN, INTERFACE_OID_OUT)
-
-        if in_value is None or out_value is None:
-            print("[threaded_get_snmp_bps] One of the values is None. Sleeping for a second...")
-            time.sleep(1)
-            continue
-
-        in_diff = in_value - prev_in_value
-        out_diff = out_value - prev_out_value
-
-        bps_in = in_diff / time_interval
-        bps_out = out_diff / time_interval
-        total_bps = int(bps_in + bps_out)
-
-        v = format_bps(total_bps)
-        print("[threaded_get_snmp_bps] Properly formatted: ", v)
-        snmp_queue.put(v)  # Push the new value to the queue
-
-        # Store current values for next iteration
-        prev_in_value = in_value
-        prev_out_value = out_value
-        prev_time = current_time
-
-        time.sleep(2)
-
-
-def test_single_digit():
-    """Display the number 8 on the first digit."""
-    pattern = number_patterns['8']
-    GPIO.output(digits[0], GPIO.HIGH)  # Enable the first digit
-
-    for segment, value in zip(segments, pattern):
-        GPIO.output(segment, value)
-
-def test_all_digits():
-    """Display the number 8 on all digits one by one."""
-    for index, digit in enumerate(digits):
-        pattern = number_patterns['8.']
-        GPIO.output(digit, GPIO.HIGH)  # Enable the current digit
+    # Display the formatted data for a brief moment (no infinite loop)
+    for digit, char in zip(digits, expanded_string):
+        pattern = number_patterns.get(char, number_patterns[' '])  # Get the pattern or default to blank
+        GPIO.output(digit, GPIO.HIGH)  # Enable this digit
+        #print(f"Displaying character '{char}' with pattern {pattern}")
 
         for segment, value in zip(segments, pattern):
             GPIO.output(segment, value)
 
-        print(f"Displaying on digit {index + 1}")
-        time.sleep(1)  # Display for 2 seconds
+        time.sleep(0.003)  # Adjust this sleep for the correct display time per digit
+        GPIO.output(digit, GPIO.LOW)  # Disable this digit
 
-        # Turn off the segments for the current digit
-        for segment in segments:
-            GPIO.output(segment, GPIO.LOW)
-        
-        GPIO.output(digit, GPIO.LOW)  # Disable the current digit
-        time.sleep(1)  # Wait for a second before moving to the next digit
 
-def main():
-    try:
-        setup()  # Initialize
-        #test_single_digit()  # Test single digit without any cycling
-        #test_all_digits() # Test single digit with cycling
-        
+def display(data):
+    # Simulated display function
+    print(data)
 
-        # Start the display thread first
-        display_thread = threading.Thread(target=threaded_display)
-        display_thread.daemon = True  # Set to daemon so it'll automatically exit with the main thread
-        display_thread.start()
+if __name__ == '__main__':
+    # Initialization for the display
+    setup()
     
-        display_thread = threading.Thread(target=threaded_get_ping)
-        display_thread.daemon = True  # Set to daemon so it'll automatically exit with the main thread
-        display_thread.start()
+    # Create pipes for SNMP and ping
+    parent_conn_snmp, child_conn_snmp = Pipe()
+    parent_conn_ping, child_conn_ping = Pipe()
 
-        #display_thread = threading.Thread(target=threaded_get_snmp_bps)
-        #display_thread.daemon = True  # Set to daemon so it'll automatically exit with the main thread
-        #display_thread.start()
+    # Create child processes
+    p_snmp = Process(target=snmp_old.snmp_child, args=(child_conn_snmp,))
+    p_ping = Process(target=ping.ping_child, args=(child_conn_ping,))
 
-        #display_ip()  # Display the IP address for about 1 minute
+    # Start child processes
+    p_snmp.start()
+    p_ping.start()
 
+    last_snmp_data = None
+    last_ping_data = None
+
+    try:
         while True:
-            try:
-                ping_string = ping_queue.get(timeout=1)
-            except queue.Empty:
-                ping_string = "O_0"
-            
-            try:
-                snmp_string = snmp_queue.get(timeout=1)
-            except queue.Empty:
-                snmp_string = "O_0"
-            
-            print(f"[Main] found ping data to be: ", ping_string)
-            print(f"[Main] found snmp data to be: ", snmp_string)
-            stringToPrint = ping_string + snmp_string
-            print(f"[Main] sending this to display_queue: ", stringToPrint)
-            display_queue.put(stringToPrint)
-            time.sleep(0.25)  # Give each string 2 seconds on the display
+            # Parent reads from its end of pipes and updates display
+            if parent_conn_snmp.poll():  # Check if there's data to read
+                last_snmp_data = parent_conn_snmp.recv()
+#                print("last_snmp_data:",f'"{last_snmp_data}"')
+            if parent_conn_ping.poll():  # Check if there's data to read
+                last_ping_data = parent_conn_ping.recv()
+#                print("last_ping_data:",f'"{last_ping_data}"')
+
+            combined_data = f"{last_ping_data}{last_snmp_data}"  # Combining the data.
+            #print("sending to display:", combined_data)
+            display_string(combined_data)  # Use the RPi.GPIO to display the combined data
 
     except KeyboardInterrupt:
-        # Clean up GPIOs upon exit
-        cleanup()
-
-if __name__ == "__main__":
-    main()
+        # On keyboard interrupt, terminate child processes and exit
+        p_snmp.terminate()
+        p_ping.terminate()
+        p_snmp.join()
+        p_ping.join()
+        cleanup()  # Proper cleanup on exit

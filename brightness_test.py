@@ -59,11 +59,12 @@ number_patterns = {' ':(0,0,0,0,0,0,0,0),
     '_.':(0,0,0,0,0,1,0,1)}
 
 def setup():
-    """Initialize GPIO pins."""
+    # initialization stuff
+    GPIO.setwarnings(False)
     GPIO.setmode(GPIO.BCM)
-    for pin in segments + digits + (decimal_point, ):
-        GPIO.setup(pin, GPIO.OUT)
-        GPIO.output(pin, GPIO.LOW)
+    GPIO.setup(segments, GPIO.OUT)
+    GPIO.setup(digits, GPIO.OUT)
+
 
 def cleanup():
     """Cleanup GPIO settings."""

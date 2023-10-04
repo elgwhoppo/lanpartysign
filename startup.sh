@@ -22,4 +22,4 @@ echo "Network is ready. Continuing with the script."
 #sleep 15
 #screen -S SIGN -d -m sudo python /home/pi/speedsign/python.py
 sleep 15
-screen -S WDOG -d -m /home/pi/speedsign/watchdog.sh
+screen -S SIGN -d -m python /home/pi/lanpartysign/sign.py
