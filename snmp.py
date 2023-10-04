@@ -194,9 +194,16 @@ def snmp_child(pipe=None):
         if prev_values["current_time"] != prev_time:
             actual_interval = prev_values["current_time"] - prev_time
 
-            in_rate = (prev_values["current_in"] - prev_in) * 8 / actual_interval
-            out_rate = (prev_values["current_out"] - prev_out) * 8 / actual_interval
-            total_bps = in_rate + out_rate
+            if actual_interval > 0:
+                in_rate = (prev_values["current_in"] - prev_in) * 8 / actual_interval
+                out_rate = (prev_values["current_out"] - prev_out) * 8 / actual_interval
+                total_bps = in_rate + out_rate
+            else:
+                # Here you can decide how to handle the case when actual_interval is 0.
+                # For example, you could use the previous values:
+                in_rate = (prev_values["current_in"] - prev_in) * 8
+                out_rate = (prev_values["current_out"] - prev_out) * 8
+                total_bps = in_rate + out_rate
 
             if first_fetch:
                 formatted_total = "SNP"
