@@ -7,6 +7,7 @@ import pysnmp.carrier.error
 import re
 import random
 import socket 
+from threading import Thread
 from multiprocessing import Pipe
 
 SNMP_TARGET = "192.168.1.40"
@@ -31,6 +32,22 @@ def fetch_snmp_data(oid):
     else:
         for varBind in varBinds:
             return int(varBind[1])
+        
+def fetch_actual_data(prev_in, prev_out, prev_time, pipe):
+    current_time = time.time()
+    actual_interval = current_time - prev_time
+    current_in = fetch_snmp_data(INTERFACE_OID_IN)
+    current_out = fetch_snmp_data(INTERFACE_OID_OUT)
+    in_rate = (current_in - prev_in) * 8 / actual_interval
+    out_rate = (current_out - prev_out) * 8 / actual_interval
+    total_bps = in_rate + out_rate
+    formatted_total = format_bps(total_bps)
+    data_to_send = {
+        'data': formatted_total,
+        'debug': f"Raw in: {current_in}, Raw out: {current_out}, Interval: {actual_interval:.2f}s, "
+                 f"In rate: {in_rate:.2f}, Out rate: {out_rate:.2f}, Total rate: {formatted_total}",
+    }
+    pipe.send(data_to_send)
 
 def get_fuzzed_value(true_value):
     """Generate a value that's within 5% of the true_value."""
@@ -156,3 +173,11 @@ def snmp_child(pipe=None):
         except (socket.error, pysnmp.error.PySnmpError, pysnmp.carrier.error.CarrierError):
             handle_error(pipe, "UHH")
             continue
+
+
+if __name__ == '__main__':
+#    parent_conn, child_conn = Pipe()
+#    snmp_child()  # Call snmp_child directly when running the script standalone
+    while True:
+        print(snmp_child())
+        time.sleep(1)
