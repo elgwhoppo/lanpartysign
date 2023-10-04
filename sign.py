@@ -144,19 +144,14 @@ if __name__ == '__main__':
 
     last_snmp_data = '000'
     last_ping_data = None
-
-    try:
+    try: 
         while True:
-            try:
-                # Parent reads from its end of pipes and updates display
-                if parent_conn_snmp.poll():  # Check if there's data to read
-                    last_snmp_data = parent_conn_snmp.recv()
-                if parent_conn_ping.poll():  # Check if there's data to read
-                    last_ping_data = parent_conn_ping.recv()
-            except Exception as e:
-                print(f"Error reading from pipe: {e}")  # Print the error (you can also log it if needed)
-                last_snmp_data = 'Err'  # Indicate error state in display
-                last_ping_data = 'Err'  # Indicate error state in display
+            # Parent reads from its end of pipes and updates display
+            if parent_conn_snmp.poll():  # Check if there's data to read
+                last_snmp_data = parent_conn_snmp.recv()
+            if parent_conn_ping.poll():  # Check if there's data to read
+                last_ping_data = parent_conn_ping.recv()
+
 
             combined_data = f"{last_ping_data}{last_snmp_data}"  # Combining the data.
             display_string(combined_data)  # Use the RPi.GPIO to display the combined data
