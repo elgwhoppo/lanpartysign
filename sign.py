@@ -85,21 +85,24 @@ def cleanup():
 
 def wake_up_display():
     """Wake up function to test all segments by quickly moving 8 through all the segments."""
-    display_string("HAI OH")
-    time.sleep(5)  # Hold for 5 seconds
-
     for _ in range(5):  # Repeat 5 times
         for pos in range(6):  # Assuming you have a 6-character display
             data = ' ' * pos + '8' + ' ' * (5 - pos)
-            display_string(data)  # Display the pattern on the segments
-            time.sleep(0.2)  # Wait for 0.2 seconds
-    display_string("      ")  # Clear the display
+            
+            for _ in range(10):  # Display each pattern 10 times to increase visibility
+                display_string(data)
+                time.sleep(0.02)  # Adjusted the sleep time
 
+            time.sleep(0.5)  # Wait for 0.5 seconds between patterns
+
+    for _ in range(50):  # Display "HAIOHH" 50 times to increase visibility
+        display_string("HAI OH")
+        time.sleep(0.02)
+
+    display_string("      ")  # Clear the display
 
 def display_string(data):
     """Display the combined SNMP and ping data on the seven-segment displays."""
-
-    #print("Received data:", data)
 
     # Formatting data
     formatted_data = str(data).ljust(12)[:12]  # assuming the display can show 6 characters at a time.
