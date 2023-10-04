@@ -38,36 +38,40 @@ def format_bps(value):
 
 def snmp_child(pipe=None):
     while True:
-        prev_in = fetch_snmp_data(INTERFACE_OID_IN)
-        prev_out = fetch_snmp_data(INTERFACE_OID_OUT)
-        time.sleep(POLL_INTERVAL)
+        try:
+            prev_in = fetch_snmp_data(INTERFACE_OID_IN)
+            prev_out = fetch_snmp_data(INTERFACE_OID_OUT)
+            time.sleep(POLL_INTERVAL)
 
-        while True:
-            try: 
-                current_in = fetch_snmp_data(INTERFACE_OID_IN)
-                current_out = fetch_snmp_data(INTERFACE_OID_OUT)
+            current_in = fetch_snmp_data(INTERFACE_OID_IN)
+            current_out = fetch_snmp_data(INTERFACE_OID_OUT)
 
-                in_rate = (current_in - prev_in) * 8 / POLL_INTERVAL  # convert bytes to bits
-                out_rate = (current_out - prev_out) * 8 / POLL_INTERVAL
+            in_rate = (current_in - prev_in) * 8 / POLL_INTERVAL  # convert bytes to bits
+            out_rate = (current_out - prev_out) * 8 / POLL_INTERVAL
 
-                total_bps = in_rate + out_rate
-                formatted_total = format_bps(total_bps)
+            total_bps = in_rate + out_rate
+            formatted_total = format_bps(total_bps)
 
-                print(f"SNMP Data: {formatted_total}")
-                if pipe:
-                    pipe.send(formatted_total)
-                else:
-                    print(formatted_total)  # print directly if running standalone
-
-                #pipe.send(formatted_total)
-
-            except subprocess.CalledProcessError:
-                pipe.send("O_0")  # Send three dots if the ping fails
-            except Exception as e:
-                pipe.send("O_0")
-
+            print(f"SNMP Data: {formatted_total}")
+            if pipe:
+                pipe.send(formatted_total)
+            else:
+                print(formatted_total)  # print directly if running standalone
 
             prev_in, prev_out = current_in, current_out
+            time.sleep(POLL_INTERVAL)
+
+        except (socket.error, http.client.HTTPException, urllib.error.URLError):
+            if pipe:
+                pipe.send("O_0")  # or some other placeholder/error value
+            else:
+                print("O_0")
+            time.sleep(POLL_INTERVAL)
+        except Exception as e:
+            if pipe:
+                pipe.send("O_0")
+            else:
+                print("O_0")
             time.sleep(POLL_INTERVAL)
 
 if __name__ == '__main__':

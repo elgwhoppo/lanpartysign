@@ -14,9 +14,8 @@ def ping_target(address="8.8.8.8"):
         response_time = 999  # If there's an error (e.g., request timed out), return 999
     return response_time
 
-def ping_child(pipe):
+def ping_child(pipe=None):
     while True:
-        # Execute the ping command
         try:
             response = subprocess.check_output(
                 ['ping', '-c', '1', '8.8.8.8'],
@@ -29,13 +28,19 @@ def ping_child(pipe):
             formatted_ping = "{:3.0f}".format(ping_time)  # Format to have 3 digits
 
             pipe.send(formatted_ping)  # Send the ping time to the parent process
-
-        except subprocess.CalledProcessError:
-            pipe.send("...")  # Send three dots if the ping fails
+        except (socket.error, subprocess.CalledProcessError):
+            if pipe:
+                pipe.send("O_0")  # or some other placeholder/error value
+            else:
+                print("O_0")
+            time.sleep(POLL_INTERVAL)
         except Exception as e:
-            pipe.send("Err")
+            if pipe:
+                pipe.send("O_0")
+            else:
+                print("O_0")
+            time.sleep(POLL_INTERVAL)
 
-        time.sleep(1)  # Sleep for one second before pinging again
 
 
 if __name__ == "__main__":
