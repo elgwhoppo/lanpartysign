@@ -83,6 +83,19 @@ def setup():
 def cleanup():
     GPIO.cleanup()
 
+def get_ip_address():
+    """Retrieve the primary IP address of the Raspberry Pi."""
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        # Connect to an external server (doesn't actually establish a connection, but chooses an interface to use)
+        s.connect(("8.8.8.8", 80))
+        IP = s.getsockname()[0]
+    except Exception:
+        IP = "127.0.0.1"
+    finally:
+        s.close()
+    return IP
+
 def wake_up_display():
     """Wake up function to test all segments by quickly moving 8 through all the segments."""
     for _ in range(500):  # Display "HAIOHH" 50 times to increase visibility
@@ -97,7 +110,18 @@ def wake_up_display():
                 #time.sleep(0.02)  # Adjusted the sleep time
 
             time.sleep(0.005)  # Wait for 0.5 seconds between patterns
-
+    """Wake up function to test all segments and display the IP address."""
+    ip_address = get_ip_address()
+    segments = ip_address.split('.')
+    formatted_ip_1 = segments[1] + segments[0]  # "168192" for IP "192.168.1.49"
+    formatted_ip_2 = segments[3].rjust(3, '0') + segments[2].rjust(3, '0')  # "049001" for IP "192.168.1.49"
+    
+    patterns = ["ADD 1P", formatted_ip_1, formatted_ip_2]
+    
+    for pattern in patterns:
+        for _ in range(500):  # Display each pattern 500 times for visibility
+            display_string(pattern)
+            time.sleep(0.02)  # Adjusted the sleep time
 
 
     display_string("      ")  # Clear the display
