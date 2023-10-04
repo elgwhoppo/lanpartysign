@@ -134,15 +134,11 @@ The Python script does all the heavy lifting of the sign and runs on the Raspber
 
 This script has been completely reworked as of October 2023, to leverage multi-processing and pipes for better efficiency. Error handling via a Watchdog service and better exception catching are also used. Python reaches out using three scripts: 
 
-- sign.py
----ping.py
----snmp.py
+- sign.py <--Parent
+- ping.py <--Child 
+- snmp.py <--Child 
 
 Calling sign.py will after a boot up cycle, call ping and snmp, getting the data accordingly. 
-
-The Shell Script
-================
-This shell script runs on our pfSense unit, and using vnstat, outputs a value in bps accessible over HTTP by the Raspberry Pi. Hopefully elgwhoppo has more to say about it because he's the one that wrote it :)
 
 tl;dr “what do i need to buy?”
 ==============================
