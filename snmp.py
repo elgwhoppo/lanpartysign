@@ -117,10 +117,15 @@ def snmp_child(pipe=None):
                 total_bps = in_rate + out_rate
                 formatted_total = format_bps(total_bps)
 
+                data_to_send = {
+                'data': formatted_total,
+                'debug': f"Raw in: {current_in}, Raw out: {current_out}, Interval: {actual_interval:.2f}s, Total rate: {formatted_total}"
+                }
+
                 if pipe:
-                    pipe.send(formatted_total)
+                    pipe.send(data_to_send)
                 else:
-                    print(formatted_total)
+                    print(data_to_send['debug'])
 
                 # Save the current values as the previous values for the next iteration.
                 prev_in, prev_out, prev_time = current_in, current_out, current_time
