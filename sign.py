@@ -173,7 +173,7 @@ if __name__ == '__main__':
     setup()
 
     # Wake up the display
-    wake_up_display()    
+    #wake_up_display()    
 
     startup_time = time.time()
     
@@ -209,8 +209,6 @@ if __name__ == '__main__':
 
             if time.time() - startup_time < 30:
                 last_snmp_data = "SNP"
-                continue
-
 
             combined_data = f"{last_ping_data}{last_snmp_data}"  # Combining the data.
             display_string(combined_data)  # Use the RPi.GPIO to display the combined data
