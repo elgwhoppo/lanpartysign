@@ -155,7 +155,7 @@ if __name__ == '__main__':
             # Check if snmp.py has crashed or terminated
             if not p_snmp.is_alive():
                 print("SNMP process has terminated! Exiting sign.py...")
-                exit(1)
+                os._exit(1)
 
             combined_data = f"{last_ping_data}{last_snmp_data}"  # Combining the data.
             display_string(combined_data)  # Use the RPi.GPIO to display the combined data
