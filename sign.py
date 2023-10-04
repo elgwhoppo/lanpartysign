@@ -107,9 +107,9 @@ def wake_up_display():
             
             for _ in range(5):  # Display each pattern 10 times to increase visibility
                 display_string(data)
-                #time.sleep(0.02)  # Adjusted the sleep time
 
             time.sleep(0.005)  # Wait for 0.5 seconds between patterns
+    
     """Wake up function to test all segments and display the IP address."""
     ip_address = get_ip_address()
     segments = ip_address.split('.')
@@ -118,10 +118,11 @@ def wake_up_display():
     
     patterns = ["ADD 1P", formatted_ip_1, formatted_ip_2]
     
-    for pattern in patterns:
-        for _ in range(500):  # Display each pattern 500 times for visibility
-            display_string(pattern)
-            time.sleep(0.02)  # Adjusted the sleep time
+    for _ in range(5):  # Repeat the whole sequence 5 times
+        for pattern in patterns:
+            for _ in range(100):  # Display each pattern 100 times for visibility
+                display_string(pattern)
+
 
 
     display_string("      ")  # Clear the display
