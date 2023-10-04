@@ -12,6 +12,7 @@ SNMP_TARGET = "192.168.1.40"
 SNMP_V2_COMMUNITY = "public"
 INTERFACE_OID_IN = "1.3.6.1.2.1.31.1.1.1.6.1"
 INTERFACE_OID_OUT = "1.3.6.1.2.1.31.1.1.1.10.1"
+SNMP_UPTIME_OID = "1.3.6.1.2.1.31.1.1.1.10.1"
 POLL_INTERVAL = 2  # seconds
 
 def fetch_snmp_data(oid):
@@ -29,6 +30,32 @@ def fetch_snmp_data(oid):
     else:
         for varBind in varBinds:
             return int(varBind[1])
+
+def can_ping(host):
+    """Return True if host responds to a ping request, otherwise False."""
+    try:
+        # The '-c 1' means only send one packet. Adjust as needed.
+        # The '-W 1' means to wait 1 second for a response.
+        subprocess.check_output(["ping", "-c", "1", "-W", "1", host])
+        return True
+    except subprocess.CalledProcessError:
+        return False
+    
+def can_snmp(target, community):
+    """Return True if SNMP response can be retrieved from target, otherwise False."""
+    try:
+        errorIndication, errorStatus, errorIndex, varBinds = next(
+            getCmd(SnmpEngine(),
+                   CommunityData(community),
+                   UdpTransportTarget((target, 161), timeout=1, retries=0),  # adding short timeout and no retries for quick check
+                   ContextData(),
+                   ObjectType(ObjectIdentity('1.3.6.1.2.1.1.1.0')))  # sysDescr OID
+        )
+        if errorIndication or errorStatus:
+            return False
+        return True
+    except Exception:
+        return False
 
 def format_bps(value):
     if value >= 10**9:  # Gbps
@@ -51,6 +78,20 @@ def format_bps(value):
 
 def snmp_child(pipe=None):
     while True:
+        if not can_ping(SNMP_TARGET):
+            if pipe:
+                pipe.send("UHH")
+            else:
+                print("UHH")
+            time.sleep(POLL_INTERVAL)  # Let's not spam the ping requests.
+            continue
+        elif not can_snmp(SNMP_TARGET, SNMP_V2_COMMUNITY):
+            if pipe:
+                pipe.send("UHH")
+            else:
+                print("UHH")
+            time.sleep(POLL_INTERVAL)  # Let's not spam the SNMP requests.
+            continue
         try:
             prev_in = fetch_snmp_data(INTERFACE_OID_IN)
             prev_out = fetch_snmp_data(INTERFACE_OID_OUT)
