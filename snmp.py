@@ -42,6 +42,7 @@ def can_snmp(target, community):
         return False
 
 def fetch_snmp_data(oid):
+    print(f"Fetching SNMP data for OID: {oid}")  # Debugging
     errorIndication, errorStatus, errorIndex, varBinds = next(
         getCmd(SnmpEngine(),
                CommunityData(SNMP_V2_COMMUNITY),
@@ -50,11 +51,12 @@ def fetch_snmp_data(oid):
                ObjectType(ObjectIdentity(oid)))
     )
     if errorIndication:
-        print(errorIndication)
+        print(f"Error indication: {errorIndication}")  # Debugging
     elif errorStatus:
-        print('%s at %s' % (errorStatus.prettyPrint(), varBinds[int(errorIndex)-1] if errorIndex else '?'))
+        print(f"Error status: {errorStatus.prettyPrint()} at {varBinds[int(errorIndex)-1] if errorIndex else '?'}")  # Debugging
     else:
         for varBind in varBinds:
+            print(f"Fetched data: {varBind[1]}")  # Debugging
             return int(varBind[1])
 
 def get_fuzzed_value(true_value):
@@ -108,6 +110,8 @@ def snmp_child(pipe=None):
     prev_out = fetch_snmp_data(INTERFACE_OID_OUT)
     prev_time = time.time()
 
+    print(f"Initial values: prev_in = {prev_in}, prev_out = {prev_out}")  # Debugging
+
     while True:
         current_time = time.time()
         actual_interval = current_time - prev_time
@@ -117,8 +121,10 @@ def snmp_child(pipe=None):
 
         in_rate = (current_in - prev_in) * 8 / actual_interval
         out_rate = (current_out - prev_out) * 8 / actual_interval
-
         total_bps = in_rate + out_rate
+
+        print(f"Values: in_rate = {in_rate}, out_rate = {out_rate}, total_bps = {total_bps}")  # Debugging
+
         formatted_total = format_bps(total_bps)
 
         data_to_send = {
