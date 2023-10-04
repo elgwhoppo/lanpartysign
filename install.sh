@@ -15,6 +15,10 @@
 #SUPPORT_URL="http://www.raspbian.org/RaspbianForums"
 #BUG_REPORT_URL="http://www.raspbian.org/RaspbianBugs"
 
+# We use screen for the watchdog process 
+sudo apt install screen 
+
+# need snmp
 pip3 install pysnmp
 #had to downgrade due to compatibility issue 
 pip3 install pyasn1==0.4.8

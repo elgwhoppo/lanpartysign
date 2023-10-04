@@ -21,5 +21,7 @@ echo "Network is ready. Continuing with the script."
 #screen -S SNMP -d -m python /home/pi/speedsign/snmp.py
 #sleep 15
 #screen -S SIGN -d -m sudo python /home/pi/speedsign/python.py
+#sleep 15
+#screen -S SIGN -d -m python /home/pi/lanpartysign/sign.py
 sleep 15
-screen -S SIGN -d -m python /home/pi/lanpartysign/sign.py
+screen -S WDOG -d -m ./home/pi/lanpartysign/watchdog.sh

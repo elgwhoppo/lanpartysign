@@ -1,1 +1,1 @@
-@reboot /home/pi/speedsign/startup.sh
+@reboot /home/pi/lanpartysign/startup.sh
