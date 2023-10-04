@@ -28,24 +28,22 @@ def fetch_snmp_data(oid):
 
 def format_bps(value):
     if value >= 10**9:  # Gbps
-        return f"{value / 10**9:.2f}G"
+        val = value / 10**9
+        if val >= 10:  # If value is 10Gbps or more, restrict to 9.9G
+            return "9.9G"
+        else:
+            return f"{val:.1f}G"
     elif value >= 10**6:  # Mbps
         val = value / 10**6
-        if val.is_integer():
+        if val >= 100:  # If in hundreds, show whole number
             return f"{int(val)}"
         else:
             return f"{val:.2f}"
     elif value >= 10**3:  # Kbps
         val = value / 10**3
-        if val.is_integer():
-            return f"{int(val)}"
-        else:
-            return f"{val:.2f}"
+        return f"{int(val)}" if val.is_integer() else f"{val:.2f}"
     else:
-        if value.is_integer():
-            return f"{int(value)}"
-        else:
-            return f"{value:.2f}"
+        return f"{int(value)}" if value.is_integer() else f"{value:.2f}"
 
 
 
