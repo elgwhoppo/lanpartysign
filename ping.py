@@ -4,7 +4,7 @@ import time
 import socket
 from multiprocessing import Pipe
 
-POLL_INTERVAL = 0.1  # seconds
+POLL_INTERVAL = 0.15  # seconds
 #IP_TO_PING = "203.50.2.71" # Australia DNS
 IP_TO_PING = "8.8.8.8" # Google DNS
 
