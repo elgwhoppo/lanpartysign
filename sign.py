@@ -207,7 +207,7 @@ if __name__ == '__main__':
                 print("SNMP process has terminated! Exiting sign.py...")
                 os._exit(1)
 
-            if time.time() - startup_time < 30:
+            if time.time() - startup_time < 50:
                 last_snmp_data = "SNP"
 
             combined_data = f"{last_ping_data}{last_snmp_data}"  # Combining the data.
