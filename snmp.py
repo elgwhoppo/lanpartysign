@@ -6,7 +6,6 @@ import pysnmp.error
 import pysnmp.carrier.error
 import re
 import random
-import threading
 import socket 
 from multiprocessing import Pipe
 
@@ -16,14 +15,6 @@ INTERFACE_OID_IN = "1.3.6.1.2.1.31.1.1.1.6.1"
 INTERFACE_OID_OUT = "1.3.6.1.2.1.31.1.1.1.10.1"
 SNMP_UPTIME_OID = "1.3.6.1.2.1.31.1.1.1.10.1"
 POLL_INTERVAL = 15  # seconds
-
-
-def fetch_real_data():
-    """Function to fetch real SNMP data and save them in global vars."""
-    global next_in, next_out, next_time
-    next_time = time.time()
-    next_in = fetch_snmp_data(INTERFACE_OID_IN)
-    next_out = fetch_snmp_data(INTERFACE_OID_OUT)
 
 def fetch_snmp_data(oid):
     errorIndication, errorStatus, errorIndex, varBinds = next(
@@ -99,8 +90,6 @@ def handle_error(pipe, message):
     time.sleep(POLL_INTERVAL)
 
 def snmp_child(pipe=None):
-    global next_in, next_out, next_time
-    
     while True:
         # Check connectivity to SNMP target
         while not can_ping(SNMP_TARGET):
@@ -120,37 +109,17 @@ def snmp_child(pipe=None):
         try:
             # Once both checks pass, enter this inner loop to continuously fetch SNMP data
             while True:
+                start_time = time.time()  # record start time of this iteration
 
-                # Start a thread to prefetch real SNMP data
-                t = threading.Thread(target=fetch_real_data)
-                t.start()
-                
-                # Continue to send fuzzed values while real data is being fetched
-                for i in range(int(POLL_INTERVAL * 10) - 5):  # Adjusted to prefetch SNMP data 0.5s earlier
-                    time.sleep(0.1)  # Update every 100ms
-                    fuzzed_bps = get_fuzzed_value(total_bps)
-                    formatted_fuzzed_total = format_bps(fuzzed_bps)
-                    
-                    data_to_send_fuzzed = {
-                        'data': formatted_fuzzed_total,
-                        'debug': f"Fuzzed Value: {formatted_fuzzed_total}"
-                    }
-
-                    if pipe:
-                        pipe.send(data_to_send_fuzzed)
-                    else:
-                        print(data_to_send_fuzzed['debug'])
-
-                t.join()  # Wait for the real data to be fetched
-
-                # Update the current values with the pre-fetched values
-                current_time = next_time
-                current_in = next_in
-                current_out = next_out
-
+                current_time = time.time()
                 actual_interval = current_time - prev_time
+
+                current_in = fetch_snmp_data(INTERFACE_OID_IN)
+                current_out = fetch_snmp_data(INTERFACE_OID_OUT)
+
                 in_rate = (current_in - prev_in) * 8 / actual_interval
                 out_rate = (current_out - prev_out) * 8 / actual_interval
+
                 total_bps = in_rate + out_rate
                 formatted_total = format_bps(total_bps)
 
@@ -165,21 +134,25 @@ def snmp_child(pipe=None):
                 else:
                     print(data_to_send['debug'])
 
-                # Save the current values as the previous values for the next iteration
+                # Save the current values as the previous values for the next iteration.
                 prev_in, prev_out, prev_time = current_in, current_out, current_time
+
+                # Send fuzzed values
+                for _ in range(int(POLL_INTERVAL * 10)):  # 10 fuzzed values every second for the entire POLL_INTERVAL
+                    time.sleep(0.1)  # Update every 100ms
+                    fuzzed_bps = get_fuzzed_value(total_bps)
+                    formatted_fuzzed_total = format_bps(fuzzed_bps)
+                    
+                    data_to_send_fuzzed = {
+                        'data': formatted_fuzzed_total,
+                        'debug': f"Fuzzed Value: {formatted_fuzzed_total}"
+                    }
+
+                    if pipe:
+                        pipe.send(data_to_send_fuzzed)
+                    else:
+                        print(data_to_send_fuzzed['debug'])
 
         except (socket.error, pysnmp.error.PySnmpError, pysnmp.carrier.error.CarrierError):
             handle_error(pipe, "UHH")
             continue
-        
-        except Exception as e:
-            handle_error(pipe, "UHH")
-            continue
-
-
-if __name__ == '__main__':
-#    parent_conn, child_conn = Pipe()
-#    snmp_child()  # Call snmp_child directly when running the script standalone
-    while True:
-        print(snmp_child())
-        time.sleep(1)

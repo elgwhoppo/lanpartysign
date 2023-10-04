@@ -169,10 +169,7 @@ def display(data):
 if __name__ == '__main__':
     # Initialization for the display
     setup()
-
-    # Wake up the display
-    #wake_up_display()    
-    
+    #wake_up_display()
     # Create pipes for SNMP and ping
     parent_conn_snmp, child_conn_snmp = Pipe()
     parent_conn_ping, child_conn_ping = Pipe()
@@ -187,17 +184,11 @@ if __name__ == '__main__':
 
     last_snmp_data = '000'
     last_ping_data = None
-    try:
+    try: 
         while True:
             # Parent reads from its end of pipes and updates display
             if parent_conn_snmp.poll():  # Check if there's data to read
-                data_received = parent_conn_snmp.recv()
-                if isinstance(data_received, dict) and 'data' in data_received:
-                    last_snmp_data = data_received['data']
-                    print(data_received['debug'])  # Print out the debug info or handle it as required
-            else:
-                print(f"Unexpected data received from SNMP pipe: {data_received}")
-
+                last_snmp_data = parent_conn_snmp.recv()
             if parent_conn_ping.poll():  # Check if there's data to read
                 last_ping_data = parent_conn_ping.recv()
 
