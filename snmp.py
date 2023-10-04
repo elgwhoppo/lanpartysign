@@ -1,6 +1,9 @@
 from pysnmp.hlapi import *
 import time
 import subprocess
+import os
+import pysnmp.error
+import pysnmp.carrier.error
 import re
 import socket 
 from multiprocessing import Pipe
@@ -46,10 +49,6 @@ def format_bps(value):
     else:
         return f"{int(value)}" if value.is_integer() else f"{value:.2f}"
 
-
-
-
-
 def snmp_child(pipe=None):
     while True:
         try:
@@ -77,15 +76,15 @@ def snmp_child(pipe=None):
 
         except (socket.error, http.client.HTTPException, urllib.error.URLError):
             if pipe:
-                pipe.send("O_0")  # or some other placeholder/error value
+                pipe.send("UHH")  # or some other placeholder/error value
             else:
-                print("O_0")
+                print("UHH")
             time.sleep(POLL_INTERVAL)
         except Exception as e:
             if pipe:
-                pipe.send("O_0")
+                pipe.send("UHH")
             else:
-                print("O_0")
+                print("UHH")
             time.sleep(POLL_INTERVAL)
 
 if __name__ == '__main__':
