@@ -128,21 +128,17 @@ We used on rebuild:
 -   pip3 install pyasn1==0.4.8 (had to downgrade for compatability)
 -   The RPi.GPIO library. No install required with python 3.9.2. 
 
-The Python Script
-=================
+The Python Scripts
+==================
 The Python script does all the heavy lifting of the sign and runs on the Raspberry Pi. It creates the precisely-timed pulses required for multiplexing the digits, as well as gathering the data displayed on the sign.
 
-The speed at which values are fetched by adjusting “fetchrate”, and the sign’s refresh rate can be adjusted using the “pulsewidth” value. A small amount of number crunching is done to create how long a segment or digit should stay on or off for the multiplexing.
+This script has been completely reworked as of October 2023, to leverage multi-processing and pipes for better efficiency. Error handling via a Watchdog service and better exception catching are also used. Python reaches out using three scripts: 
 
-The rest of the Python script is heavily derived from Rototron’s terrific 7 Segment LED tutorial. I would suggest viewing that as it’s a great explanation of using PWM to multiplex LED’s.
+- sign.py
+---ping.py
+---snmp.py
 
-http://www.rototron.info/7-segment-led-tutorial-for-raspberry-pi/
-
-It’s important to note that once a pulse is created (via PWM.add\_channel\_pulse), that GPIO pin will continue to pulse until instructed otherwise (i.e. overwritten by another use of PWM.add\_channel\_pulse, or killed via PWM.clear\_channel)
-
-The http daemon only updates a file once per second even though the shell script is updating it quicker. To create the illustion it’s updating faster, a small section for “fuzzing” averages the previous two values to fabricate a new one.
-
-Some error checking and exception handling is done to prevent the Python script from stopping if a ping times out, or a blank value is fetched from pfSense.
+Calling sign.py will after a boot up cycle, call ping and snmp, getting the data accordingly. 
 
 The Shell Script
 ================
