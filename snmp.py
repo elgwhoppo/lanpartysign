@@ -41,6 +41,47 @@ def can_snmp(target, community):
     except Exception:
         return False
 
+def snmp_fetch(pipe):
+    while True:
+        # Check connectivity to SNMP target
+        while not can_ping(SNMP_TARGET):
+            handle_error(pipe, "UHH")
+            time.sleep(POLL_INTERVAL)
+
+        # Check SNMP availability on the target
+        while not can_snmp(SNMP_TARGET, SNMP_V2_COMMUNITY):
+            handle_error(pipe, "UHH")
+            time.sleep(POLL_INTERVAL)
+
+        prev_time = time.time()
+        prev_in = fetch_snmp_data(INTERFACE_OID_IN)
+        prev_out = fetch_snmp_data(INTERFACE_OID_OUT)
+
+        current_time = time.time()
+        actual_interval = current_time - prev_time
+
+        current_in = fetch_snmp_data(INTERFACE_OID_IN)
+        current_out = fetch_snmp_data(INTERFACE_OID_OUT)
+
+        in_rate = (current_in - prev_in) * 8 / actual_interval
+        out_rate = (current_out - prev_out) * 8 / actual_interval
+        total_bps = in_rate + out_rate
+
+        formatted_total = format_bps(total_bps)
+
+        data_to_send = {
+            'data': formatted_total,
+            'debug': f"Raw in: {current_in}, Raw out: {current_out}, Interval: {actual_interval:.2f}s, "
+                     f"In rate: {in_rate:.2f}, Out rate: {out_rate:.2f}, Total rate: {formatted_total}",
+        }
+
+        if pipe:
+            pipe.send(data_to_send)
+        else:
+            print(data_to_send['debug'])
+
+        time.sleep(POLL_INTERVAL)
+
 def fetch_snmp_data(oid):
     print(f"Fetching SNMP data for OID: {oid}")  # Debugging
     errorIndication, errorStatus, errorIndex, varBinds = next(
@@ -103,14 +144,16 @@ def snmp_fetch(pipe):
         # ... rest of your logic for the thread ...
 
 def snmp_child(pipe=None):
+    #snmp_thread = threading.Thread(target=snmp_fetch, args=(pipe,))
+    #snmp_thread.start()
+
+    #prev_in = fetch_snmp_data(INTERFACE_OID_IN)
+    #prev_out = fetch_snmp_data(INTERFACE_OID_OUT)
+    #prev_time = time.time()
+
+    #print(f"Initial values: prev_in = {prev_in}, prev_out = {prev_out}")  # Debugging
     snmp_thread = threading.Thread(target=snmp_fetch, args=(pipe,))
     snmp_thread.start()
-
-    prev_in = fetch_snmp_data(INTERFACE_OID_IN)
-    prev_out = fetch_snmp_data(INTERFACE_OID_OUT)
-    prev_time = time.time()
-
-    print(f"Initial values: prev_in = {prev_in}, prev_out = {prev_out}")  # Debugging
 
     while True:
         current_time = time.time()
