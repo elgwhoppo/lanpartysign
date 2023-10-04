@@ -172,6 +172,9 @@ def snmp_child(pipe=None):
     out_rate = (prev_out - 0) * 8  # Initializing out_rate
     total_bps = in_rate + out_rate  # Initialize total_bps
 
+    # If it's the first data fetch, we'll send "SNP" for the display
+    first_fetch = True  # <-- NEW
+
     # Shared dictionary to store values
     prev_values = {
         "current_time": prev_time,
@@ -192,7 +195,11 @@ def snmp_child(pipe=None):
             out_rate = (prev_values["current_out"] - prev_out) * 8 / actual_interval
             total_bps = in_rate + out_rate  # Update total_bps
 
-            formatted_total = format_bps(total_bps)
+            if first_fetch:  # <-- NEW
+                formatted_total = "SNP"  # <-- NEW
+                first_fetch = False  # <-- NEW
+            else:  # <-- NEW
+                formatted_total = format_bps(total_bps)  # <-- MODIFIED
 
             data_to_send = {
                 'data': formatted_total,
@@ -209,7 +216,7 @@ def snmp_child(pipe=None):
             prev_in = prev_values["current_in"]
             prev_out = prev_values["current_out"]
             prev_time = prev_values["current_time"]
-            
+
         # Send fuzzed values
         for _ in range(int(POLL_INTERVAL * 10)):  # 10 fuzzed values every second for the entire POLL_INTERVAL
             time.sleep(0.1)  # Update every 100ms
@@ -225,6 +232,7 @@ def snmp_child(pipe=None):
                 pipe.send(data_to_send_fuzzed)
             else:
                 print(data_to_send_fuzzed['debug'])
+
 
 if __name__ == '__main__':
     snmp_child()

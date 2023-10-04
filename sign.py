@@ -36,6 +36,7 @@ number_patterns = {' ':(0,0,0,0,0,0,0,0),
     'P':(1,1,1,1,0,0,1,0), #number 5, the last one is the bottom right
     'B':(0,1,0,1,1,1,1,0), #number 1, the first one is the top segment
     'D':(0,0,1,1,1,1,1,0), #number 2, the second one, is top left segment
+    'S':(1,1,0,0,5,1,1,0), #number 2, the second one, is top left segment
     '0':(1,1,1,1,1,1,0,0),
     '1':(0,0,1,0,1,0,0,0),
     '2':(1,0,1,1,0,1,1,0),
@@ -61,6 +62,7 @@ number_patterns = {' ':(0,0,0,0,0,0,0,0),
     'P.':(1,1,1,1,0,0,1,1), #number 5, the last one is the bottom right
     'B.':(0,1,0,1,1,1,1,1), #number 1, the first one is the top segment
     'D.':(0,0,1,1,1,1,1,1), #number 2, the second one, is top left segment
+    'S.':(1,1,0,0,5,1,1,1), #number 2, the second one, is top left segment
     '0.':(1,1,1,1,1,1,0,1),
     '1.':(0,0,1,0,1,0,0,1),
     '2.':(1,0,1,1,0,1,1,1),
