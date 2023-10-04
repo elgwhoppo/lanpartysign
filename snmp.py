@@ -74,15 +74,17 @@ def snmp_child(pipe=None):
             prev_in, prev_out = current_in, current_out
             time.sleep(POLL_INTERVAL)
 
-        except (socket.error, http.client.HTTPException, urllib.error.URLError):
+        except (socket.error, pysnmp.error.PySnmpError, pysnmp.carrier.error.CarrierError, Exception):
             if pipe:
                 pipe.send("UHH")  # or some other placeholder/error value
+                os._exit(1)
             else:
                 print("UHH")
             time.sleep(POLL_INTERVAL)
         except Exception as e:
             if pipe:
                 pipe.send("UHH")
+                os._exit(1)
             else:
                 print("UHH")
             time.sleep(POLL_INTERVAL)
