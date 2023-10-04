@@ -195,16 +195,24 @@ def snmp_child(pipe=None):
             actual_interval = prev_values["current_time"] - prev_time
 
             if actual_interval > 0:
-                in_rate = (prev_values["current_in"] - prev_in) * 8 / actual_interval
-                out_rate = (prev_values["current_out"] - prev_out) * 8 / actual_interval
-                total_bps = in_rate + out_rate
+                new_in_rate = (prev_values["current_in"] - prev_in) * 8 / actual_interval
+                new_out_rate = (prev_values["current_out"] - prev_out) * 8 / actual_interval
+                new_total_bps = new_in_rate + new_out_rate
             else:
                 # Here you can decide how to handle the case when actual_interval is 0.
                 # For example, you could use the previous values:
-                in_rate = (prev_values["current_in"] - prev_in) * 8
-                out_rate = (prev_values["current_out"] - prev_out) * 8
-                total_bps = in_rate + out_rate
+                new_in_rate = (prev_values["current_in"] - prev_in) * 8
+                new_out_rate = (prev_values["current_out"] - prev_out) * 8
+                new_total_bps = new_in_rate + new_out_rate
 
+            # Check if either in_rate or out_rate are zero, or if they're both None.
+            # If any of these conditions are met, we'll keep the previous total_bps.
+            if new_in_rate == 0 or new_out_rate == 0 or (new_in_rate is None and new_out_rate is None):
+                total_bps = total_bps  # essentially does nothing, but makes it clear in the code
+            else:
+                in_rate = new_in_rate
+                out_rate = new_out_rate
+                total_bps = new_total_bps
             if first_fetch:
                 formatted_total = "SNP"
                 first_fetch = False
