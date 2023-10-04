@@ -24,3 +24,7 @@ pip3 install pysnmp
 pip3 install pyasn1==0.4.8
 
 git clone https://github.com/elgwhoppo/lanpartysign.git
+cd lanpartysign
+
+chmod +x startup.sh
+chmod +x watchdog.sh
