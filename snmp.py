@@ -36,7 +36,7 @@ def format_bps(value):
     else:
         return f"{value:.2f}"
 
-def snmp_child(pipe):
+def snmp_child(pipe=None):
     while True:
         prev_in = fetch_snmp_data(INTERFACE_OID_IN)
         prev_out = fetch_snmp_data(INTERFACE_OID_OUT)
@@ -54,8 +54,12 @@ def snmp_child(pipe):
                 formatted_total = format_bps(total_bps)
 
                 print(f"SNMP Data: {formatted_total}")
+                if pipe:
+                    pipe.send(formatted_total)
+                else:
+                    print(formatted_total)  # print directly if running standalone
 
-                pipe.send(formatted_total)
+                #pipe.send(formatted_total)
 
             except subprocess.CalledProcessError:
                 pipe.send("O_0")  # Send three dots if the ping fails
@@ -65,7 +69,6 @@ def snmp_child(pipe):
 
             prev_in, prev_out = current_in, current_out
             time.sleep(POLL_INTERVAL)
-
 
 if __name__ == '__main__':
 #    parent_conn, child_conn = Pipe()
