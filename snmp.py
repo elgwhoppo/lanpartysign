@@ -148,8 +148,39 @@ def handle_error(pipe, message):
     if pipe:
         pipe.send("UHH")
     else:
+        print("UHH")
         print(message)
     time.sleep(POLL_INTERVAL)
+
+def snmp_works_question_mark(pipe):
+    ping_failures = 0
+    snmp_failures = 0
+
+    while True:
+        if not can_ping(SNMP_TARGET):
+            ping_failures += 1
+            print(f"Can't ping {SNMP_TARGET}. Attempt {ping_failures}/5.")
+            if ping_failures >= 5:
+                print(f"Failed to ping {SNMP_TARGET} 5 times consecutively. Sending error.")
+                handle_error(pipe, "UHH due to ping failure")
+                # Resetting the counter so we can continue monitoring after sending the error.
+                ping_failures = 0
+            time.sleep(POLL_INTERVAL)
+        else:
+            ping_failures = 0  # Reset the counter if ping is successful.
+
+        if not can_snmp(SNMP_TARGET, SNMP_V2_COMMUNITY):
+            snmp_failures += 1
+            print(f"Can't get SNMP from {SNMP_TARGET}. Attempt {snmp_failures}/5.")
+            if snmp_failures >= 5:
+                print(f"Failed to get SNMP data from {SNMP_TARGET} 5 times consecutively. Sending error.")
+                handle_error(pipe, "UHH due to SNMP failure")
+                # Resetting the counter so we can continue monitoring after sending the error.
+                snmp_failures = 0
+            time.sleep(POLL_INTERVAL)
+        else:
+            snmp_failures = 0  # Reset the counter if SNMP fetch is successful.
+
 
 def snmp_fetch(pipe):
     while True:
@@ -190,6 +221,7 @@ def snmp_child(pipe=None):
     snmp_thread.start()
 
     while True:
+        snmp_works_question_mark(pipe)
         if prev_values["current_time"] != prev_time:
             actual_interval = prev_values["current_time"] - prev_time
 
@@ -248,6 +280,15 @@ def snmp_child(pipe=None):
                     last_non_zero_fuzzed_bps = fuzzed_bps
 
                 formatted_fuzzed_total = format_bps(fuzzed_bps)
+
+
+                # Print fuzzed value only once every 5 seconds
+                fuzzed_print_counter += 1
+                if fuzzed_print_counter >= 50:  # With the sleep of 0.1s, this will be roughly every 5 seconds
+                    if not pipe:
+                        print(data_to_send_fuzzed['debug'])
+                    fuzzed_print_counter = 0
+
 
                 data_to_send_fuzzed = {
                     'data': formatted_fuzzed_total,
