@@ -221,7 +221,7 @@ def snmp_child(pipe=None):
     snmp_thread.start()
 
     while True:
-        snmp_works_question_mark(pipe)
+        #snmp_works_question_mark(pipe)
         if prev_values["current_time"] != prev_time:
             actual_interval = prev_values["current_time"] - prev_time
 
