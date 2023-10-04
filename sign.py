@@ -173,7 +173,7 @@ if __name__ == '__main__':
     setup()
 
     # Wake up the display
-    wake_up_display()    
+    #wake_up_display()    
 
     startup_time = time.time()
     
