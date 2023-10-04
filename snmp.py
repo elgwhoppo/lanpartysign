@@ -85,6 +85,23 @@ def snmp_fetch(pipe):
 
         time.sleep(POLL_INTERVAL)
 
+def snmp_fetch_thread(prev_values):
+    while True:
+        # Check connectivity to SNMP target
+        while not can_ping(SNMP_TARGET):
+            time.sleep(POLL_INTERVAL)
+
+        # Check SNMP availability on the target
+        while not can_snmp(SNMP_TARGET, SNMP_V2_COMMUNITY):
+            time.sleep(POLL_INTERVAL)
+
+        prev_values["current_time"] = time.time()
+
+        prev_values["current_in"] = fetch_snmp_data(INTERFACE_OID_IN)
+        prev_values["current_out"] = fetch_snmp_data(INTERFACE_OID_OUT)
+
+        time.sleep(POLL_INTERVAL)
+
 def fetch_snmp_data(oid):
     print(f"Fetching SNMP data for OID: {oid}")  # Debugging
     errorIndication, errorStatus, errorIndex, varBinds = next(
@@ -152,43 +169,43 @@ def snmp_child(pipe=None):
     prev_in = fetch_snmp_data(INTERFACE_OID_IN)
     prev_out = fetch_snmp_data(INTERFACE_OID_OUT)
 
+    # Shared dictionary to store values
+    prev_values = {
+        "current_time": prev_time,
+        "current_in": prev_in,
+        "current_out": prev_out,
+    }
+
+    # Start the SNMP fetch thread
+    snmp_thread = threading.Thread(target=snmp_fetch_thread, args=(prev_values,))
+    snmp_thread.start()
+
     while True:
-        # Check connectivity to SNMP target
-        while not can_ping(SNMP_TARGET):
-            handle_error(pipe, "UHH")
-            time.sleep(POLL_INTERVAL)
+        # Check if the snmp_fetch_thread has updated the values
+        if prev_values["current_time"] != prev_time:
+            actual_interval = prev_values["current_time"] - prev_time
 
-        # Check SNMP availability on the target
-        while not can_snmp(SNMP_TARGET, SNMP_V2_COMMUNITY):
-            handle_error(pipe, "UHH")
-            time.sleep(POLL_INTERVAL)
+            in_rate = (prev_values["current_in"] - prev_in) * 8 / actual_interval
+            out_rate = (prev_values["current_out"] - prev_out) * 8 / actual_interval
 
-        # Let's fetch the time and SNMP data once before entering the loop.
-        current_time = time.time()
-        actual_interval = current_time - prev_time
+            total_bps = in_rate + out_rate
+            formatted_total = format_bps(total_bps)
 
-        current_in = fetch_snmp_data(INTERFACE_OID_IN)
-        current_out = fetch_snmp_data(INTERFACE_OID_OUT)
+            data_to_send = {
+                'data': formatted_total,
+                'debug': f"Raw in: {prev_values['current_in']}, Raw out: {prev_values['current_out']}, Interval: {actual_interval:.2f}s, "
+                         f"In rate: {in_rate:.2f}, Out rate: {out_rate:.2f}, Total rate: {formatted_total}",
+            }
 
-        in_rate = (current_in - prev_in) * 8 / actual_interval
-        out_rate = (current_out - prev_out) * 8 / actual_interval
+            if pipe:
+                pipe.send(data_to_send)
+            else:
+                print(data_to_send['debug'])
 
-        total_bps = in_rate + out_rate
-        formatted_total = format_bps(total_bps)
-
-        data_to_send = {
-            'data': formatted_total,
-            'debug': f"Raw in: {current_in}, Raw out: {current_out}, Interval: {actual_interval:.2f}s, "
-                     f"In rate: {in_rate:.2f}, Out rate: {out_rate:.2f}, Total rate: {formatted_total}",
-        }
-
-        if pipe:
-            pipe.send(data_to_send)
-        else:
-            print(data_to_send['debug'])
-
-        # Save the current values as the previous values for the next iteration.
-        prev_in, prev_out, prev_time = current_in, current_out, current_time
+            # Update previous values for the next iteration
+            prev_in = prev_values["current_in"]
+            prev_out = prev_values["current_out"]
+            prev_time = prev_values["current_time"]
 
         # Send fuzzed values
         for _ in range(int(POLL_INTERVAL * 10)):  # 10 fuzzed values every second for the entire POLL_INTERVAL
@@ -205,7 +222,6 @@ def snmp_child(pipe=None):
                 pipe.send(data_to_send_fuzzed)
             else:
                 print(data_to_send_fuzzed['debug'])
-
 
 if __name__ == '__main__':
     snmp_child()
