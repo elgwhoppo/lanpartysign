@@ -120,7 +120,7 @@ def wake_up_display():
     
     patterns = ["ADD 1P", formatted_ip_1, formatted_ip_2]
     
-    for _ in range(5):  # Repeat the whole sequence 5 times
+    for _ in range(3):  # Repeat the whole sequence 3 times, display IP address 3 times
         for pattern in patterns:
             for _ in range(100):  # Display each pattern 100 times for visibility
                 display_string(pattern)
