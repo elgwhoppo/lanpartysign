@@ -176,6 +176,8 @@ def snmp_child(pipe=None):
     # If it's the first data fetch, we'll send "SNP" for the display
     first_fetch = True
 
+    last_non_zero_fuzzed_bps = 0
+
     # Shared dictionary to store values
     prev_values = {
         "current_time": prev_time,
@@ -223,6 +225,12 @@ def snmp_child(pipe=None):
             for _ in range(int(POLL_INTERVAL * 10)):  # 10 fuzzed values every second for the entire POLL_INTERVAL
                 time.sleep(0.1)  # Update every 100ms
                 fuzzed_bps = get_fuzzed_value(total_bps)
+                # Check if fuzzed_bps is zero, make it the last non-zero value
+                if fuzzed_bps == 0:
+                    fuzzed_bps = last_non_zero_fuzzed_bps
+                else:
+                    last_non_zero_fuzzed_bps = fuzzed_bps
+
                 formatted_fuzzed_total = format_bps(fuzzed_bps)
 
                 data_to_send_fuzzed = {
