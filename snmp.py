@@ -5,6 +5,7 @@ import os
 import pysnmp.error
 import pysnmp.carrier.error
 import re
+import random
 import socket 
 from multiprocessing import Pipe
 
@@ -13,7 +14,7 @@ SNMP_V2_COMMUNITY = "public"
 INTERFACE_OID_IN = "1.3.6.1.2.1.31.1.1.1.6.1"
 INTERFACE_OID_OUT = "1.3.6.1.2.1.31.1.1.1.10.1"
 SNMP_UPTIME_OID = "1.3.6.1.2.1.31.1.1.1.10.1"
-POLL_INTERVAL = 5  # seconds
+POLL_INTERVAL = 15  # seconds
 
 def fetch_snmp_data(oid):
     errorIndication, errorStatus, errorIndex, varBinds = next(
@@ -30,6 +31,11 @@ def fetch_snmp_data(oid):
     else:
         for varBind in varBinds:
             return int(varBind[1])
+
+def get_fuzzed_value(true_value):
+    """Generate a value that's within 5% of the true_value."""
+    fuzz_factor = random.uniform(0.95, 1.05)
+    return true_value * fuzz_factor
 
 def can_ping(host):
     """Return True if host responds to a ping request, otherwise False."""
@@ -131,12 +137,21 @@ def snmp_child(pipe=None):
                 # Save the current values as the previous values for the next iteration.
                 prev_in, prev_out, prev_time = current_in, current_out, current_time
 
-                end_time = time.time()  # record end time of this iteration
-                elapsed_time = end_time - start_time  # find out how long it took
-                sleep_time = POLL_INTERVAL - elapsed_time  # adjust sleep time
+                # Send fuzzed values
+                for _ in range(int(POLL_INTERVAL * 10)):  # 10 fuzzed values every second for the entire POLL_INTERVAL
+                    time.sleep(0.1)  # Update every 100ms
+                    fuzzed_bps = get_fuzzed_value(total_bps)
+                    formatted_fuzzed_total = format_bps(fuzzed_bps)
+                    
+                    data_to_send_fuzzed = {
+                        'data': formatted_fuzzed_total,
+                        'debug': f"Fuzzed Value: {formatted_fuzzed_total}"
+                    }
 
-                if sleep_time > 0:  # Only sleep if there's time remaining in the desired interval
-                    time.sleep(sleep_time)
+                    if pipe:
+                        pipe.send(data_to_send_fuzzed)
+                    else:
+                        print(data_to_send_fuzzed['debug'])
 
         except (socket.error, pysnmp.error.PySnmpError, pysnmp.carrier.error.CarrierError):
             handle_error(pipe, "UHH")
