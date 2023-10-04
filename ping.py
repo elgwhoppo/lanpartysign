@@ -1,6 +1,7 @@
 import subprocess
 import re
 import time
+import socket
 from multiprocessing import Pipe
 
 POLL_INTERVAL = 0.1  # seconds

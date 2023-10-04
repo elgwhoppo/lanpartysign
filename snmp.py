@@ -2,6 +2,7 @@ from pysnmp.hlapi import *
 import time
 import subprocess
 import re
+import socket 
 from multiprocessing import Pipe
 
 SNMP_TARGET = "192.168.1.40"
