@@ -171,6 +171,7 @@ def snmp_child(pipe=None):
     in_rate = (prev_in - 0) * 8  # Initializing in_rate
     out_rate = (prev_out - 0) * 8  # Initializing out_rate
     total_bps = in_rate + out_rate  # Initialize total_bps
+    data_ready = False
 
     # If it's the first data fetch, we'll send "SNP" for the display
     first_fetch = True

@@ -173,7 +173,9 @@ if __name__ == '__main__':
     setup()
 
     # Wake up the display
-    #wake_up_display()    
+    wake_up_display()    
+
+    startup_time = time.time()
     
     # Create pipes for SNMP and ping
     parent_conn_snmp, child_conn_snmp = Pipe()
@@ -204,6 +206,11 @@ if __name__ == '__main__':
             if not p_snmp.is_alive():
                 print("SNMP process has terminated! Exiting sign.py...")
                 os._exit(1)
+
+            if time.time() - startup_time < 30:
+                last_snmp_data = "SNP"
+                continue
+
 
             combined_data = f"{last_ping_data}{last_snmp_data}"  # Combining the data.
             display_string(combined_data)  # Use the RPi.GPIO to display the combined data
