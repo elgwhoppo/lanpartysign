@@ -119,7 +119,8 @@ def snmp_child(pipe=None):
 
                 data_to_send = {
                 'data': formatted_total,
-                'debug': f"Raw in: {current_in}, Raw out: {current_out}, Interval: {actual_interval:.2f}s, Total rate: {formatted_total}"
+                'debug': f"Raw in: {current_in}, Raw out: {current_out}, Interval: {actual_interval:.2f}s, "
+                         f"In rate: {in_rate:.2f}, Out rate: {out_rate:.2f}, Total rate: {formatted_total}",
                 }
 
                 if pipe:
