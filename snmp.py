@@ -31,12 +31,21 @@ def format_bps(value):
         return f"{value / 10**9:.2f}G"
     elif value >= 10**6:  # Mbps
         val = value / 10**6
-        return f"{val:.0f}" if val.is_integer() else f"{val:.2f}"
+        if val.is_integer():
+            return f"{int(val)}"
+        else:
+            return f"{val:.2f}"
     elif value >= 10**3:  # Kbps
         val = value / 10**3
-        return f"{val:.0f}" if val.is_integer() else f"{val:.2f}"
+        if val.is_integer():
+            return f"{int(val)}"
+        else:
+            return f"{val:.2f}"
     else:
-        return f"{value:.0f}" if value.is_integer() else f"{value:.2f}"
+        if value.is_integer():
+            return f"{int(value)}"
+        else:
+            return f"{value:.2f}"
 
 
 
