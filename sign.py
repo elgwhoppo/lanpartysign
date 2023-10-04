@@ -192,8 +192,11 @@ if __name__ == '__main__':
             # Parent reads from its end of pipes and updates display
             if parent_conn_snmp.poll():  # Check if there's data to read
                 data_received = parent_conn_snmp.recv()
-                last_snmp_data = data_received['data']
-                print(data_received['debug'])  # Print out the debug info or handle it as required
+                if isinstance(data_received, dict) and 'data' in data_received:
+                    last_snmp_data = data_received['data']
+                    print(data_received['debug'])  # Print out the debug info or handle it as required
+            else:
+                print(f"Unexpected data received from SNMP pipe: {data_received}")
 
             if parent_conn_ping.poll():  # Check if there's data to read
                 last_ping_data = parent_conn_ping.recv()
