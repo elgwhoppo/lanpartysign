@@ -30,7 +30,12 @@ def format_bps(value):
     if value >= 10**9:  # Gbps
         return f"{value / 10**9:.1f}G"
     else:  # Representing everything else in Mbps
-        return f"{value / 10**6:.2f}"
+        mbps_value = value / 10**6
+        if mbps_value.is_integer():
+            return f"{int(mbps_value)}"
+        else:
+            return f"{mbps_value:.2f}"
+
 
 
 
