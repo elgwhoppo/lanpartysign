@@ -173,7 +173,7 @@ def snmp_child(pipe=None):
     total_bps = in_rate + out_rate  # Initialize total_bps
 
     # If it's the first data fetch, we'll send "SNP" for the display
-    first_fetch = True  # <-- NEW
+    first_fetch = True
 
     # Shared dictionary to store values
     prev_values = {
@@ -193,13 +193,13 @@ def snmp_child(pipe=None):
 
             in_rate = (prev_values["current_in"] - prev_in) * 8 / actual_interval
             out_rate = (prev_values["current_out"] - prev_out) * 8 / actual_interval
-            total_bps = in_rate + out_rate  # Update total_bps
+            total_bps = in_rate + out_rate
 
-            if first_fetch:  # <-- NEW
-                formatted_total = "SNP"  # <-- NEW
-                first_fetch = False  # <-- NEW
-            else:  # <-- NEW
-                formatted_total = format_bps(total_bps)  # <-- MODIFIED
+            if first_fetch:
+                formatted_total = "SNP"
+                first_fetch = False
+            else:
+                formatted_total = format_bps(total_bps)
 
             data_to_send = {
                 'data': formatted_total,
@@ -217,22 +217,22 @@ def snmp_child(pipe=None):
             prev_out = prev_values["current_out"]
             prev_time = prev_values["current_time"]
 
-        # Send fuzzed values
-        for _ in range(int(POLL_INTERVAL * 10)):  # 10 fuzzed values every second for the entire POLL_INTERVAL
-            time.sleep(0.1)  # Update every 100ms
-            fuzzed_bps = get_fuzzed_value(total_bps)
-            formatted_fuzzed_total = format_bps(fuzzed_bps)
+        # Send fuzzed values ONLY if first_fetch is False
+        if not first_fetch:
+            for _ in range(int(POLL_INTERVAL * 10)):  # 10 fuzzed values every second for the entire POLL_INTERVAL
+                time.sleep(0.1)  # Update every 100ms
+                fuzzed_bps = get_fuzzed_value(total_bps)
+                formatted_fuzzed_total = format_bps(fuzzed_bps)
 
-            data_to_send_fuzzed = {
-                'data': formatted_fuzzed_total,
-                'debug': f"Fuzzed Value: {formatted_fuzzed_total}"
-            }
+                data_to_send_fuzzed = {
+                    'data': formatted_fuzzed_total,
+                    'debug': f"Fuzzed Value: {formatted_fuzzed_total}"
+                }
 
-            if pipe:
-                pipe.send(data_to_send_fuzzed)
-            else:
-                print(data_to_send_fuzzed['debug'])
-
+                if pipe:
+                    pipe.send(data_to_send_fuzzed)
+                else:
+                    print(data_to_send_fuzzed['debug'])
 
 if __name__ == '__main__':
     snmp_child()
