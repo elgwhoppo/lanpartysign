@@ -92,16 +92,23 @@ def snmp_child(pipe=None):
                 print("UHH")
             time.sleep(POLL_INTERVAL)  # Let's not spam the SNMP requests.
             continue
+
+    prev_in = fetch_snmp_data(INTERFACE_OID_IN)
+    prev_out = fetch_snmp_data(INTERFACE_OID_OUT)
+    prev_time = time.time()
+
+    while True:
         try:
-            prev_in = fetch_snmp_data(INTERFACE_OID_IN)
-            prev_out = fetch_snmp_data(INTERFACE_OID_OUT)
             time.sleep(POLL_INTERVAL)
+
+            current_time = time.time()  # Fetch the current timestamp
+            actual_interval = current_time - prev_time  # Calculate actual elapsed time
 
             current_in = fetch_snmp_data(INTERFACE_OID_IN)
             current_out = fetch_snmp_data(INTERFACE_OID_OUT)
 
-            in_rate = (current_in - prev_in) * 8 / POLL_INTERVAL  # convert bytes to bits
-            out_rate = (current_out - prev_out) * 8 / POLL_INTERVAL
+            in_rate = (current_in - prev_in) * 8 / actual_interval  # convert bytes to bits
+            out_rate = (current_out - prev_out) * 8 / actual_interval
 
             total_bps = in_rate + out_rate
             formatted_total = format_bps(total_bps)
