@@ -30,11 +30,12 @@ def format_bps(value):
     if value >= 10**9:  # Gbps
         return f"{value / 10**9:.1f}G"
     elif value >= 10**6:  # Mbps
-        return f"{value / 10**6:.3g}"  # using .3g will format to 3 significant figures
+        return f"{value / 10**6:.1f}M"  # Changed .3g to .1f
     elif value >= 10**3:  # Kbps
         return f"{value / 10**3:.2f}K"
     else:
         return f"{value:.2f}"
+
 
 def snmp_child(pipe=None):
     while True:

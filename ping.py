@@ -3,6 +3,8 @@ import re
 import time
 from multiprocessing import Pipe
 
+POLL_INTERVAL = 0.1  # seconds
+
 def ping_target(address="8.8.8.8"):
     """Ping the specified address and return the response time in ms as a whole number."""
     try:
