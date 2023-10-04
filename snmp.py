@@ -75,67 +75,62 @@ def format_bps(value):
         return f"{int(val)}" if val.is_integer() else f"{val:.2f}"
     else:
         return f"{int(value)}" if value.is_integer() else f"{value:.2f}"
+    
+def handle_error(pipe, message):
+    if pipe:
+        pipe.send("UHH")
+    else:
+        print(message)
+    time.sleep(POLL_INTERVAL)
 
 def snmp_child(pipe=None):
     while True:
+        # Check connectivity to SNMP target
         if not can_ping(SNMP_TARGET):
-            if pipe:
-                pipe.send("UHH")
-            else:
-                print("UHH")
-            time.sleep(POLL_INTERVAL)  # Let's not spam the ping requests.
-            continue
-        elif not can_snmp(SNMP_TARGET, SNMP_V2_COMMUNITY):
-            if pipe:
-                pipe.send("UHH")
-            else:
-                print("UHH")
-            time.sleep(POLL_INTERVAL)  # Let's not spam the SNMP requests.
+            handle_error(pipe, "Cannot ping target")
             continue
 
-    prev_in = fetch_snmp_data(INTERFACE_OID_IN)
-    prev_out = fetch_snmp_data(INTERFACE_OID_OUT)
-    prev_time = time.time()
+        # Check SNMP availability on the target
+        if not can_snmp(SNMP_TARGET, SNMP_V2_COMMUNITY):
+            handle_error(pipe, "Cannot SNMP to target")
+            continue
 
-    while True:
         try:
-            time.sleep(POLL_INTERVAL)
+            prev_in = fetch_snmp_data(INTERFACE_OID_IN)
+            prev_out = fetch_snmp_data(INTERFACE_OID_OUT)
+            prev_time = time.time()
 
-            current_time = time.time()  # Fetch the current timestamp
-            actual_interval = current_time - prev_time  # Calculate actual elapsed time
+            # Once both checks pass, enter this inner loop to continuously fetch SNMP data
+            while True:
+                time.sleep(POLL_INTERVAL)
 
-            current_in = fetch_snmp_data(INTERFACE_OID_IN)
-            current_out = fetch_snmp_data(INTERFACE_OID_OUT)
+                current_time = time.time()
+                actual_interval = current_time - prev_time
 
-            in_rate = (current_in - prev_in) * 8 / actual_interval  # convert bytes to bits
-            out_rate = (current_out - prev_out) * 8 / actual_interval
+                current_in = fetch_snmp_data(INTERFACE_OID_IN)
+                current_out = fetch_snmp_data(INTERFACE_OID_OUT)
 
-            total_bps = in_rate + out_rate
-            formatted_total = format_bps(total_bps)
+                in_rate = (current_in - prev_in) * 8 / actual_interval
+                out_rate = (current_out - prev_out) * 8 / actual_interval
 
-            print(f"SNMP Data: {formatted_total}")
-            if pipe:
-                pipe.send(formatted_total)
-            else:
-                print(formatted_total)  # print directly if running standalone
+                total_bps = in_rate + out_rate
+                formatted_total = format_bps(total_bps)
 
-            prev_in, prev_out = current_in, current_out
-            time.sleep(POLL_INTERVAL)
+                if pipe:
+                    pipe.send(formatted_total)
+                else:
+                    print(formatted_total)
 
-        except (socket.error, pysnmp.error.PySnmpError, pysnmp.carrier.error.CarrierError, Exception):
-            if pipe:
-                pipe.send("UHH")  # or some other placeholder/error value
-                os._exit(1)
-            else:
-                print("UHH")
-            time.sleep(POLL_INTERVAL)
+                prev_in, prev_out = current_in, current_out
+
+        except (socket.error, pysnmp.error.PySnmpError, pysnmp.carrier.error.CarrierError):
+            handle_error(pipe, "SNMP or Network error occurred")
+            continue
+        
         except Exception as e:
-            if pipe:
-                pipe.send("UHH")
-                os._exit(1)
-            else:
-                print("UHH")
-            time.sleep(POLL_INTERVAL)
+            handle_error(pipe, f"Unknown error: {e}")
+            continue
+
 
 if __name__ == '__main__':
 #    parent_conn, child_conn = Pipe()
