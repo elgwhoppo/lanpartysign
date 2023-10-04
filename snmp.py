@@ -147,18 +147,23 @@ def snmp_fetch(pipe):
         # ... rest of your logic for the thread ...
 
 def snmp_child(pipe=None):
-    #snmp_thread = threading.Thread(target=snmp_fetch, args=(pipe,))
-    #snmp_thread.start()
-
-    #prev_in = fetch_snmp_data(INTERFACE_OID_IN)
-    #prev_out = fetch_snmp_data(INTERFACE_OID_OUT)
-    #prev_time = time.time()
-
-    #print(f"Initial values: prev_in = {prev_in}, prev_out = {prev_out}")  # Debugging
-    snmp_thread = threading.Thread(target=snmp_fetch, args=(pipe,))
-    snmp_thread.start()
+    # Initialize prev_* variables outside the loop
+    prev_time = time.time()
+    prev_in = fetch_snmp_data(INTERFACE_OID_IN)
+    prev_out = fetch_snmp_data(INTERFACE_OID_OUT)
 
     while True:
+        # Check connectivity to SNMP target
+        while not can_ping(SNMP_TARGET):
+            handle_error(pipe, "UHH")
+            time.sleep(POLL_INTERVAL)
+
+        # Check SNMP availability on the target
+        while not can_snmp(SNMP_TARGET, SNMP_V2_COMMUNITY):
+            handle_error(pipe, "UHH")
+            time.sleep(POLL_INTERVAL)
+
+        # Let's fetch the time and SNMP data once before entering the loop.
         current_time = time.time()
         actual_interval = current_time - prev_time
 
@@ -167,10 +172,8 @@ def snmp_child(pipe=None):
 
         in_rate = (current_in - prev_in) * 8 / actual_interval
         out_rate = (current_out - prev_out) * 8 / actual_interval
+
         total_bps = in_rate + out_rate
-
-        print(f"Values: in_rate = {in_rate}, out_rate = {out_rate}, total_bps = {total_bps}")  # Debugging
-
         formatted_total = format_bps(total_bps)
 
         data_to_send = {
@@ -184,10 +187,12 @@ def snmp_child(pipe=None):
         else:
             print(data_to_send['debug'])
 
+        # Save the current values as the previous values for the next iteration.
         prev_in, prev_out, prev_time = current_in, current_out, current_time
 
-        for _ in range(int(POLL_INTERVAL * 10)):
-            time.sleep(0.1)
+        # Send fuzzed values
+        for _ in range(int(POLL_INTERVAL * 10)):  # 10 fuzzed values every second for the entire POLL_INTERVAL
+            time.sleep(0.1)  # Update every 100ms
             fuzzed_bps = get_fuzzed_value(total_bps)
             formatted_fuzzed_total = format_bps(fuzzed_bps)
 
@@ -200,6 +205,7 @@ def snmp_child(pipe=None):
                 pipe.send(data_to_send_fuzzed)
             else:
                 print(data_to_send_fuzzed['debug'])
+
 
 if __name__ == '__main__':
     snmp_child()
