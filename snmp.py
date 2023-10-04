@@ -226,7 +226,7 @@ def snmp_child(pipe=None):
                 time.sleep(0.1)  # Update every 100ms
                 fuzzed_bps = get_fuzzed_value(total_bps)
                 # Check if fuzzed_bps is zero, make it the last non-zero value
-                if fuzzed_bps == 0:
+                if fuzzed_bps == "0":
                     fuzzed_bps = last_non_zero_fuzzed_bps
                 else:
                     last_non_zero_fuzzed_bps = fuzzed_bps
