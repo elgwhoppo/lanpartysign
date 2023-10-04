@@ -33,6 +33,7 @@ def ping_child(pipe=None):
             formatted_ping = "{:3.0f}".format(ping_time)  # Format to have 3 digits
 
             pipe.send(formatted_ping)  # Send the ping time to the parent process
+            time.sleep(POLL_INTERVAL)
         except (socket.error, subprocess.CalledProcessError):
             if pipe:
                 pipe.send("O_0")  # or some other placeholder/error value
