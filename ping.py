@@ -44,7 +44,6 @@ def ping_child(pipe=None):
             time.sleep(POLL_INTERVAL)
 
 
-
 if __name__ == "__main__":
     # This section is for testing the script directly
     while True:

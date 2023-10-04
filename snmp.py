@@ -27,15 +27,15 @@ def fetch_snmp_data(oid):
             return int(varBind[1])
 
 def format_bps(value):
+    width = 5  # Setting a default width (change as per requirement)
     if value >= 10**9:  # Gbps
-        return f"{value / 10**9:.1f}G"
+        return f"{value / 10**9:>{width}.1f}G"
     elif value >= 10**6:  # Mbps
-        return f"{value / 10**6:.1f}M"  # Changed .3g to .1f
+        return f"{value / 10**6:>{width}.1f}M"  # Changed .3g to .1f
     elif value >= 10**3:  # Kbps
-        return f"{value / 10**3:.2f}K"
+        return f"{value / 10**3:>{width}.2f}K"
     else:
-        return f"{value:.2f}"
-
+        return f"{value:>{width}.2f}"
 
 def snmp_child(pipe=None):
     while True:
