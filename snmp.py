@@ -168,6 +168,9 @@ def snmp_child(pipe=None):
     prev_time = time.time()
     prev_in = fetch_snmp_data(INTERFACE_OID_IN)
     prev_out = fetch_snmp_data(INTERFACE_OID_OUT)
+    in_rate = (prev_in - 0) * 8  # Initializing in_rate
+    out_rate = (prev_out - 0) * 8  # Initializing out_rate
+    total_bps = in_rate + out_rate  # Initialize total_bps
 
     # Shared dictionary to store values
     prev_values = {
@@ -187,8 +190,8 @@ def snmp_child(pipe=None):
 
             in_rate = (prev_values["current_in"] - prev_in) * 8 / actual_interval
             out_rate = (prev_values["current_out"] - prev_out) * 8 / actual_interval
+            total_bps = in_rate + out_rate  # Update total_bps
 
-            total_bps = in_rate + out_rate
             formatted_total = format_bps(total_bps)
 
             data_to_send = {
@@ -206,7 +209,7 @@ def snmp_child(pipe=None):
             prev_in = prev_values["current_in"]
             prev_out = prev_values["current_out"]
             prev_time = prev_values["current_time"]
-
+            
         # Send fuzzed values
         for _ in range(int(POLL_INTERVAL * 10)):  # 10 fuzzed values every second for the entire POLL_INTERVAL
             time.sleep(0.1)  # Update every 100ms
