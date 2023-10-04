@@ -171,7 +171,7 @@ def snmp_child(pipe=None):
     in_rate = (prev_in - 0) * 8  # Initializing in_rate
     out_rate = (prev_out - 0) * 8  # Initializing out_rate
     total_bps = in_rate + out_rate  # Initialize total_bps
-    data_ready = False
+    consecutive_failures = 0  # Count for consecutive failures
 
     # If it's the first data fetch, we'll send "SNP" for the display
     first_fetch = True
@@ -190,7 +190,6 @@ def snmp_child(pipe=None):
     snmp_thread.start()
 
     while True:
-        # Check if the snmp_fetch_thread has updated the values
         if prev_values["current_time"] != prev_time:
             actual_interval = prev_values["current_time"] - prev_time
 
@@ -199,20 +198,23 @@ def snmp_child(pipe=None):
                 new_out_rate = (prev_values["current_out"] - prev_out) * 8 / actual_interval
                 new_total_bps = new_in_rate + new_out_rate
             else:
-                # Here you can decide how to handle the case when actual_interval is 0.
-                # For example, you could use the previous values:
                 new_in_rate = (prev_values["current_in"] - prev_in) * 8
                 new_out_rate = (prev_values["current_out"] - prev_out) * 8
                 new_total_bps = new_in_rate + new_out_rate
 
-            # Check if either in_rate or out_rate are zero, or if they're both None.
-            # If any of these conditions are met, we'll keep the previous total_bps.
             if new_in_rate == 0 or new_out_rate == 0 or (new_in_rate is None and new_out_rate is None):
-                total_bps = total_bps  # essentially does nothing, but makes it clear in the code
+                consecutive_failures += 1
+                print(f"Consecutive failures: {consecutive_failures}")
+                
+                if consecutive_failures >= 4:
+                    total_bps = "UHH"
+                    consecutive_failures = 0
             else:
                 in_rate = new_in_rate
                 out_rate = new_out_rate
                 total_bps = new_total_bps
+                consecutive_failures = 0  # Reset the consecutive failures
+
             if first_fetch:
                 formatted_total = "SNP"
                 first_fetch = False
@@ -235,12 +237,11 @@ def snmp_child(pipe=None):
             prev_out = prev_values["current_out"]
             prev_time = prev_values["current_time"]
 
-        # Send fuzzed values ONLY if first_fetch is False
-        if not first_fetch:
-            for _ in range(int(POLL_INTERVAL * 10)):  # 10 fuzzed values every second for the entire POLL_INTERVAL
-                time.sleep(0.1)  # Update every 100ms
+        if not first_fetch and total_bps != "UHH":  # Only send fuzzed values if total_bps is not "UHH"
+            for _ in range(int(POLL_INTERVAL * 10)):
+                time.sleep(0.1)
                 fuzzed_bps = get_fuzzed_value(total_bps)
-                # Check if fuzzed_bps is zero, make it the last non-zero value
+
                 if fuzzed_bps == "0":
                     fuzzed_bps = last_non_zero_fuzzed_bps
                 else:
@@ -257,6 +258,7 @@ def snmp_child(pipe=None):
                     pipe.send(data_to_send_fuzzed)
                 else:
                     print(data_to_send_fuzzed['debug'])
+
 
 if __name__ == '__main__':
     snmp_child()
