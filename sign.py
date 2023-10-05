@@ -1,28 +1,19 @@
+import os
+import socket
+import time
+from datetime import datetime
 from multiprocessing import Process, Pipe
+import RPi.GPIO as GPIO
+
 import snmp  # Import the snmp module
 import ping  # Import the ping module
-import time
-import RPi.GPIO as GPIO
-from datetime import datetime
-import urllib.request, urllib.error
-import threading
-import math
-import re
-import os
-import queue 
-import random
-import socket
-import http.client
 
-# Definitions
-segments = (25, 5, 6, 12, 13, 19, 16, 24)  # GPIOs for segments a-g, decimal on 24
-digits = (23, 22, 27, 18, 17, 4)       # GPIOs for each of the 6 digits
-FREQUENCY = 1000  # PWM frequency in Hz.
-pwms = []  # This list will hold all PWM instances.
-
-
-# Segment patterns for numbers 0-9, some letters also decimals
-number_patterns = {' ':(0,0,0,0,0,0,0,0),
+# CONSTANTS
+SEGMENTS = (25, 5, 6, 12, 13, 19, 16, 24)
+DIGITS = (23, 22, 27, 18, 17, 4)
+FREQUENCY = 1000
+PWMS = []
+NUMBER_PATTERNS = {' ':(0,0,0,0,0,0,0,0),
     'L':(0,1,0,1,0,1,0,0),
     'U':(0,1,1,1,1,1,0,0),
     'R':(0,0,0,1,0,0,1,0),
@@ -76,13 +67,14 @@ number_patterns = {' ':(0,0,0,0,0,0,0,0),
     '_.':(0,0,0,0,0,1,0,1)}
 
 def setup():
-    # initialization stuff
+    """Initialization for the display."""
     GPIO.setwarnings(False)
     GPIO.setmode(GPIO.BCM)
     GPIO.setup(segments, GPIO.OUT)
     GPIO.setup(digits, GPIO.OUT)
 
 def cleanup():
+    """Cleanup the GPIO settings."""
     GPIO.cleanup()
 
 def get_ip_address():
@@ -168,16 +160,12 @@ def display(data):
     # Simulated display function
     print(data)
 
-if __name__ == '__main__':
+def main():
     # Initialization for the display
     setup()
-
-    # Wake up the display
     wake_up_display()    
 
-    startup_time = time.time()
-    
-    # Create pipes for SNMP and ping
+    startup_time = time.time() 
     parent_conn_snmp, child_conn_snmp = Pipe()
     parent_conn_ping, child_conn_ping = Pipe()
 
@@ -191,6 +179,7 @@ if __name__ == '__main__':
 
     last_snmp_data = '000'
     last_ping_data = None
+
     try:
         while True:
             # Parent reads from its end of pipes and updates display
@@ -220,3 +209,6 @@ if __name__ == '__main__':
         p_snmp.join()
         p_ping.join()
         cleanup()  # Proper cleanup on exit
+
+if __name__ == '__main__':
+    main()
