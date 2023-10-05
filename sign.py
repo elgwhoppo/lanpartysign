@@ -71,7 +71,7 @@ def setup():
     GPIO.setwarnings(False)
     GPIO.setmode(GPIO.BCM)
     GPIO.setup(SEGMENTS, GPIO.OUT)
-    GPIO.setup(SEGMENTS, GPIO.OUT)
+    GPIO.setup(DIGITS, GPIO.OUT)
 
 def cleanup():
     """Cleanup the GPIO settings."""
