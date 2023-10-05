@@ -160,7 +160,7 @@ def display(data):
     # Simulated display function
     print(data)
 
-if __name__ == '__main__':
+def main():
     # Initialization for the display
     print("Seting up GPIO...")
     setup()
@@ -211,3 +211,6 @@ if __name__ == '__main__':
         p_snmp.join()
         p_ping.join()
         cleanup()  # Proper cleanup on exit
+
+if __name__ == '__main__':
+    main()
