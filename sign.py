@@ -70,8 +70,8 @@ def setup():
     """Initialization for the display."""
     GPIO.setwarnings(False)
     GPIO.setmode(GPIO.BCM)
-    GPIO.setup(segments, GPIO.OUT)
-    GPIO.setup(digits, GPIO.OUT)
+    GPIO.setup(SEGMENTS, GPIO.OUT)
+    GPIO.setup(SEGMENTS, GPIO.OUT)
 
 def cleanup():
     """Cleanup the GPIO settings."""
@@ -145,12 +145,12 @@ def display_string(data):
     #print("Expanded string:", expanded_string)
 
     # Display the formatted data for a brief moment (no infinite loop)
-    for digit, char in zip(digits, expanded_string):
-        pattern = number_patterns.get(char, number_patterns[' '])  # Get the pattern or default to blank
+    for digit, char in zip(DIGITS, expanded_string):
+        pattern = NUMBER_PATTERNS.get(char, NUMBER_PATTERNS[' '])  # Get the pattern or default to blank
         GPIO.output(digit, GPIO.HIGH)  # Enable this digit
         #print(f"Displaying character '{char}' with pattern {pattern}")
 
-        for segment, value in zip(segments, pattern):
+        for segment, value in zip(SEGMENTS, pattern):
             GPIO.output(segment, value)
 
         time.sleep(0.003)  # Adjust this sleep for the correct display time per digit
@@ -162,8 +162,10 @@ def display(data):
 
 def main():
     # Initialization for the display
+    print("Seting up GPIO...")
     setup()
-    wake_up_display()    
+    #print("Waking up the display...")
+    #wake_up_display()
 
     startup_time = time.time() 
     parent_conn_snmp, child_conn_snmp = Pipe()
