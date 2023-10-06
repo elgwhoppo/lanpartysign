@@ -164,8 +164,8 @@ def main():
     # Initialization for the display
     print("Seting up GPIO...")
     setup()
-    #print("Waking up the display...")
-    #wake_up_display()
+    print("Waking up the display...")
+    wake_up_display()
 
     startup_time = time.time() 
     parent_conn_snmp, child_conn_snmp = Pipe()
@@ -188,7 +188,7 @@ def main():
             if parent_conn_snmp.poll():  # Check if there's data to read
                 data_received = parent_conn_snmp.recv()
                 last_snmp_data = data_received['data']
-                print(data_received['debug'])  # Print out the debug info or handle it as required
+                #print(data_received['data'])  # Print out the debug info or handle it as required
 
             if parent_conn_ping.poll():  # Check if there's data to read
                 last_ping_data = parent_conn_ping.recv()
@@ -210,7 +210,7 @@ def main():
         p_ping.terminate()
         p_snmp.join()
         p_ping.join()
-        cleanup()  # Proper cleanup on exit
+        cleanup()  # Proper cleanup on exit 
 
 if __name__ == '__main__':
     main()
