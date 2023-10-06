@@ -1,7 +1,10 @@
 from pysnmp.hlapi import *
+from pysnmp.carrier.error import CarrierError
+from pysnmp.error import PySnmpError
 import time
 import threading
 import sys
+import subprocess
 import random
 from multiprocessing.connection import Connection
 
@@ -15,60 +18,102 @@ SYSTEM_DESCRIPTION_OID = "1.3.6.1.2.1.1.1.0"
 POLL_INTERVAL = 15  # seconds
 ERROR_RESPONSE = "UHH"
 
+def is_host_reachable(host):
+    """Ping the host to check if it's reachable."""
+    try:
+        # Sending a single packet with a timeout of 1 second
+        response = subprocess.check_output(
+            ['ping', '-c', '1', '-W', '1', host],
+            stderr=subprocess.STDOUT,
+            universal_newlines=True
+        )
+        return True if "1 received" in response else False
+    except subprocess.CalledProcessError:
+        return False
+
 def snmp_threaded_fetch(shared_data, lock, stop_thread_event):
     consecutive_failures = 0
     last_seen_values = {INTERFACE_OID_IN: None, INTERFACE_OID_OUT: None}
     last_timestamp = time.time()
+
+    # Ping test variables to make sure SNMP target is online
+    wait_time_between_attempts = 7  # 7 seconds
     
     while not stop_thread_event.is_set():
-        current_timestamp = time.time()
-        elapsed_time = current_timestamp - last_timestamp
-        current_values = {}
-        total_delta = 0  # To keep track of the total change in counter values
-        
-        for oid in [INTERFACE_OID_IN, INTERFACE_OID_OUT, SYSTEM_DESCRIPTION_OID]:
-            errorIndication, errorStatus, errorIndex, varBinds = next(
-                getCmd(SnmpEngine(),
-                       CommunityData(SNMP_V2_COMMUNITY),
-                       UdpTransportTarget((SNMP_TARGET, 161)),
-                       ContextData(),
-                       ObjectType(ObjectIdentity(oid)))
-            )
-            value = None if errorIndication or errorStatus else str(varBinds[0][1])
-            #print(f"[DEBUG] Fetched for OID {oid}: {value}")
-
-            if not value or value == "0":
-                current_values[oid] = ERROR_RESPONSE if consecutive_failures >= 5 else last_seen_values.get(oid, ERROR_RESPONSE)
-                consecutive_failures += 1
-                print(f"[WARN] Failed to fetched value for OID {oid}")
+        try: 
+            # Check if the SNMP target is reachable, don't move forward if it's not. 
+            if not is_host_reachable(SNMP_TARGET):
+                print(f"[ERROR] SNMP target is not reachable! Attempt 1 of 3")
+                time.sleep(wait_time_between_attempts)
+                if not is_host_reachable(SNMP_TARGET):
+                    print(f"[ERROR] SNMP target is not reachable! Attempt 2 of 3")
+                    time.sleep(wait_time_between_attempts)
+                    if not is_host_reachable(SNMP_TARGET):
+                        current_values = {}
+                        print(f"[ERROR] SNMP target is not reachable! Attempt 3 of 3")
+                        time.sleep(wait_time_between_attempts)
+                        current_values["combined_bps"] = ERROR_RESPONSE
+                        with lock:
+                            shared_data.update(current_values)
+                    else: 
+                        break
+                else: 
+                    break
             else:
-                current_values[oid] = value
-                consecutive_failures = 0
+                current_timestamp = time.time()
+                elapsed_time = current_timestamp - last_timestamp
+                current_values = {}
+                total_delta = 0  # To keep track of the total change in counter values
+                
+                for oid in [INTERFACE_OID_IN, INTERFACE_OID_OUT, SYSTEM_DESCRIPTION_OID]:
+                    errorIndication, errorStatus, errorIndex, varBinds = next(
+                        getCmd(SnmpEngine(),
+                            CommunityData(SNMP_V2_COMMUNITY),
+                            UdpTransportTarget((SNMP_TARGET, 161)),
+                            ContextData(),
+                            ObjectType(ObjectIdentity(oid)))
+                    )
+                    value = None if errorIndication or errorStatus else str(varBinds[0][1])
+                    #print(f"[DEBUG] Fetched for OID {oid}: {value}")
+
+                    if not value or value == "0":
+                        current_values[oid] = ERROR_RESPONSE if consecutive_failures >= 5 else last_seen_values.get(oid, ERROR_RESPONSE)
+                        consecutive_failures += 1
+                        print(f"[WARN] Failed to fetched value for OID {oid}")
+                    else:
+                        current_values[oid] = value
+                        consecutive_failures = 0
 
 
-            if oid in [INTERFACE_OID_IN, INTERFACE_OID_OUT] and last_seen_values[oid] is not None and current_values[oid] != ERROR_RESPONSE:
-                # calculate delta between current and last values
-                delta = int(current_values[oid]) - int(last_seen_values[oid])
-                total_delta += delta
-                print(f"[DEBUG] Delta for OID {oid}: {delta} Total Delta so far: {total_delta}")
+                    if oid in [INTERFACE_OID_IN, INTERFACE_OID_OUT] and last_seen_values[oid] is not None and current_values[oid] != ERROR_RESPONSE:
+                        # calculate delta between current and last values
+                        delta = int(current_values[oid]) - int(last_seen_values[oid])
+                        total_delta += delta
+                        print(f"[DEBUG] Delta for OID {oid}: {delta} Total Delta so far: {total_delta}")
 
-        # Now, let's calculate the combined bps using total_delta
-        combined_bps = (total_delta * 8) / elapsed_time  # Multiply by 8 to convert bytes to bits
-        combined_bps = round(combined_bps)
+                # Now, let's calculate the combined bps using total_delta
+                combined_bps = (total_delta * 8) / elapsed_time  # Multiply by 8 to convert bytes to bits
+                combined_bps = round(combined_bps)
 
-        print(f"[DEBUG] Combined bps: {combined_bps}")
-        current_values["combined_bps"] = combined_bps
+                print(f"[DEBUG] Combined bps: {combined_bps}")
+                current_values["combined_bps"] = combined_bps
+                
+                for key, value in current_values.items():
+                    if value != ERROR_RESPONSE:
+                        last_seen_values[key] = value
+                last_timestamp = current_timestamp
+
+                with lock:
+                    shared_data.update(current_values)
+                stop_thread_event.wait(POLL_INTERVAL)
         
-
-
-        for key, value in current_values.items():
-            if value != ERROR_RESPONSE:
-                last_seen_values[key] = value
-        last_timestamp = current_timestamp
-
-        with lock:
-            shared_data.update(current_values)
-        stop_thread_event.wait(POLL_INTERVAL)
+        except (CarrierError, PySnmpError) as e:
+            print(f"[ERROR] SNMP error occurred: {e}. Retrying in {POLL_INTERVAL} seconds...")
+            current_values = ERROR_RESPONSE
+            with lock:
+                shared_data.update(current_values)
+            time.sleep(POLL_INTERVAL)
+            continue
 
 def format_bps(value):
     """Format the value to appropriate units (Bps, Kbps, Mbps, Gbps). Feed it bps, it'll return a string."""
@@ -118,7 +163,7 @@ def snmp_child(pipe_conn=None):
         while True:  
 
             with lock:
-        # Extract data from shared_data
+                # Extract data from shared_data
                 interface_in = shared_data.get(INTERFACE_OID_IN)
                 interface_out = shared_data.get(INTERFACE_OID_OUT)
                 system_description = shared_data.get(SYSTEM_DESCRIPTION_OID)

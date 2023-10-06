@@ -195,8 +195,11 @@ def main():
 
             # Check if snmp.py has crashed or terminated
             if not p_snmp.is_alive():
-                print("SNMP process has terminated! Exiting sign.py...")
-                os._exit(1)
+                print("[WARNING] snmp_child process died. Restarting...")
+                p_snmp.terminate()  # Ensure it's terminated
+                p_snmp.join()       # Ensure cleanup
+                p_snmp = Process(target=snmp.snmp_child, args=(child_conn_snmp,))
+                p_snmp.start()
 
             if time.time() - startup_time < 50:
                 last_snmp_data = "SNP"
