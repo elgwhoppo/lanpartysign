@@ -10,10 +10,10 @@ from multiprocessing.connection import Connection
 
 
 # Constants
-SNMP_TARGET = "192.168.1.40"
-SNMP_V2_COMMUNITY = "public"
-INTERFACE_OID_IN = "1.3.6.1.2.1.31.1.1.1.6.1"
-INTERFACE_OID_OUT = "1.3.6.1.2.1.31.1.1.1.10.1"
+SNMP_TARGET = "10.10.0.4"
+SNMP_V2_COMMUNITY = "forgetown"
+INTERFACE_OID_IN = "1.3.6.1.2.1.31.1.1.1.6.8"
+INTERFACE_OID_OUT = "1.3.6.1.2.1.31.1.1.1.10.8"
 SYSTEM_DESCRIPTION_OID = "1.3.6.1.2.1.1.1.0"
 POLL_INTERVAL = 15  # seconds
 ERROR_RESPONSE = "UHH"
@@ -136,7 +136,7 @@ def get_fuzzed_value(true_value):
     if true_value is None or not isinstance(true_value, (int, float)):
         return true_value  # Basically just give it back if it's not an int, float, or None
     
-    fuzz_factor = random.uniform(0.98, 1.02)
+    fuzz_factor = random.uniform(0.92, 1.08)
     #print(f"True Value: {true_value}, Fuzz Factor: {fuzz_factor}, Result: {true_value * fuzz_factor}")
     return round(true_value * fuzz_factor)
 

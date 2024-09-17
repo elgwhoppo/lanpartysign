@@ -106,8 +106,10 @@ def wake_up_display():
     
     """Wake up function to test all segments and display the IP address."""
     ip_address = get_ip_address()
+    print(f"Showing RPI IP Address: {ip_address}")
     segments = ip_address.split('.')
-    formatted_ip_1 = segments[1] + segments[0]  # "168192" for IP "192.168.1.49"
+
+    formatted_ip_1 = segments[1].rjust(3, '0') + segments[0].rjust(3, '0')  # "168192" for IP "192.168.1.49"
     formatted_ip_2 = segments[3].rjust(3, '0') + segments[2].rjust(3, '0')  # "049001" for IP "192.168.1.49"
     
     patterns = ["ADD 1P", formatted_ip_1, formatted_ip_2]
@@ -188,7 +190,7 @@ def main():
             if parent_conn_snmp.poll():  # Check if there's data to read
                 data_received = parent_conn_snmp.recv()
                 last_snmp_data = data_received['data']
-                #print(data_received['data'])  # Print out the debug info or handle it as required
+                print(data_received['data'])  # Print out the debug info or handle it as required
 
             if parent_conn_ping.poll():  # Check if there's data to read
                 last_ping_data = parent_conn_ping.recv()
