@@ -124,21 +124,59 @@ We used on rebuild:
 -   Raspberry Pi OS (32-bit)
 -   Python 3.9.2 that came with updated Rasberry Pi OS
 -   Screen for the watchdog process - sudo apt install screen 
--   https://pypi.org/project/pysnmp/ - sudo pip3 install pysnmp
--   pip3 install pyasn1==0.4.8 (had to downgrade for compatability)
--   The RPi.GPIO library. No install required with python 3.9.2. 
+-   `pip3 install requests websocket-client` for the UniFi Network dashboard WebSocket collector.
+-   The RPi.GPIO library. No install required with python 3.9.2.
 
 The Python Scripts
 ==================
 The Python script does all the heavy lifting of the sign and runs on the Raspberry Pi. It creates the precisely-timed pulses required for multiplexing the digits, as well as gathering the data displayed on the sign.
 
-This script has been completely reworked as of October 2023, to leverage multi-processing and pipes for better efficiency. Error handling via a Watchdog service and better exception catching are also used. Python reaches out using three scripts: 
+This script has been completely reworked as of October 2023, to leverage multi-processing and pipes for better efficiency. Error handling via a Watchdog service and better exception catching are also used. The current WAN throughput collector uses UniFi Network's authenticated dashboard WebSocket instead of SNMP interface-counter polling. Python reaches out using three scripts:
 
 - sign.py <--Parent
-- ping.py <--Child 
-- snmp.py <--Child 
+- ping.py <--Child
+- unifi.py <--Child
 
-Calling sign.py will after a boot up cycle, call ping and snmp, getting the data accordingly. 
+Calling sign.py will after a boot up cycle, call ping and unifi, getting the data accordingly.
+
+### UniFi Network configuration
+
+Create a dedicated local-only UniFi Network user, ideally read-only. The dashboard and physical sign automatically load local settings from `.env` before reading environment variables. A starter `.env.example` is included:
+
+```dotenv
+UNIFI_HOST=192.168.1.1
+UNIFI_USERNAME=dashboard-api
+UNIFI_PASSWORD='your-password'
+```
+
+Put the UniFi user's password in `.env`. The `.env` path is ignored by git.
+
+Optional settings:
+
+- `UNIFI_SITE` defaults to `default`.
+- `UNIFI_VERIFY_SSL=true` enables certificate validation. The default is disabled for self-signed local UDM certificates.
+- `UNIFI_DISPLAY_METRIC` can be `total`, `download`, or `upload`; the default is `total`, matching the old combined in+out SNMP display.
+
+### Local metrics dashboard
+
+Run the full-color local dashboard with:
+
+```bash
+python3 dashboard.py
+```
+
+Then open `http://<raspberry-pi-ip>:8080` on the attached monitor or another browser on the LAN.
+
+The root page is a compact dark HUD for the attached monitor. Its activity strip shows the most recent 1 minute with one-second buckets. Click Details, or open `http://<raspberry-pi-ip>:8080/details.html`, for charts, rolling averages, and peaks for 5 minutes, 15 minutes, 1 hour, 6 hours, 24 hours, and 72 hours. The dashboard logs UniFi WAN throughput and local latency checks to `wan_metrics.sqlite3` and keeps only the most recent 72 hours.
+
+Latency is measured locally by the dashboard host, not read from UniFi. The ping collector checks one target every 1 second, rotating through Cloudflare `1.1.1.1`, Google `8.8.8.8`, and Quad9 `9.9.9.9`. That staggers the checks so each target is pinged every 3 seconds.
+
+Useful options:
+
+- `DASHBOARD_PORT=8081 python3 dashboard.py` changes the port.
+- `DASHBOARD_DB=/home/pi/lanpartysign/wan_metrics.sqlite3 python3 dashboard.py` changes the database path.
+- `python3 dashboard.py --demo` records synthetic in-memory samples for UI testing without UniFi credentials. This is not real traffic.
+- `python3 dashboard.py --no-collector` serves existing recorded data without collecting new samples.
 
 tl;dr “what do i need to buy?”
 ==============================

@@ -14,7 +14,7 @@ def ping_target(address=IP_TO_PING):
     """Ping the specified address and return the response time in ms as a whole number."""
     try:
         response = subprocess.check_output(['ping', '-c', '1', address])
-        response_time = float(re.search("time=(\d+\.?\d*)", response.decode('utf-8')).group(1))
+        response_time = float(re.search(r"time=(\d+\.?\d*)", response.decode('utf-8')).group(1))
         # Convert to whole number and ensure it's between 1 and 999
         return min(max(1, int(response_time)), 999)
     except Exception:
@@ -30,7 +30,7 @@ def ping_child(pipe=None):
                 stderr=subprocess.STDOUT,  # get all output
                 universal_newlines=True  # return string not bytes
             )
-            ping_time = float(re.search(r"time=(\d+.\d+)", response).group(1))
+            ping_time = float(re.search(r"time=(\d+\.?\d*)", response).group(1))
             formatted_ping = "{:3.0f}".format(ping_time)  # Format to have 3 digits
 
         except (socket.error, subprocess.CalledProcessError, Exception):

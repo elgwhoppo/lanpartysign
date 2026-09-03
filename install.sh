@@ -18,10 +18,9 @@
 # We use screen for the watchdog process 
 sudo apt install screen 
 
-# need snmp
-pip3 install pysnmp
-#had to downgrade due to compatibility issue 
-pip3 install pyasn1==0.4.8
+# UniFi dashboard WebSocket collector dependencies.
+# The local dashboard uses Python's built-in HTTP server and sqlite3.
+pip3 install requests websocket-client
 
 git clone https://github.com/elgwhoppo/lanpartysign.git
 cd lanpartysign

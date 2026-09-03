@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>LAN Party Sign Metrics</title>
+    <link rel="stylesheet" href="/styles.css?v=needle-motion-1">
+  </head>
+  <body data-page="details">
+    <main class="dashboard">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">LAN Party Sign</p>
+          <h1>WAN Metrics</h1>
+        </div>
+        <div class="status-strip">
+          <a class="back-link" href="/">HUD</a>
+          <span id="collector-state" class="status-pill">Starting</span>
+          <span id="last-update">No samples yet</span>
+        </div>
+      </header>
+
+      <section class="current-grid" aria-label="Current WAN metrics">
+        <article class="metric primary">
+          <span class="metric-label">Total</span>
+          <strong id="current-total">--</strong>
+          <span class="unit">Mbps</span>
+        </article>
+        <article class="metric">
+          <span class="metric-label">Download</span>
+          <strong id="current-download">--</strong>
+          <span class="unit">Mbps</span>
+        </article>
+        <article class="metric">
+          <span class="metric-label">Upload</span>
+          <strong id="current-upload">--</strong>
+          <span class="unit">Mbps</span>
+        </article>
+        <article class="metric latency">
+          <span class="metric-label">Latency</span>
+          <div class="latency-grid">
+            <span><img class="brand-logo cloudflare" src="/assets/brands/cloudflare.svg" alt=""><i id="latency-cloudflare-status" class="ping-status waiting" aria-hidden="true">?</i><strong id="latency-cloudflare">--</strong></span>
+            <span><img class="brand-logo google" src="/assets/brands/google-g-icon.png" alt=""><i id="latency-google-status" class="ping-status waiting" aria-hidden="true">?</i><strong id="latency-google">--</strong></span>
+            <span><img class="brand-logo quad9" src="/assets/brands/quad9.svg" alt=""><i id="latency-quad9-status" class="ping-status waiting" aria-hidden="true">?</i><strong id="latency-quad9">--</strong></span>
+          </div>
+        </article>
+      </section>
+
+      <section class="speedometer-section" aria-label="Throughput tachometers">
+        <div class="instrument-cluster">
+          <article class="tachometer-gauge download">
+            <canvas id="download-tachometer" width="620" height="620" aria-label="Current download Mbps tachometer"></canvas>
+            <div class="speedometer-readout">
+              <span>Download</span>
+              <strong id="download-tachometer-value">--</strong>
+              <span>Mbps</span>
+            </div>
+          </article>
+          <div class="cluster-center">
+            <canvas id="latency-temp-gauge" width="260" height="360" aria-label="Current latency temperature gauge"></canvas>
+            <div class="temp-readout">
+              <span>Latency</span>
+              <strong id="latency-temp-value">--</strong>
+            </div>
+          </div>
+          <article class="tachometer-gauge upload">
+            <canvas id="upload-tachometer" width="620" height="620" aria-label="Current upload Mbps tachometer"></canvas>
+            <div class="speedometer-readout">
+              <span>Upload</span>
+              <strong id="upload-tachometer-value">--</strong>
+              <span>Mbps</span>
+            </div>
+          </article>
+        </div>
+        <form class="speedometer-controls" aria-label="Speedometer limits">
+          <label>
+            <span>Download Max</span>
+            <input id="download-tachometer-max" type="number" min="1" step="1" value="1000" inputmode="numeric">
+          </label>
+          <label>
+            <span>Download Redzone</span>
+            <input id="download-tachometer-redzone" type="number" min="1" step="1" value="750" inputmode="numeric">
+          </label>
+          <label>
+            <span>Upload Max</span>
+            <input id="upload-tachometer-max" type="number" min="1" step="1" value="100" inputmode="numeric">
+          </label>
+          <label>
+            <span>Upload Redzone</span>
+            <input id="upload-tachometer-redzone" type="number" min="1" step="1" value="75" inputmode="numeric">
+          </label>
+        </form>
+      </section>
+
+      <section class="chart-section">
+        <div class="section-head">
+          <div>
+            <h2>Last <span id="window-title">72 hours</span></h2>
+            <p id="sample-count">0 samples retained</p>
+          </div>
+          <div class="range-tabs" role="tablist" aria-label="Time range">
+            <button data-window="5m">5m</button>
+            <button data-window="15m">15m</button>
+            <button data-window="1h">1h</button>
+            <button data-window="6h">6h</button>
+            <button data-window="24h">24h</button>
+            <button data-window="72h" class="active">72h</button>
+          </div>
+        </div>
+        <canvas id="throughput-chart" width="1600" height="520" aria-label="Throughput chart"></canvas>
+      </section>
+
+      <section class="window-grid" id="window-grid" aria-label="Rolling summaries"></section>
+    </main>
+
+    <script src="/app.js?v=needle-motion-1"></script>
+  </body>
+</html>

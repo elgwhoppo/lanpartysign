@@ -1,11 +1,11 @@
-import os
 import socket
 import time
-from datetime import datetime
 from multiprocessing import Process, Pipe
+from pathlib import Path
 import RPi.GPIO as GPIO
 
-import snmp  # Import the snmp module
+from env_config import load_env_file
+import unifi  # Import the UniFi dashboard WebSocket collector
 import ping  # Import the ping module
 
 # CONSTANTS
@@ -122,7 +122,7 @@ def wake_up_display():
     display_string("      ")  # Clear the display
 
 def display_string(data):
-    """Display the combined SNMP and ping data on the seven-segment displays."""
+    """Display the combined WAN throughput and ping data on the seven-segment displays."""
 
     # Formatting data
     formatted_data = str(data).ljust(12)[:12]  # assuming the display can show 6 characters at a time.
@@ -162,59 +162,96 @@ def display(data):
     # Simulated display function
     print(data)
 
+
+def start_child_process(target):
+    parent_conn, child_conn = Pipe()
+    process = Process(target=target, args=(child_conn,))
+    process.start()
+    child_conn.close()
+    return parent_conn, process
+
+
+def restart_child_process(name, process, parent_conn, target):
+    print(f"[WARNING] {name} process died. Restarting...")
+    if process.is_alive():
+        process.terminate()
+    process.join()
+    parent_conn.close()
+    return start_child_process(target)
+
+
+def recv_if_ready(conn, default=None):
+    try:
+        if conn.poll():
+            return conn.recv()
+    except (EOFError, OSError):
+        return default
+    return default
+
+
+def stop_child_process(process):
+    if process.is_alive():
+        process.terminate()
+    process.join()
+
+
 def main():
+    load_env_file(Path(__file__).resolve().parent / ".env")
+
     # Initialization for the display
-    print("Seting up GPIO...")
+    print("Setting up GPIO...")
     setup()
     print("Waking up the display...")
     wake_up_display()
 
     startup_time = time.time() 
-    parent_conn_snmp, child_conn_snmp = Pipe()
-    parent_conn_ping, child_conn_ping = Pipe()
+    parent_conn_wan, p_wan = start_child_process(unifi.unifi_child)
+    parent_conn_ping, p_ping = start_child_process(ping.ping_child)
 
-    # Create child processes
-    p_snmp = Process(target=snmp.snmp_child, args=(child_conn_snmp,))
-    p_ping = Process(target=ping.ping_child, args=(child_conn_ping,))
-
-    # Start child processes
-    p_snmp.start()
-    p_ping.start()
-
-    last_snmp_data = '000'
-    last_ping_data = None
+    last_wan_data = '000'
+    last_ping_data = "999"
 
     try:
         while True:
             # Parent reads from its end of pipes and updates display
-            if parent_conn_snmp.poll():  # Check if there's data to read
-                data_received = parent_conn_snmp.recv()
-                last_snmp_data = data_received['data']
-                print(data_received['data'])  # Print out the debug info or handle it as required
+            data_received = recv_if_ready(parent_conn_wan)
+            if data_received:
+                last_wan_data = data_received["data"]
+                print(data_received["data"])  # Print out the debug info or handle it as required
 
-            if parent_conn_ping.poll():  # Check if there's data to read
-                last_ping_data = parent_conn_ping.recv()
+            ping_received = recv_if_ready(parent_conn_ping)
+            if ping_received:
+                last_ping_data = ping_received
 
-            # Check if snmp.py has crashed or terminated
-            if not p_snmp.is_alive():
-                print("[WARNING] snmp_child process died. Restarting...")
-                p_snmp.terminate()  # Ensure it's terminated
-                p_snmp.join()       # Ensure cleanup
-                p_snmp = Process(target=snmp.snmp_child, args=(child_conn_snmp,))
-                p_snmp.start()
+            # Check if unifi.py has crashed or terminated
+            if not p_wan.is_alive():
+                parent_conn_wan, p_wan = restart_child_process(
+                    "unifi_child",
+                    p_wan,
+                    parent_conn_wan,
+                    unifi.unifi_child,
+                )
+
+            if not p_ping.is_alive():
+                parent_conn_ping, p_ping = restart_child_process(
+                    "ping_child",
+                    p_ping,
+                    parent_conn_ping,
+                    ping.ping_child,
+                )
 
             if time.time() - startup_time < 50:
-                last_snmp_data = "SNP"
+                last_wan_data = "UNI"
 
-            combined_data = f"{last_ping_data}{last_snmp_data}"  # Combining the data.
+            combined_data = f"{last_ping_data}{last_wan_data}"  # Combining the data.
             display_string(combined_data)  # Use the RPi.GPIO to display the combined data
 
     except KeyboardInterrupt:
         # On keyboard interrupt, terminate child processes and exit
-        p_snmp.terminate()
-        p_ping.terminate()
-        p_snmp.join()
-        p_ping.join()
+        stop_child_process(p_wan)
+        stop_child_process(p_ping)
+        parent_conn_wan.close()
+        parent_conn_ping.close()
         cleanup()  # Proper cleanup on exit 
 
 if __name__ == '__main__':

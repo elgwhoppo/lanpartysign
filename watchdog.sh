@@ -1,7 +1,7 @@
 #!/bin/bash
 
 screen_session_name="SIGN"
-command_to_run="python /home/pi/lanpartysign/sign.py"
+command_to_run="python3 /home/pi/lanpartysign/sign.py"
 
 while true; do
     sleep 5

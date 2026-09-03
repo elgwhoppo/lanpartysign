@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>LAN Party Sign HUD</title>
+    <link rel="stylesheet" href="/styles.css?v=mbps-format-1">
+  </head>
+  <body data-page="hud">
+    <main class="hud-stage">
+      <section class="hud-panel" aria-label="WAN metrics HUD">
+        <a class="details-link" href="/details.html">Details</a>
+        <div id="hud-state" class="hud-state" hidden>No live data</div>
+
+        <div class="hud-rates" aria-label="Current throughput">
+          <div class="hud-rate down">
+            <span class="rate-line">
+              <span class="rate-label"><span aria-hidden="true">&darr;</span> Download</span>
+              <span class="rate-unit">Mbps</span>
+            </span>
+            <strong id="hud-download">--</strong>
+          </div>
+          <div class="hud-rate up">
+            <span class="rate-line">
+              <span class="rate-label"><span aria-hidden="true">&uarr;</span> Upload</span>
+              <span class="rate-unit">Mbps</span>
+            </span>
+            <strong id="hud-upload">--</strong>
+          </div>
+        </div>
+
+        <canvas id="hud-sparkline" width="520" height="92" aria-label="Recent throughput activity"></canvas>
+
+        <div class="hud-pings" aria-label="Latency checks">
+          <div class="hud-latencies">
+            <span><img class="brand-logo cloudflare" src="/assets/brands/cloudflare.svg" alt=""><i id="hud-cloudflare-status" class="ping-status waiting" aria-hidden="true">?</i><strong id="hud-cloudflare">--</strong></span>
+            <span><img class="brand-logo google" src="/assets/brands/google-g-icon.png" alt=""><i id="hud-google-status" class="ping-status waiting" aria-hidden="true">?</i><strong id="hud-google">--</strong></span>
+            <span><img class="brand-logo quad9" src="/assets/brands/quad9.svg" alt=""><i id="hud-quad9-status" class="ping-status waiting" aria-hidden="true">?</i><strong id="hud-quad9">--</strong></span>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="/app.js?v=mbps-format-1"></script>
+  </body>
+</html>
